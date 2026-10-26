@@ -1,0 +1,34 @@
+# The test stack: one container that compiles the styles and runs the suite.
+#
+#   docker compose -f docker-compose.test.yml run --rm test
+#
+# Run through app/scripts/test.sh. Standalone, with no postgres of its own: it
+# reads the dev stack's database, the `li` area imported there, through
+# the port docker-compose.local.yml publishes. Configured from config.test/,
+# not config.local/, so neither a narrowed dev config nor the dev stack's
+# environment changes what is tested; and /data is a tmpfs, so the styles it
+# compiles and the caches it fills never touch the dev server's.
+
+name: gbd-geoservices-03-test
+
+services:
+  test:
+    build: .
+    env_file: ./config.test/postgres.env
+    # Docker Desktop resolves host.docker.internal by itself; Linux needs it.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./app:/app
+      - ./config.test:/config:ro
+      # pytest and ruff run from the repository root, where pyproject.toml is
+      # and where the deploy and config tests find the compose files and
+      # config directories.
+      - .:/repo:ro
+      # The extracts the dev stack downloaded, for the tests that read a pbf
+      # header; the rest of /data is the tmpfs.
+      - ./data/downloads:/data/downloads:ro
+    tmpfs:
+      - /data
+    working_dir: /repo
+    entrypoint: ["sh", "/repo/app/scripts/test_run.sh"]

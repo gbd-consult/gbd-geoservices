@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ t('devtools.title') }}</title>
+
+<link rel="icon" href="/devtools/static/favicon.ico">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/proj4@2.11.0/dist/proj4.js"></script>
+<script src="https://unpkg.com/proj4leaflet@1.0.2/src/proj4leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Canonical format -> MIME type, from web/formats.py, so the page never
+     keeps a second list. No API key is rendered into this page, which would
+     put a real key in the source of any page that served it. The key field
+     below keeps it in the browser. -->
+<meta name="formats" content='{{ formats | tojson }}'>
+<meta name="watch" content="{{ 'on' if watch else 'off' }}">
+<!-- The scripts' texts in this page's language (lib/messages.yaml), read by
+     static/i18n.js. -->
+<meta name="messages" content='{{ script_messages | tojson }}'>
+
+<link rel="stylesheet" href="/devtools/static/devtools.css">
+</head>
+<body>
+<div id="layout">
+  <!-- The key notice is beside #map, not in it: inside, a click on it would
+       reach the map as a "what's here", and a map rebuild would clear it. -->
+  <div id="mapArea">
+    <div id="map"></div>
+    <div class="key-notice hidden" id="keyNotice" role="alert">
+      <div class="key-notice-card">
+        <strong class="hidden" data-key="missing">{{ t('devtools.key_missing') }}</strong>
+        <strong class="hidden" data-key="invalid">{{ t('devtools.key_invalid') }}</strong>
+        <p>{{ t('devtools.key_needed', field=t('devtools.api_key'), button=t('devtools.use')) }}</p>
+        <button class="primary" type="button" id="keyNoticeGo">{{ t('devtools.key_go') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="panel-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <span class="brand-name">gbd&nbsp;·&nbsp;geoservices</span>
+          <span class="brand-sub">Devtools · {{ version }}</span>
+        </span>
+      </div>
+      <span class="header-end">
+        <nav class="lang-switch">{% for code, name in languages.items() %}<a href="?lang={{ code }}" data-lang="{{ code }}" hreflang="{{ code }}" lang="{{ code }}" title="{{ name }}" aria-label="{{ name }}">{{ code | upper }}</a>{% endfor %}</nav>
+        <span class="badge">{{ t('devtools.dev_only') }}</span>
+      </span>
+    </div>
+
+    <div class="tabbar">
+      <div class="segmented">
+        <label><input type="radio" name="tab" value="tiles"{{ ' checked' if ui.tab == 'tiles' }}>{{ t('devtools.tab_tiles') }}</label>
+        <label><input type="radio" name="tab" value="search"{{ ' checked' if ui.tab == 'search' }}>{{ t('devtools.tab_search') }}</label>
+        <label><input type="radio" name="tab" value="status"{{ ' checked' if ui.tab == 'status' }}>Status</label>
+      </div>
+    </div>
+
+    <!-- Every control below is rendered as the URL sets it (`controls()` in
+         web/devtools/__init__.py), not left to the scripts, which apply the
+         URL only once the map has loaded. -->
+
+    <!-- ---- Tiles ---- -->
+    <div class="panel-controls{{ ' hidden' if ui.tab != 'tiles' }}" id="panel-tiles">
+      <!-- Two axes, two controls: a theme is <colour>[_<detail>], and the
+           twelve combinations as one flat list is a cross-product nobody
+           can scan. The colour is the URL's until /metadata lists them. -->
+      <div class="field">
+        <label class="field-label" for="colorTheme">{{ t('devtools.color_theme') }}</label>
+        <select id="colorTheme"><option value="{{ ui.palette }}" selected>{{ ui.palette }}</option></select>
+        <span class="hint" id="themeHint"></span>
+      </div>
+
+      <div class="field" id="detailField">
+        <label class="field-label" for="detailLevel">{{ t('devtools.detail_level') }}</label>
+        <select id="detailLevel">
+          <option value="min"{{ ' selected' if ui.detail == 'min' }}>min</option>
+          <option value="nav"{{ ' selected' if ui.detail == 'nav' }}>nav</option>
+          <option value="std"{{ ' selected' if ui.detail == 'std' }}>{{ t('devtools.detail_std') }}</option>
+          <option value="max"{{ ' selected' if ui.detail == 'max' }}>max</option>
+          <option value="topographic"{{ ' selected' if ui.detail == 'topographic' }}>topographic</option>
+          <option value="vegetation"{{ ' selected' if ui.detail == 'vegetation' }}>vegetation</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Schema</label>
+        <div class="field-inline">
+          <span class="schema-pill">{{ area }}</span>
+          <span class="hint">{{ t('devtools.schema_hint') | safe }}</span>
+        </div>
+      </div>
+
+      <!-- Three ways to fetch the same tile. They must draw the identical
+           map; one that differs is a bug in that protocol's addressing. -->
+      <div class="field">
+        <label class="field-label">{{ t('devtools.request_mode') }}</label>
+        <div class="segmented">
+          <label><input type="radio" name="mode" value="xyz"{{ ' checked' if ui.mode == 'xyz' }}>XYZ</label>
+          <label><input type="radio" name="mode" value="wmts-rest"{{ ' checked' if ui.mode == 'wmts-rest' }}>WMTS REST</label>
+          <label><input type="radio" name="mode" value="wmts-kvp"{{ ' checked' if ui.mode == 'wmts-kvp' }}>WMTS KVP</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="grid">TileMatrixSet <span style="text-transform:none;font-weight:400;">{{ t('devtools.wmts_only') }}</span></label>
+        <select id="grid"{{ ' disabled' if ui.grid_disabled }}>{% for id, crs in ui.grids.items() %}<option value="{{ id }}"{{ ' selected' if id == ui.grid }}>{{ id }} ({{ crs }})</option>{% endfor %}</select>
+        <span class="hint" id="gridHint"></span>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="format">Format</label>
+        <select id="format">{% for fmt in ui.formats %}<option value="{{ fmt }}"{{ ' selected' if fmt == ui.format }}>{{ fmt }}</option>{% endfor %}</select>
+      </div>
+
+      <div class="field">
+        <label class="field-check" for="debugGrid">
+          <input type="checkbox" id="debugGrid"{{ ' checked' if ui.debug }}> {{ t('devtools.debug_grid') }}
+        </label>
+        <span class="hint">{{ t('devtools.debug_hint') | safe }}</span>
+        <span class="hint" id="tierHint"></span>
+      </div>
+
+      <div class="field">
+        <label class="field-label">{{ t('devtools.request_url') }}</label>
+        <div id="urlTemplate"></div>
+      </div>
+
+      <div class="button-row">
+        <button class="secondary" id="reloadThemes" title="{{ t('devtools.reload_themes_title') }}">{{ t('devtools.reload_themes') }}</button>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <!-- ---- Search ---- -->
+    <div class="panel-controls{{ ' hidden' if ui.tab != 'search' }}{{ ' mode-' ~ ui.smode if ui.smode in ('here', 'address') }}" id="panel-search">
+      <div class="field">
+        <label class="field-label">{{ t('devtools.mode') }}</label>
+        <div class="segmented">
+          <label><input type="radio" name="smode" value="name"{{ ' checked' if ui.smode == 'name' }}>{{ t('devtools.smode_name') }}</label>
+          <label><input type="radio" name="smode" value="address"{{ ' checked' if ui.smode == 'address' }}>{{ t('devtools.smode_address') }}</label>
+          <label><input type="radio" name="smode" value="phrase"{{ ' checked' if ui.smode == 'phrase' }}>{{ t('devtools.smode_phrase') }}</label>
+          <label><input type="radio" name="smode" value="here"{{ ' checked' if ui.smode == 'here' }}>{{ t('devtools.smode_here') }}</label>
+        </div>
+      </div>
+
+      <!-- "What's here" has no query: a click on the map is the request,
+           and the radius the one thing to set. -->
+      <div class="field only-here">
+        <label class="field-label" for="hereRadius">Radius (m)</label>
+        <input type="number" id="hereRadius" min="1" max="10000" step="1" value="{{ ui.text.radius }}"
+               placeholder="{{ t('devtools.radius_placeholder') }}" autocomplete="off">
+        <span class="hint">{{ t('devtools.click_map') }}</span>
+      </div>
+
+      <div class="field not-here not-address">
+        <label class="field-label" for="searchQuery">{{ t('devtools.query') }}</label>
+        <input type="text" id="searchQuery" value="{{ ui.text.q }}" placeholder="{{ t('devtools.query_placeholder') }}" autocomplete="off">
+        <span class="hint" id="searchQueryHint">{% if ui.smode == 'name' %}{{ t('devtools.js.hint_name') }}{% elif ui.smode == 'phrase' %}{{ t('devtools.js.hint_phrase') }}{% endif %}</span>
+      </div>
+
+      <!-- The address mode takes the parts as fields, not text. -->
+      <div class="field-row only-address">
+        <div class="field address-street">
+          <label class="field-label" for="addrStreet">{{ t('devtools.street') }}</label>
+          <input type="text" id="addrStreet" value="{{ ui.text.street }}" placeholder="{{ t('devtools.street_placeholder') }}" autocomplete="off">
+        </div>
+        <div class="field address-number">
+          <label class="field-label" for="addrNumber">{{ t('devtools.number') }}</label>
+          <input type="text" id="addrNumber" value="{{ ui.text.hn }}" placeholder="100" autocomplete="off">
+        </div>
+      </div>
+      <div class="field-row only-address">
+        <div class="field address-number">
+          <label class="field-label" for="addrPostcode">{{ t('devtools.postcode') }}</label>
+          <input type="text" id="addrPostcode" value="{{ ui.text.pc }}" placeholder="optional" autocomplete="off">
+        </div>
+        <div class="field address-street">
+          <label class="field-label" for="addrCity">{{ t('devtools.city') }}</label>
+          <input type="text" id="addrCity" value="{{ ui.text.city }}" placeholder="optional" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field not-here not-address">
+        <label class="field-label" for="searchCategory">{{ t('devtools.category') }}</label>
+        <div class="cat-picker" id="searchCategoryPicker">
+          <button type="button" class="cat-picker-button" id="searchCategory"
+                  aria-haspopup="tree" aria-expanded="false">
+            <span class="cat-picker-label{{ ' cat-picker-empty' if not ui.category }}" id="searchCategoryLabel">{{ ui.category or '…' }}</span>
+            <span class="cat-picker-caret" aria-hidden="true"></span>
+          </button>
+          <div class="cat-picker-popup hidden" id="searchCategoryTree" role="tree"></div>
+        </div>
+        <span class="hint">{{ t('devtools.category_hint') }}</span>
+      </div>
+
+      <div class="field not-here">
+        <label class="field-check" for="searchInView">
+          <input type="checkbox" id="searchInView"{{ ' checked' if ui.inview }}{{ ' disabled' if ui.geom }}> {{ t('devtools.in_view') }}
+        </label>
+        <label class="field-check" for="searchWithin">
+          <input type="checkbox" id="searchWithin"{{ ' checked' if ui.within }}{{ ' disabled' if not ui.geom }}> {{ t('devtools.within') }}
+        </label>
+        <label class="field-check" for="searchFuzzy">
+          <input type="checkbox" id="searchFuzzy"{{ ' checked' if ui.fuzzy }}{{ ' disabled' if ui.smode != 'name' }}> {{ t('devtools.fuzzy') }}
+        </label>
+        <span class="hint">{{ t('devtools.fuzzy_hint') }}</span>
+      </div>
+
+      <div class="field-row not-here">
+        <div class="field">
+          <label class="field-label" for="searchSort">{{ t('devtools.sort') }}</label>
+          <select id="searchSort">
+            <option value="score"{{ ' selected' if ui.sort == 'score' }}>{{ t('devtools.sort_score') }}</option>
+            <option value="distance"{{ ' selected' if ui.sort == 'distance' }}>{{ t('devtools.sort_distance') }}</option>
+            <option value="name"{{ ' selected' if ui.sort == 'name' }}>{{ t('devtools.sort_name') }}</option>
+            <option value="address"{{ ' selected' if ui.sort == 'address' }}>{{ t('devtools.sort_address') }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="searchSimilarity">{{ t('devtools.fuzziness') }} <span id="searchSimilarityValue">{{ ui.similarity }}</span></label>
+          <input type="range" id="searchSimilarity" min="{{ ui.similarity_range[0] }}" max="{{ ui.similarity_range[1] }}" value="{{ ui.similarity }}" data-default="{{ ui.default_similarity }}">
+          <span class="hint">{{ t('devtools.fuzziness_hint') }}</span>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="primary not-here" id="searchSubmit">{{ t('devtools.search') }}</button>
+        <button class="secondary" id="searchClear">{{ t('devtools.clear') }}</button>
+      </div>
+
+      <div class="geom-note not-here{{ ' hidden' if not ui.geom }}" id="searchGeomNote">
+        {{ t('devtools.geom_note') }}
+      </div>
+
+      <div id="searchError" class="hidden"></div>
+      <div class="search-busy hidden" id="searchBusy" role="status" aria-label="{{ t('devtools.searching') }}"></div>
+      <div class="search-summary" id="searchSummary"></div>
+      <div class="interp-box hidden" id="searchInterpretation"></div>
+
+      <div class="pager hidden" id="searchPager">
+        <button id="searchPrev">{{ t('devtools.prev') }}</button>
+        <span class="pager-label" id="searchPageLabel"></span>
+        <button id="searchNext">{{ t('devtools.next') }}</button>
+      </div>
+
+      <div class="results-list" id="searchResults"></div>
+    </div>
+
+    <!-- ---- Status ---- -->
+    <div class="panel-controls{{ ' hidden' if ui.tab != 'status' }}" id="panel-status">
+      <div class="field">
+        <label class="field-label" for="apiKey">{{ t('devtools.api_key') }}</label>
+        <form class="field-inline" id="apiKeyForm" onsubmit="return false">
+          <input type="text" id="apiKey" placeholder="{{ t('devtools.api_key_placeholder') }}" autocomplete="off">
+          <button class="secondary" id="apiKeyApply" type="submit">{{ t('devtools.use') }}</button>
+        </form>
+        <span class="hint">{{ t('devtools.api_key_hint') }}</span>
+      </div>
+      <div class="field-inline">
+        <span class="watch-dot" id="serverDot" aria-hidden="true"></span>
+        <span class="field-label">Server</span>
+      </div>
+      <div class="hint" id="serverStatus">{{ t('devtools.checking') }}</div>
+      <div class="field-inline">
+        <span class="watch-dot" id="styleDot" aria-hidden="true"></span>
+        <span class="field-label">{{ t('devtools.styles') }}</span>
+      </div>
+      <div class="hint watch-status" id="styleStatus">{{ t('devtools.checking') }}</div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/devtools/static/main.js"></script>
+</body>
+</html>

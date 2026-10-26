@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gbd-geoservices</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1a1d21; --bg: #fbfaf8; --muted: #6b7178;
+          --rule: #e3e0da; --code: #f2efe9; --switch: #63625d; --switch-hover: #006fb8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e6e3dd; --bg: #14181d; --muted: #9aa1a9; --rule: #2a3037; --code: #1d2228;
+            --switch: #9aa1a9; --switch-hover: #5bb4e5; }
+  }
+  body { margin: 0 auto; padding: 2.5rem 1rem 4rem; max-width: 46rem; background: var(--bg);
+         color: var(--fg); font: 16px/1.6 system-ui, sans-serif; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1rem; margin: 2rem 0 .5rem; text-transform: uppercase;
+       letter-spacing: .06em; color: var(--muted); }
+  p.sub { color: var(--muted); margin: 0 0 2rem; }
+  code, pre { background: var(--code); border-radius: 4px; font-family: ui-monospace, monospace;
+              font-size: .875rem; }
+  code { padding: .1em .35em; }
+  pre { padding: .75rem 1rem; overflow-x: auto; }
+  ul { padding-left: 1.2rem; }
+  li { margin: .35rem 0; }
+  /* As on the devtools page: only the language to switch to, as a small
+     square with its code; the language's name is the link's title. */
+  .lang-switch { float: right; display: flex; gap: 6px; color: var(--switch);
+                 font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
+                 Arial, sans-serif; }
+  .lang-switch a { display: inline-flex; align-items: center; justify-content: center;
+                   width: 22px; height: 22px; box-sizing: border-box; border: 1px solid currentColor;
+                   border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .03em;
+                   line-height: 1; color: inherit; text-decoration: none; }
+  .lang-switch a:hover { color: var(--switch-hover); }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+           color: var(--muted); font-size: .875rem; }
+</style>
+</head>
+<body>
+<nav class="lang-switch">{% for code, name in languages.items() %}<a href="?lang={{ code }}" hreflang="{{ code }}" lang="{{ code }}" title="{{ name }}" aria-label="{{ name }}">{{ code | upper }}</a>{% endfor %}</nav>
+<h1>gbd-geoservices</h1>
+<p class="sub">{{ t('landing.subtitle') }} &mdash; {{ t('landing.area') }} <strong>{{ area }}</strong>, {{ t('landing.version') }} {{ version }}.</p>
+
+<h2>{{ t('landing.tiles') }}</h2>
+<pre>/xyz/{theme}/{z}/{x}/{y}.png</pre>
+<p>{{ t('landing.themes') }}: {% for theme in themes %}<code>{{ theme }}</code>{% if not loop.last %} {% endif %}{% else %}<em>{{ t('landing.no_themes') }}</em>{% endfor %}</p>
+
+<h2>WMTS</h2>
+<pre>/wmts?SERVICE=WMTS&amp;REQUEST=GetCapabilities
+/wmts/{theme}/{grid}/{level}/{col}/{row}.png</pre>
+<p>{{ t('landing.grids') }}: {% for id, tms in grids.items() %}<code>{{ id }}</code> ({{ tms.crs }}){% if not loop.last %} {% endif %}{% endfor %}</p>
+
+<h2>{{ t('landing.search') }}</h2>
+<pre>POST /search        {"mode": "name" | "phrase", "text": "..."}
+POST /search        {"mode": "address", "street": "...", "housenumber": "..."}
+POST /search        {"mode": "point", "near": [lon, lat]}</pre>
+
+<h2>{{ t('landing.this_server') }}</h2>
+<ul>
+  <li><a href="/metadata">/metadata</a> &mdash; {{ t('landing.metadata') }}</li>
+  <li>/status &mdash; {{ t('landing.status') }}</li>
+  <li><a href="/health">/health</a> &mdash; {{ t('landing.health') }}</li>
+  <li><a href="/docs">/docs</a> &mdash; {{ t('landing.docs') }}</li>
+  {% if devtools %}<li><a href="/devtools/?lang={{ lang }}">/devtools/</a> &mdash; {{ t('landing.devtools') }}</li>{% endif %}
+</ul>
+
+<footer>{{ t('landing.attribution') }}</footer>
+</body>
+</html>

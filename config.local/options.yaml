@@ -1,0 +1,13 @@
+# The dev stack's deployment options, mounted at /config by docker-compose.local.yml. Tracked in
+# git; the dev database's password is in postgres.env next to it. Production's is config/,
+# git-ignored (config.example/README.md).
+host: localhost
+serve_area: de_nb
+keys: []
+devtools: true
+devtools_watch: true
+# Compile and serve fewer themes: every one is loaded at each restart, ~0.06 s per Map.
+serve_palettes: [default, light, dark, hico, grayscale, sepia, atkis, flora]
+serve_details: [min, nav, std, max, topographic, vegetation]
+serve_grids: [GoogleMapsCompatible, DE_EPSG_25833_ADV]
+nocache: true

@@ -1,0 +1,241 @@
+# Importance per category, 0-100 -- the scale of `ranking.relevance`. Hand-written.
+#
+#   100  essential: what people look for by name; first in search results
+#    80  major landmark or destination
+#    60  everyday destination
+#    40  neighbourhood-level
+#    20  incidental: named, but rarely what anyone looks for
+#     0  ignored: never found by search, even with a name, and never drawn as an icon
+#
+# Keys are any node of model/generated/categories.yaml, at any depth. A node without an entry
+# inherits its nearest listed ancestor's value, so the three top levels must be listed. A key
+# that is no node is refused (importer/rules.py): generated ids follow iD's preset names, and a
+# stale one would otherwise silently do nothing.
+#
+# Changing a value needs a re-import: the importer writes it onto every row. Which importance
+# gets an icon from which zoom is styling, per detail: styles/details.yaml `symbols`.
+# See DESIGN.md "Importance".
+
+cat_geography: 40
+cat_built: 20
+cat_poi: 40
+
+# --- geography
+
+cat_geography_places: 80
+cat_geography_places_city: 100
+cat_geography_places_town: 100
+cat_geography_places_hamlet: 60
+cat_geography_places_locality: 60
+cat_geography_places_island: 60
+cat_geography_places_square: 60
+cat_geography_places_other: 40
+cat_geography_places_region: 60
+cat_geography_places_address: 20
+
+cat_geography_admin: 20
+
+cat_geography_boundaries: 20
+cat_geography_boundaries_admin: 0
+cat_geography_boundaries_military: 40
+
+cat_geography_terrain: 40
+cat_geography_terrain_peak: 60
+cat_geography_terrain_coast: 60
+cat_geography_terrain_rock: 20
+
+cat_geography_water: 40
+cat_geography_water_lake: 60
+cat_geography_water_sea: 60
+cat_geography_water_river: 60
+cat_geography_water_ditch: 0
+cat_geography_water_coastline: 0
+
+cat_geography_landcover: 20
+cat_geography_landcover_park: 60
+cat_geography_landcover_naturereserve: 60
+cat_geography_landcover_beach: 40
+cat_geography_landcover_tree: 0
+
+cat_geography_landuse: 20
+cat_geography_landuse_harbour: 40
+
+# --- built
+
+cat_built_buildings: 20
+cat_built_buildings_outbuilding: 0
+cat_built_buildings_entrance: 0
+cat_built_buildings_indoor: 0
+
+cat_built_roads: 80
+cat_built_roads_service: 40
+cat_built_roads_track: 40
+cat_built_roads_pedestrian: 40
+cat_built_roads_footway: 40
+cat_built_roads_cycleway: 40
+cat_built_roads_path: 40
+cat_built_roads_restarea: 40
+cat_built_roads_construction: 20
+cat_built_roads_crossing: 0
+cat_built_roads_traffic: 0
+cat_built_roads_parking: 40
+cat_built_roads_parking_bicycleparking: 20
+cat_built_roads_parking_motorcycleparking: 20
+cat_built_roads_parking_parkingentrance: 20
+cat_built_roads_parking_streetside: 20
+cat_built_roads_parking_parkingspace: 0
+cat_built_roads_fuel: 60
+cat_built_roads_charging: 40
+cat_built_roads_carrental: 40
+cat_built_roads_carpooling: 20
+cat_built_roads_bikerental: 20
+
+cat_built_transport: 60
+cat_built_transport_airport: 100
+cat_built_transport_station: 80
+cat_built_transport_busstation: 80
+cat_built_transport_stop_platform: 20
+cat_built_transport_stop_ticketvalidator: 0
+# A stop position repeats its stop's name; the stop is what search should find.
+cat_built_transport_stop_stoppositionbus: 0
+cat_built_transport_stop_stoppositionlightrail: 0
+cat_built_transport_stop_stoppositionmonorail: 0
+cat_built_transport_stop_stoppositionsubway: 0
+cat_built_transport_stop_stoppositiontrain: 0
+cat_built_transport_stop_stoppositiontram: 0
+cat_built_transport_stop_stoppositiontrolleybus: 0
+cat_built_transport_port: 40
+cat_built_transport_cablecar: 40
+cat_built_transport_taxi: 40
+cat_built_transport_railway: 20
+cat_built_transport_airinfra: 20
+cat_built_transport_railinfra: 0
+
+cat_built_infrastructure: 20
+cat_built_infrastructure_pipeline: 0
+cat_built_infrastructure_monitoring: 0
+cat_built_infrastructure_pole: 0
+
+cat_built_structures: 20
+cat_built_structures_lighthouse: 60
+cat_built_structures_bridge: 40
+cat_built_structures_tower: 40
+cat_built_structures_pier: 40
+cat_built_structures_dam: 40
+cat_built_structures_dyke: 40
+cat_built_structures_observatory: 40
+cat_built_structures_wall: 0
+cat_built_structures_fence: 0
+cat_built_structures_gate: 0
+cat_built_structures_bollard: 0
+cat_built_structures_streetfurniture: 0
+
+# --- points of interest
+
+cat_poi_food: 60
+cat_poi_food_icecream: 40
+cat_poi_food_foodcourt: 40
+
+cat_poi_shopping: 40
+cat_poi_shopping_supermarket: 60
+cat_poi_shopping_mall: 60
+cat_poi_shopping_vending: 0
+
+cat_poi_accommodation: 60
+cat_poi_accommodation_hut: 40
+
+cat_poi_health: 60
+cat_poi_health_hospital: 80
+cat_poi_health_therapy: 40
+cat_poi_health_medicalsupply: 40
+cat_poi_health_care: 40
+
+cat_poi_education: 60
+cat_poi_education_university: 80
+cat_poi_education_kindergarten: 40
+cat_poi_education_otherschool: 40
+cat_poi_education_research: 40
+
+cat_poi_services: 40
+cat_poi_services_bank: 60
+cat_poi_services_bank_atm: 20
+cat_poi_services_bank_moneylender: 20
+cat_poi_services_bank_paymentterminal: 0
+cat_poi_services_post: 60
+cat_poi_services_post_postdepot: 40
+cat_poi_services_post_postbox: 20
+cat_poi_services_post_parcellocker: 20
+cat_poi_services_post_letterbox: 0
+cat_poi_services_craft: 20
+cat_poi_services_office: 20
+cat_poi_services_studio: 20
+cat_poi_services_lottery: 20
+
+cat_poi_public: 60
+cat_poi_public_townhall: 80
+cat_poi_public_police: 80
+cat_poi_public_toilets: 40
+cat_poi_public_toilets_shower: 20
+cat_poi_public_toilets_dressingroom: 20
+cat_poi_public_toilets_sanitarydumpstation: 20
+cat_poi_public_toilets_dogtoilet: 0
+cat_poi_public_prison: 40
+cat_poi_public_social: 40
+cat_poi_public_emergency: 20
+cat_poi_public_emergency_ambulancestation: 60
+cat_poi_public_emergency_lifeboatstation: 60
+cat_poi_public_emergency_mountainrescue: 60
+cat_poi_public_emergency_firealarm: 0
+cat_poi_public_emergency_fireextinguisher: 0
+cat_poi_public_emergency_firehose: 0
+cat_poi_public_emergency_firehydrant: 0
+cat_poi_public_emergency_fireserviceinlet: 0
+cat_poi_public_emergency_firstaidkit: 0
+cat_poi_public_emergency_lifering: 0
+cat_poi_public_emergency_siren: 0
+cat_poi_public_emergency_waterreservoir: 0
+cat_poi_public_emergency_waterreservoircovered: 0
+cat_poi_public_emergency_watertank: 0
+cat_poi_public_drinkingwater: 20
+cat_poi_public_recycling: 20
+cat_poi_public_shelter: 20
+cat_poi_public_telephone: 20
+cat_poi_public_polling: 0
+
+cat_poi_culture: 60
+cat_poi_culture_museum: 80
+cat_poi_culture_theatre: 80
+cat_poi_culture_casino: 40
+cat_poi_culture_nightclub: 40
+cat_poi_culture_internetcafe: 20
+
+cat_poi_sights: 60
+cat_poi_sights_attraction: 80
+cat_poi_sights_castle: 80
+cat_poi_sights_zoo: 80
+cat_poi_sights_themepark: 80
+cat_poi_sights_monument: 40
+cat_poi_sights_historic: 40
+cat_poi_sights_fountain: 40
+cat_poi_sights_artwork: 20
+cat_poi_sights_information: 20
+cat_poi_sights_ceremonialgate: 20
+
+cat_poi_leisure: 40
+cat_poi_leisure_swimming: 60
+cat_poi_leisure_marina: 60
+cat_poi_leisure_camping: 60
+cat_poi_leisure_golf: 60
+cat_poi_leisure_sportscentre_fitnessstation: 20
+cat_poi_leisure_pitch: 20
+cat_poi_leisure_pitch_stadium: 60
+cat_poi_leisure_picnic: 20
+cat_poi_leisure_wildlife: 20
+cat_poi_leisure_dogpark: 20
+cat_poi_leisure_hunting: 0
+
+cat_poi_religion: 40
+cat_poi_religion_worship: 60
+cat_poi_religion_monastery: 60
+
+cat_poi_other: 20

@@ -1,0 +1,20 @@
+app/tools/.cache/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Everything that outlives a container: downloads, compiled
+# styles, the tile cache, the import log. Bind-mounted at /data.
+/data/
+
+# Postgres's cluster, bind-mounted at /var/lib/postgresql/data.
+/pgdata/
+
+# The deployment's configuration, with the production password and API keys
+# in it; this is the line that keeps them out of git. It lives on the
+# machine deploy.sh runs from and on the server; config.example/ is the
+# tracked template, config.local/ the dev stack's (dev password only).
+/config/
+
+# Local scratch copies, e.g. ___docker-compose.local.yml.
+___*

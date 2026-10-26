@@ -1,0 +1,167 @@
+# The map legend: which classes and icons it shows, in which groups and order. What an entry looks
+# like is not written here -- renderer/legend.py draws it from classes.yaml and the theme's palette,
+# so the legend cannot drift from the map. `manage.py compile-styles` writes one image per theme and
+# language; GET /legend/{theme}.png serves it, and the WMTS capabilities name it as each layer's
+# LegendURL. See DESIGN.md "Legend".
+#
+# The legend shows everything the map draws, and the compiler refuses one that does not: every
+# class drawn in a mode other than `marker` must be named by an entry, and every icon a detail
+# draws must lie under an icons group.
+#
+# `zoom` is the zoom whose style the symbols show, for every entry that names none of its own: a road
+# is drawn as wide as it is there. An entry none of whose classes draws at its zoom is refused.
+#
+# A group is either
+#   {title: <message id>, entries: [...]}       entries as listed, in this order
+#   {icons: <category or list>, title?, entries?}
+#                                               every icon a theme draws for a category under these,
+#                                               one row per icon, in alphabetical order; titled as the
+#                                               first category is (categories.yaml `name_<lang>`)
+#                                               unless `title` says otherwise
+# An entry is one of
+#   {class: <class>, text: <message id>}   the class's geometry: an area if it is filled, else a line;
+#                                          for a class with no geometry (a place) its name, written in
+#                                          the class's label style. `class` may be a glob or a list
+#                                          of them, for classes that look alike: the entry is drawn as
+#                                          the first of them the theme draws.
+#   {category: <category>}                 the category's icon, named as the category is unless `text`
+#                                          says otherwise. An icon several categories share is named
+#                                          as the most general of them; an entry here renames it.
+# A theme shows only what it draws: a class its detail does not list, an icon its detail's `symbols`
+# never reach. A group left with nothing is left out, and an icon is shown only once, in the first
+# group that holds it.
+
+zoom: 15
+
+groups:
+  - title: legend.group.roads
+    entries:
+      - {class: cls_road_motorway, text: legend.motorway}
+      - {class: cls_road_trunk, text: legend.trunk}
+      - {class: cls_road_primary, text: legend.primary}
+      - {class: cls_road_secondary, text: legend.secondary}
+      - {class: cls_road_tertiary, text: legend.tertiary}
+      - {class: cls_road_minor, text: legend.minor}
+      - {class: cls_road_service, text: legend.service}
+      - {class: cls_road_busway, text: legend.busway}
+      - {class: cls_road_bus_guideway, text: legend.bus_guideway}
+      - {class: cls_road_raceway, text: legend.raceway}
+      - {class: cls_road_track, text: legend.track}
+      - {class: cls_road_path, text: legend.path}
+      - {class: cls_public_transport_path, text: legend.platform}
+      # Every road's bridge has the dark casing, every tunnel the dashed one.
+      - {class: [cls_road_primary_bridge, cls_road_*_bridge], text: legend.bridge}
+      - {class: [cls_road_primary_tunnel, cls_road_*_tunnel], text: legend.tunnel}
+
+  - title: legend.group.rail
+    entries:
+      - {class: cls_rail_rail, text: legend.rail}
+      - {class: cls_rail_rail_bridge, text: legend.rail_bridge}
+      - {class: cls_rail_rail_tunnel, text: legend.rail_tunnel}
+      - {class: [cls_rail_narrow_gauge, cls_rail_funicular], text: legend.narrow_gauge}
+      - {class: [cls_transit_tram, cls_transit_light_rail, cls_transit_monorail], text: legend.tram}
+      - {class: cls_transit_subway, text: legend.subway}
+      - {class: cls_ferry, text: legend.ferry}
+
+  - title: legend.group.air
+    entries:
+      - {class: [cls_aeroway_aerodrome, cls_aeroway_apron, cls_aeroway_helipad], text: legend.aerodrome}
+      - {class: cls_aeroway_runway, text: legend.runway}
+      - {class: cls_aeroway_taxiway, text: legend.taxiway}
+
+  - title: legend.group.water
+    entries:
+      - {class: [cls_water_lake, cls_ocean, cls_water_dock, cls_water_swimming_pool], text: legend.water}
+      - {class: cls_coastline, text: legend.coastline}
+      - {class: cls_waterway_river, text: legend.river}
+      - {class: cls_waterway_canal, text: legend.canal}
+      - {class: cls_waterway_stream, text: legend.stream}
+      - {class: [cls_waterway_drain, cls_waterway_ditch], text: legend.ditch}
+      - {class: cls_waterway_river_intermittent, text: legend.river_intermittent}
+      - {class: cls_waterway_stream_intermittent, text: legend.stream_intermittent}
+
+  - title: legend.group.relief
+    entries:
+      - {class: cls_contour_1000, text: legend.contour_1000}
+      - {class: cls_contour_500, text: legend.contour_500}
+      - {class: cls_contour_250, text: legend.contour_250}
+      - {class: cls_contour_100, text: legend.contour_100}
+      - {class: cls_contour_50, text: legend.contour_50}
+
+  - title: legend.group.landcover
+    entries:
+      - {class: cls_landcover_wood, text: legend.wood}
+      - {class: cls_landcover_wood_broadleaved, text: legend.wood_broadleaved}
+      - {class: cls_landcover_wood_needleleaved, text: legend.wood_needleleaved}
+      - {class: cls_landcover_scrub, text: legend.scrub}
+      - {class: cls_landcover_heath, text: legend.heath}
+      - {class: cls_landcover_grass, text: legend.grass}
+      - {class: cls_landcover_orchard, text: legend.orchard}
+      - {class: cls_landcover_farmland, text: legend.farmland}
+      - {class: cls_landcover_wetland, text: legend.wetland}
+      - {class: cls_landcover_bog, text: legend.bog}
+      - {class: cls_landcover_sand, text: legend.sand}
+      - {class: cls_landcover_rock, text: legend.rock}
+      - {class: cls_landcover_ice, text: legend.ice}
+      - {class: cls_protected_area, text: legend.protected}
+
+  - title: legend.group.landuse
+    entries:
+      - {class: cls_landuse_residential, text: legend.residential}
+      - {class: [cls_landuse_retail, cls_landuse_commercial], text: legend.retail}
+      - {class: [cls_landuse_industrial, cls_landuse_railway], text: legend.industrial}
+      - {class: cls_landuse_quarry, text: legend.quarry}
+      - {class: cls_landuse_military, text: legend.military}
+      - {class: [cls_landuse_parking, cls_landuse_garages, cls_landuse_bus_station], text: legend.parking}
+      - {class: cls_landuse_hospital, text: legend.hospital}
+      - class: [cls_landuse_school, cls_landuse_university, cls_landuse_college, cls_landuse_kindergarten,
+                cls_landuse_library]
+        text: legend.school
+      - {class: [cls_landuse_pitch, cls_landuse_stadium, cls_landuse_track], text: legend.pitch}
+      - {class: [cls_landuse_playground, cls_landuse_theme_park, cls_landuse_zoo], text: legend.park}
+      - {class: cls_landuse_cemetery, text: legend.cemetery}
+      - {class: cls_building, text: legend.building}
+
+  - title: legend.group.boundaries
+    entries:
+      - {class: cls_boundary_admin_2, text: legend.boundary_country}
+      - {class: cls_boundary_admin_4, text: legend.boundary_state}
+      - {class: cls_boundary_admin_6, text: legend.boundary_district}
+      - {class: cls_boundary_admin_8, text: legend.boundary_municipality}
+
+  - title: legend.group.places
+    entries:
+      - {class: cls_place_city, text: legend.city}
+      - {class: cls_place_town, text: legend.town}
+      - {class: cls_place_village, text: legend.village}
+      - {class: cls_place_suburb, text: legend.suburb}
+      - {class: cls_place_quarter, text: legend.quarter}
+      - {class: [cls_place_neighbourhood, cls_place_hamlet, cls_place_isolated_dwelling], text: legend.hamlet}
+      - {class: cls_place_island, text: legend.island}
+
+  # The icons, one group per kind of place as the search knows it.
+  - {icons: cat_poi_food}
+  - icons: cat_poi_shopping
+    entries:
+      - {category: cat_poi_shopping, text: legend.shop}
+      - {category: cat_poi_shopping_vehicles}
+  - {icons: cat_poi_services}
+  - {icons: cat_poi_accommodation}
+  - icons: cat_poi_health
+    entries:
+      - {category: cat_poi_health_doctor}
+  - {icons: cat_poi_education}
+  - {icons: cat_poi_public}
+  - {icons: cat_poi_religion}
+  - {icons: cat_poi_culture}
+  - {icons: cat_poi_sights}
+  - icons: cat_poi_leisure
+    entries:
+      - {category: cat_poi_leisure_camping_campsite}
+  - {icons: cat_geography_landcover, title: legend.group.parks}
+  - icons: [cat_built_transport, cat_built_roads]
+    entries:
+      - {category: cat_built_transport_stop_platform_trampoint, text: legend.tram_stop}
+      - {category: cat_built_transport_stop_platform_subway, text: legend.subway_stop}
+  - {icons: cat_built_infrastructure}
+  - {icons: cat_poi_other}

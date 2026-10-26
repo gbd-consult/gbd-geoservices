@@ -1,0 +1,13923 @@
+[
+{
+"kind": "line",
+"tags": {
+"admin_level": "10"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "4"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "6"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "7",
+"barrier": "hedge",
+"boundary": "administrative"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "7",
+"boundary": "administrative",
+"waterway": "canal"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "8",
+"barrier": "hedge",
+"boundary": "administrative"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "8",
+"boundary": "administrative",
+"tunnel": "culvert",
+"waterway": "stream"
+}
+},
+{
+"kind": "line",
+"tags": {
+"admin_level": "8",
+"boundary": "administrative",
+"waterway": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aerialway": "zip_line"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aeroway": "airstrip",
+"leisure": "sports_centre",
+"sport": "ultralight_aviation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aeroway": "hangar",
+"building": "hangar"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aeroway": "heliport",
+"amenity": "police",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aeroway": "preserved",
+"highway": "service"
+}
+},
+{
+"kind": "line",
+"tags": {
+"aeroway": "terminal",
+"building": "retail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "ambulance_station",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "animal_breeding",
+"building": "barn"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "animal_shelter",
+"building": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "animal_training",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "arts_centre",
+"building": "civic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "arts_centre",
+"building": "yes",
+"craft": "carpenter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "baking_oven",
+"building": "bakehouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bank",
+"building": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bar",
+"building": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bar",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bench",
+"barrier": "retaining_wall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bicycle_parking",
+"building": "garage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bicycle_parking",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bicycle_rental"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bicycle_repair_station",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "boat_rental",
+"building": "yes",
+"shop": "fishing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "boat_storage",
+"place": "square"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "building_yard",
+"building": "civic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "bus_station",
+"bus": "yes",
+"parking": "surface",
+"public_transport": "station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "cafe",
+"building": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "cafe",
+"building": "kiosk"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "cafe",
+"building": "yes",
+"shop": "gift"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "cafe",
+"leisure": "outdoor_seating",
+"shop": "bakery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "canteen",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "car_rental",
+"building": "yes",
+"shop": "car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "car_wash",
+"building": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "car_wash",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "charging_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "childcare",
+"building": "kindergarten"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "cinema",
+"building": "public"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "clinic",
+"building": "office",
+"healthcare": "clinic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "clinic",
+"emergency": "no",
+"healthcare": "rehabilitation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "college",
+"building": "civic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre",
+"building": "civic",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre",
+"building": "house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre",
+"building": "religious"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre",
+"building": "yes",
+"leisure": "sports_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "community_centre",
+"religion": "christian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "courthouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "crematorium"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "dentist",
+"building": "commercial",
+"healthcare": "dentist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "dentist",
+"building": "yes",
+"healthcare": "dentist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "doctors",
+"building": "detached"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "doctors",
+"building": "office",
+"healthcare": "doctor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "doctors",
+"building": "yes",
+"healthcare": "psychotherapist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "dressing_room",
+"building": "pavilion"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "driving_school",
+"building": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "driving_school",
+"building": "yes",
+"education": "driving_school"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "events_venue",
+"building": "office"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fast_food"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fast_food",
+"building": "kiosk"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fast_food",
+"building": "terrace"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "feeding_place"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "ferry_terminal",
+"ferry": "yes",
+"man_made": "pier",
+"public_transport": "station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fire_station",
+"building": "community_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fire_station",
+"building": "public"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fire_station",
+"landuse": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fountain",
+"barrier": "wall",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fuel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fuel",
+"building": "gas_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fuel",
+"building": "retail",
+"shop": "kiosk"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fuel",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "fuel",
+"landuse": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "funeral_hall",
+"building": "funeral_hall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "galabau"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "grave_yard",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "grave_yard",
+"historic": "yes",
+"leisure": "park"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "greenhouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "hospital",
+"building": "hospital"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "hospital",
+"healthcare": "hospital"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "ice_cream",
+"building": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "kindergarten",
+"barrier": "fence",
+"education": "kindergarten"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "kindergarten",
+"building": "hut"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "kindergarten",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "kindergarten",
+"landuse": "education"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "kneipp_water_cure"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "letter_box",
+"building": "house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "lifeboat",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "marketplace",
+"highway": "pedestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "motorcycle_parking"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "music_school",
+"building": "yes",
+"education": "music_school"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "nightclub",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "nursing_home",
+"building": "nursing_home",
+"social_facility": "assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "nursing_home",
+"social_facility": "group_home"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"building": "apartments",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"building": "garage",
+"parking": "rooftop"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"building": "parking"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"building": "roof",
+"parking": "carports"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"building": "yes",
+"parking": "rooftop"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"bus": "no",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"ferry": "no",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"highway": "service",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"park_ride": "bus",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"park_ride": "no",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"park_ride": "no",
+"parking": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"park_ride": "yes",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"parking": "lane"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"parking": "service"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking",
+"parking": "surface",
+"tourism": "caravan_site"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking_space"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "parking_space",
+"parking": "lane"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "pharmacy",
+"building": "house",
+"healthcare": "pharmacy"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "pharmacy",
+"healthcare": "pharmacy"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "place_of_worship",
+"building": "chapel",
+"religion": "multifaith"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "place_of_worship",
+"building": "church",
+"religion": "christian",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "place_of_worship",
+"building": "mosque",
+"religion": "muslim"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "place_of_worship",
+"building": "yes",
+"religion": "buddhist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "police",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "police",
+"building": "government"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "police",
+"building": "retail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "post_depot"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "post_depot",
+"landuse": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "prison",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "pub",
+"building": "apartments"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "pub",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "public_bookcase",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "recycling",
+"barrier": "fence",
+"recycling_type": "centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "recycling",
+"landuse": "commercial",
+"recycling_type": "centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "refugee_housing",
+"building": "yes",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "research_institute",
+"emergency": "no"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "restaurant",
+"building": "detached"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "restaurant",
+"building": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "restaurant",
+"building": "terrace"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "restaurant",
+"building": "yes",
+"shop": "seafood"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "restaurant",
+"sport": "9pin",
+"tourism": "hotel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "sailing_school"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "sanitary_dump_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "school",
+"building": "school"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "school",
+"education": "folk_high_school"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "school",
+"religion": "no"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "scout_camp"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "shelter",
+"building": "roof",
+"historic": "pillory"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "shelter",
+"building": "transportation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "shelter",
+"leisure": "outdoor_seating"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "smoking_area",
+"building": "roof"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "apartments",
+"social_facility": "assisted_living"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "church",
+"social_facility": "outreach",
+"social_facility:for": "drug_addicted"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "detached",
+"social_facility": "ambulatory_care",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "dormitory",
+"social_facility": "hospice"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "house",
+"social_facility": "group_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "nursing_home",
+"social_facility": "nursing_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "residential",
+"social_facility": "assisted_living"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "residential",
+"social_facility": "group_home;nursing_home;assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"craft": "signmaker",
+"social_facility": "workshop"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "ambulatory_care",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "day_care",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "group_home",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "group_home",
+"social_facility:for": "senior;disabled"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "nursing_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "refugee-housing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "workshop",
+"social_facility:for": "mental_health"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"tourism": "hostel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"landuse": "industrial",
+"social_facility": "workshop"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"landuse": "residential",
+"social_facility": "group_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "ambulatory_care"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "assisted_living",
+"social_facility:for": "underprivileged"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "group_home",
+"social_facility:for": "juvenile"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "nursing_home",
+"social_facility:for": "deseased"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "shelter",
+"social_facility:for": "homeless"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "social_facility",
+"social_facility:for": "homeless"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "sport",
+"leisure": "pitch",
+"office": "association",
+"sport": "dog"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "stables",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "stables",
+"leisure": "horse_riding",
+"sport": "equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "student_accommodation",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "swingerclub",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "theatre",
+"building": "ship",
+"man_made": "ship"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "toilets",
+"building": "cabin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "toilets",
+"building": "service"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "townhall",
+"building": "city_hall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "townhall",
+"building": "office",
+"office": "government"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "townhall",
+"building": "yes",
+"historic": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "traffic_park",
+"highway": "service"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "university"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "vehicle_inspection",
+"building": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "veterinary",
+"building": "detached"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "waste_disposal",
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "waste_disposal",
+"waste": "mixed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "waste_disposal",
+"waste": "trash;plastics;paper;organic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"amenity": "weighbridge"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "block"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "city_wall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "dam"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "ditch",
+"man_made": "wastewater_plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "ditch",
+"waterway": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"generator:method": "photovoltaic",
+"landuse": "industrial",
+"power": "generator"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"industrial": "shipyard",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "commercial",
+"man_made": "pumping_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "forest"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "industrial",
+"man_made": "wastewater_plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "landfill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "military"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"landuse": "plant_nursery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"leisure": "beach_resort"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"leisure": "park",
+"natural": "wood"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"leisure": "pitch",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"leisure": "water_park",
+"sport": "swimming"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"man_made": "wastewater_plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"military": "range"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"natural": "water",
+"water": "pond"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"public_transport": "platform",
+"railway": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "fence",
+"tourism": "theme_park"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "handrail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "hedge",
+"landuse": "meadow"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "hedge",
+"waterway": "ditch"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "hegde_bank"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "kerb",
+"natural": "grassland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "mound"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "railing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "retaining_wall",
+"man_made": "quay"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "stone"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "wall",
+"building": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "wall",
+"leisure": "pitch",
+"sport": "shooting"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "wall",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "wire_fence"
+}
+},
+{
+"kind": "line",
+"tags": {
+"barrier": "yes",
+"leisure": "pitch",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"boundary": "de:Naturerlebnisraum",
+"leisure": "park"
+}
+},
+{
+"kind": "line",
+"tags": {
+"boundary": "postal_code"
+}
+},
+{
+"kind": "line",
+"tags": {
+"boundary": "protected_area",
+"leisure": "nature_reserve",
+"natural": "wetland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"boundary": "public_transport"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "aqueduct"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "boardwalk",
+"highway": "pedestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "covered",
+"man_made": "bridge"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "movable",
+"highway": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "movable",
+"highway": "track"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "no",
+"highway": "construction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "trestle",
+"highway": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"building": "bridge"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"bus": "no",
+"highway": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"footway": "sidewalk",
+"highway": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "cycleway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "footway",
+"historic": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "path"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "path",
+"railway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "primary",
+"historic": "railway",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "residential",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "service",
+"railway": "disused"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"highway": "track",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"historic": "railway",
+"railway": "construction",
+"railway:preserved": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"man_made": "bridge"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"railway": "construction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bridge": "yes",
+"railway": "rail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "16c"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "agricultural"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"landuse": "retail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"office": "employment_agency"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"office": "newspaper"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"shop": "bicycle"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"shop": "gift"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"shop": "mobile_phone"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"shop": "supermarket"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"shop": "vacant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "apartments",
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "band_shell",
+"leisure": "bandstand"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "barn",
+"power": "generator"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "bell_tower",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "bungalow"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "bunker",
+"historic": "ruins",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "cabin",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "carport",
+"parking": "carports"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "chalet",
+"tourism": "chalet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "church",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "civic",
+"emergency": "disaster_response"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "civic",
+"leisure": "bandstand"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "civic",
+"office": "advertising_agency"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "civic",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "clubhouse",
+"sport": "soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "blacksmith"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "electrician"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "hvac"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "painter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "signmaker"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"craft": "window_construction",
+"shop": "fabric"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"healthcare": "centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"leisure": "bowling_alley"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"leisure": "sports_centre",
+"sport": "10pin;9pin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"man_made": "bunker_silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"man_made": "windmill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"office": "estate_agent"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"office": "newspaper"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"office": "surveyor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"power": "substation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "books"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "chemist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "electrical"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "funeral_directors"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "hearing_aids"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "mall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "pet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "stationery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "tools"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"shop": "variety_store"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"sport": "motor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "commercial",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "community_centre",
+"office": "educational_institution"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "container"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "container",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "demountable"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"craft": "electrician"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"historic": "heritage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"leisure": "sports_hall",
+"sport": "equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"office": "property_management"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"shop": "florist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"sport": "soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "detached",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "digester",
+"man_made": "reservoir_covered"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "dormitory",
+"social_facility": "shelter",
+"social_facility:for": "migrant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "factory"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "farm",
+"historic": "watermill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "farm",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "farm_auxiliary",
+"man_made": "silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "farmhouse",
+"tourism": "hotel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "fuel_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "garage",
+"parking": "carports"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "garages"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "gas_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "glasshouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "government",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "greenhouse_horticulture"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "gymnasium",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hall",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hen-coop"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hospital",
+"emergency": "no",
+"healthcare": "rehabilitation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hospital",
+"healthcare": "occupational_therapist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hotel",
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"craft": "blacksmith"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"craft": "hvac"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"craft": "stove_fitter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"healthcare": "physiotherapist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"historic": "castle"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"leisure": "adult_gaming_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"leisure": "water_park",
+"sport": "swimming"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"office": "notary"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "art"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "dry_cleaning"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "frame"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "jewelry"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "second_hand"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"shop": "vacant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "house",
+"tourism": "hotel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hovel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hut",
+"historic": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "hut",
+"shop": "ticket"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"craft": "agricultural_engines"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"craft": "electrician"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"craft": "painter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"craft": "stonemason"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"generator:method": "combustion",
+"power": "generator"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"industrial": "bakery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"industrial": "warehouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"man_made": "chimney"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"man_made": "water_works"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"office": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"railway": "roundhouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"shop": "boat"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"shop": "furniture"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "industrial",
+"shop": "wholesale"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "kindergarten",
+"religion": "christian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "kiosk",
+"shop": "kiosk"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "lifeguard_tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "livestock"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "manufacture",
+"craft": "dental_technician"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "manufacture",
+"shop": "car_repair"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "mosque"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "nursing_home"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"office": "architect"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"office": "energy_supplier"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"office": "it"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"office": "research"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"shop": "clothes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "office",
+"tourism": "hotel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "passage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "pavilion",
+"sport": "gliding"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "poolhouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "prison"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "public",
+"landuse": "retail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "public",
+"office": "association"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "public",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "railway",
+"historic": "railway",
+"tourism": "hostel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "residential",
+"craft": "gardener"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "residential",
+"historic": "heritage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "residential",
+"office": "insurance"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "residential",
+"shop": "vacant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "residential",
+"tourism": "hotel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"craft": "boatbuilder"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"craft": "tiler"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"landuse": "retail",
+"shop": "supermarket"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"office": "estate_agent"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "bakery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "car_parts"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "computer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "doityourself"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "furniture"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "hairdresser"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "laundry"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "rental"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "stationery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "trade"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"shop": "yacht_supply"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "retail",
+"tourism": "information"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "riding_hall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "roof",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "roof",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "ruins",
+"landuse": "military",
+"military": "bunker"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "school",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "school",
+"sport": "swimming"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "semidetached_house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "service",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "service",
+"man_made": "monitoring_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "service",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "service",
+"power": "substation",
+"tourism": "artwork"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sevice"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "shed",
+"leisure": "sauna"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "shed",
+"sport": "canoe"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "ship",
+"historic": "ship"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "slurry_tank",
+"man_made": "silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "social_facility",
+"social_facility": "assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports",
+"sport": "9pin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_centre",
+"leisure": "sports_centre",
+"sport": "shooting"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_centre",
+"leisure": "sports_hall",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_centre",
+"sport": "ice_skating"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_hall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_hall",
+"leisure": "sports_hall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "sports_hall",
+"sport": "tennis"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "stable",
+"sport": "equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "static_caravan",
+"shop": "pastry"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "storage_tank"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "supermarket"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "synagogue"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "tent"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "terrace",
+"historic": "building"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "terrace;apartments"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "tower",
+"man_made": "monitoring_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "train_station",
+"historic": "heritage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "transformer_tower",
+"historic": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "transportation",
+"railway": "wash"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "veranda"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "warehouse",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "warehouse",
+"man_made": "pumping_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "warehouse",
+"shop": "houseware"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "warehouse",
+"sport": "tennis;squash"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "water_tower",
+"man_made": "water_tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "windmill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "windmill",
+"man_made": "windmill",
+"tourism": "chalet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "agricultural_engines"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "blacksmith",
+"historic": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "builder"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "carpet_layer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "distillery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "gardener"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "hvac"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "metal_works",
+"shop": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "plumber",
+"shop": "bathroom_furnishing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "saddler"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"craft": "tiler"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"emergency": "ambulance_station"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"emergency": "water_rescue"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"healthcare": "alternative"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"healthcare": "doctor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"healthcare": "podiatrist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "beacon"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "building",
+"man_made": "watermill",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "building",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "gatehouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "manor",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "monument",
+"man_made": "tower",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "windmill",
+"man_made": "windmill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "yes",
+"man_made": "tower",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"historic": "yes",
+"military": "bunker"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"industrial": "slaughterhouse"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"landuse": "residential"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "bird_hide",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "dance"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "horse_riding"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "pitch",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "playground"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "9pin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "climbing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "surfing;sailing; beachvolleyball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "tennis;soccer;multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "sports_hall",
+"sport": "multi;volleyball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "stadium",
+"sport": "ice_skating"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"leisure": "wellness"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "bunker_silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "gasometer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "obelisk"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "reservoir_covered"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "street_cabinet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "tower",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "water_works"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"man_made": "works"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"natural": "water"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "camping"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "diplomatic"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "financial_advisor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "it"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "ngo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "property_management"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"office": "telecommunication"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"parking": "surface",
+"shop": "department_store"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"power": "substation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"railway": "signal_box"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "antiques"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "battery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "bookmaker"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "car_repair;tyres"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "clothes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "cosmetics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "dry_cleaning"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "farm"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "fuel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "greengrocer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "hifi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "kite"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "mobile_phone"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "newsagent"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "pet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "radiotechnics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "shoes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "tailor"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "tiles"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "trailer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "video"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"shop": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"social_facility:for": "mental_health"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"sport": "canoe"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"sport": "martial_arts"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"sport": "shooting"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"sport": "surfing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"sport": "water_sports"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"tourism": "chalet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"tourism": "motel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes",
+"tourism": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"building": "yes;terrace"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bus": "designated",
+"highway": "unclassified"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bus": "yes",
+"highway": "bus_stop",
+"public_transport": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bus": "yes",
+"highway": "secondary"
+}
+},
+{
+"kind": "line",
+"tags": {
+"bus": "yes",
+"public_transport": "platform",
+"railway": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "builder",
+"landuse": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "gardener"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "gardener",
+"landuse": "plant_nursery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "metal_construction",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "sawmill"
+}
+},
+{
+"kind": "line",
+"tags": {
+"craft": "stonemason",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "assembly_point",
+"leisure": "pitch",
+"sport": "tennis"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "designated",
+"highway": "track"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "fire_water_pond",
+"intermittent": "no",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "fire_water_pond",
+"leisure": "swimming_pool"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "landing_site"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "no",
+"highway": "service"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "water_tank"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "yes",
+"highway": "construction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "yes",
+"highway": "pedestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"emergency": "yes",
+"highway": "track"
+}
+},
+{
+"kind": "line",
+"tags": {
+"ferry": "primary"
+}
+},
+{
+"kind": "line",
+"tags": {
+"ferry": "unclassified"
+}
+},
+{
+"kind": "line",
+"tags": {
+"footway": "crossing",
+"highway": "cycleway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"footway": "link",
+"highway": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"footway": "sidepath",
+"highway": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"footway": "sidewalk",
+"highway": "footway",
+"man_made": "dyke"
+}
+},
+{
+"kind": "line",
+"tags": {
+"footway": "traffic_island"
+}
+},
+{
+"kind": "line",
+"tags": {
+"generator:method": "anaerobic_digestion",
+"power": "generator"
+}
+},
+{
+"kind": "line",
+"tags": {
+"generator:method": "photovoltaic",
+"power": "plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"healthcare": "psychotherapist"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "busway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "corridor",
+"tunnel": "building_passage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "cycleway",
+"tunnel": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "footway",
+"leisure": "slipway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "footway",
+"public_transport": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "footway",
+"tunnel": "building_passage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "give_way",
+"landuse": "meadow"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "living_street",
+"tunnel": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "path"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "path",
+"leisure": "track",
+"sport": "bmx"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "path",
+"railway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "path",
+"tunnel": "no"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "pedestrian",
+"leisure": "schoolyard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "pedestrian",
+"tunnel": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "primary",
+"man_made": "pier"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "proposed",
+"residential": "proposed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "raceway",
+"sport": "rc_car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "residential",
+"man_made": "dyke"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "residential",
+"railway": "narrow_gauge"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "rest_area",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "secondary",
+"railway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "service",
+"historic": "railway",
+"railway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "service",
+"parking": "no"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "service",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "services"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "steps",
+"public_transport": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "tertiary",
+"man_made": "dyke"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "tertiary_link"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "track",
+"historic": "railway",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "track",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "track",
+"tunnel": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "unclassified",
+"historic": "railway",
+"railway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"highway": "unclassified",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "archaeological_site",
+"man_made": "embankment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "bomb_crater",
+"man_made": "crater"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "castle"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "footway"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "heritage",
+"man_made": "tower"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "monastery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "railway",
+"railway": "construction",
+"railway:preserved": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "railway",
+"railway": "razed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "ruins",
+"natural": "valley"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "tomb",
+"landuse": "grass"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"historic": "yes",
+"man_made": "observatory"
+}
+},
+{
+"kind": "line",
+"tags": {
+"industrial": "aluminium_smelting",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"industrial": "distributor",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"industrial": "mine",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"industrial": "scrap_yard",
+"landuse": "commercial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"industrial": "storage",
+"landuse": "industrial"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "no",
+"man_made": "tailings_pond",
+"natural": "water",
+"water": "reservoir"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "no",
+"natural": "water",
+"water": "lagoon"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "no",
+"natural": "water",
+"water": "reservoir"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "no",
+"tunnel": "yes",
+"waterway": "stream"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "yes",
+"landuse": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "yes",
+"natural": "water",
+"water": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "yes",
+"natural": "water",
+"water": "river"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "yes",
+"tunnel": "culvert",
+"waterway": "stream"
+}
+},
+{
+"kind": "line",
+"tags": {
+"intermittent": "yes",
+"waterway": "stream"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "allotments",
+"place": "plot"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "aquaculture"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "basin",
+"natural": "water",
+"water": "pond"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "brownfield",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "civic_admin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "commercial",
+"office": "company"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "commercial",
+"shop": "car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "conservation"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "depot"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "farmland",
+"natural": "grassland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "farmland",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "farmyard",
+"leisure": "sports_centre",
+"sport": "equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "farmyard",
+"power": "plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "farmyard",
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "flowerbed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "forest",
+"natural": "fell"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "forest",
+"place": "island"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "garden",
+"natural": "grassland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "grass",
+"leisure": "dog_park"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "grass",
+"leisure": "pitch",
+"sport": "sailing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "grass",
+"man_made": "dwelling_mound"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "grass",
+"natural": "grassland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "grass",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "greenfield"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "harbour",
+"seamark:harbour:category": "fishing;ferry"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "industrial",
+"man_made": "reservoir_covered"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "industrial",
+"office": "logistics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "industrial",
+"shop": "car_parts"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "industrial",
+"waterway": "boatyard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "marina"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"leisure": "nature_reserve"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"man_made": "dyke"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"meadow": "paddock"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"natural": "grassland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"place": "island"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "meadow",
+"sport": "soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "military",
+"military": "base"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "orchard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "park",
+"leisure": "park"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "proposed"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "railway",
+"public_transport": "station",
+"railway": "halt"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "recreation_ground",
+"leisure": "pitch",
+"sport": "soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "recreation_ground",
+"leisure": "swimming_area"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "recreation_ground",
+"sport": "canoe;sailing;rowing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "recreation_ground",
+"sport": "soccer;equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "recreation_ground",
+"tourism": "chalet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "religious",
+"religion": "christian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "reservoir",
+"natural": "wetland"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "residential",
+"natural": "water",
+"water": "river"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "residential",
+"place": "plot"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "residential",
+"residential": "single_family"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "residential",
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "retail",
+"shop": "car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "sand"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "utility"
+}
+},
+{
+"kind": "line",
+"tags": {
+"landuse": "vineyard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "bathing_place"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "bird_hide"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "diving_platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "fishing",
+"natural": "water",
+"water": "lake"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "fitness_station",
+"sport": "calisthenics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "hackerspace"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "kitesurfing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "marina",
+"seamark:harbour:category": "marina"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "miniature_golf"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "nature_reserve",
+"natural": "scrub"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "park",
+"meadow": "meadow_orchard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "park",
+"tourism": "attraction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "Soccer;Basketball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "athletics;running"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "basketball;soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "beachsoccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "boule"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "cricket"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "cyclocross;Mountain_Biking"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "field_hockey"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "golf"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "handball;basketball;five-a-side"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "miniature_golf"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "multi;basketball;soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "paddle_tennis"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "rc_car"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "running"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "slackline"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;baseball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;field_hockey"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;tennis;athletics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "pitch",
+"sport": "tennis;basketball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "playground",
+"natural": "shrubbery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "playground",
+"sport": "soccer"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sauna",
+"sport": "swimming"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "canoe"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "dance_sport"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "karting"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "sailing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "soccer;baseball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "soccer;tennis;equestrian"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_centre",
+"sport": "tennis;beachvolleyball;bowling;dancing;gymnastics;volleyball"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "sports_hall",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "stadium",
+"sport": "tennis"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "swimming_pool",
+"sport": "swimming",
+"water": "pond"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "track",
+"sport": "cycling;bmx"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "track",
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "track",
+"sport": "tractor-pulling"
+}
+},
+{
+"kind": "line",
+"tags": {
+"leisure": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "air_filter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "beacon",
+"place": "islet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "bunker_silo"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "courtyard"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "embankment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "gantry"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "groyne",
+"natural": "scree"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "observatory"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "pier",
+"sport": "rowing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "pipeline",
+"tunnel": "flooded",
+"waterway": "pressurised"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "planter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "quay wall"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "shaft"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "storage_tank"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "tank"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "tunnel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "wastewater_plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "water_well"
+}
+},
+{
+"kind": "line",
+"tags": {
+"man_made": "windmill",
+"tourism": "chalet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"military": "bunker"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "bay",
+"place": "locality",
+"sport": "kitesurfing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "beach",
+"water": "lake"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "coastline",
+"place": "islet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "grass",
+"tourism": "museum"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "mud"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "scree"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "shoal",
+"place": "islet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "tree_group"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "water",
+"sport": "fishing"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "water",
+"water": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "water",
+"water": "lock"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "water",
+"water": "reservoir"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "water",
+"waterway": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"natural": "wood",
+"place": "islet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"office": "estate_agent"
+}
+},
+{
+"kind": "line",
+"tags": {
+"park_ride": "no",
+"parking": "surface"
+}
+},
+{
+"kind": "line",
+"tags": {
+"parking": "yes",
+"power": "yes",
+"tourism": "camp_pitch"
+}
+},
+{
+"kind": "line",
+"tags": {
+"place": "islet"
+}
+},
+{
+"kind": "line",
+"tags": {
+"place": "square"
+}
+},
+{
+"kind": "line",
+"tags": {
+"power": "converter"
+}
+},
+{
+"kind": "line",
+"tags": {
+"power": "plant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"public_transport": "platform"
+}
+},
+{
+"kind": "line",
+"tags": {
+"public_transport": "platform",
+"railway": "platform_edge",
+"train": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"public_transport": "station",
+"railway": "station",
+"subway": "yes",
+"train": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "construction"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "disused",
+"tunnel": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "miniature",
+"tunnel": "building_passage"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "platform",
+"railway:preserved": "yes",
+"train": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "rail"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "subway",
+"subway": "yes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"railway": "traverser;miniature"
+}
+},
+{
+"kind": "line",
+"tags": {
+"religion": "muslim"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "bakery"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "butcher"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "clothes"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "electronics"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "garden_centre"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "houseware"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "optician"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "sports",
+"sport": "Pétanque"
+}
+},
+{
+"kind": "line",
+"tags": {
+"shop": "vacant"
+}
+},
+{
+"kind": "line",
+"tags": {
+"social_facility": "outreach",
+"social_facility:for": "child;juvenile"
+}
+},
+{
+"kind": "line",
+"tags": {
+"sport": "canoe"
+}
+},
+{
+"kind": "line",
+"tags": {
+"sport": "multi"
+}
+},
+{
+"kind": "line",
+"tags": {
+"sport": "swimming"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tourism": "apartment"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tourism": "caravan_site"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tourism": "information"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tourism": "wilderness_hut"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "building_passage",
+"waterway": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "culvert",
+"waterway": "canal"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "culvert",
+"waterway": "stream"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "no",
+"waterway": "drain"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "pipe",
+"waterway": "ditch"
+}
+},
+{
+"kind": "line",
+"tags": {
+"tunnel": "yes",
+"waterway": "abandoned"
+}
+},
+{
+"kind": "line",
+"tags": {
+"water": "basin"
+}
+},
+{
+"kind": "line",
+"tags": {
+"waterway": "canoe_pass"
+}
+},
+{
+"kind": "line",
+"tags": {
+"waterway": "drainage_channel"
+}
+},
+{
+"kind": "line",
+"tags": {
+"waterway": "lock_gate"
+}
+},
+{
+"kind": "line",
+"tags": {
+"waterway": "waterfall"
+}
+},
+{
+"kind": "point",
+"tags": {
+"admin_level": "7",
+"amenity": "townhall",
+"office": "government"
+}
+},
+{
+"kind": "point",
+"tags": {
+"aeroway": "ceilometer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"aeroway": "navigationaid"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "Café & Rösterei"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "animal_training"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "ashtray"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bank"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bar",
+"leisure": "amusement_arcade",
+"sport": "billiards"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bbq"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bench"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bench",
+"leisure": "picnic_table"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bench",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bicycle_parking",
+"natural": "tree_stump"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bicycle_rental",
+"tourism": "information"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "boat_rental"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "brothel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "bus_station",
+"bus": "yes",
+"public_transport": "station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "cafe",
+"shop": "bakery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "cafe",
+"shop": "gift"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "cafe",
+"shop": "pastry"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "cafe",
+"tourism": "hotel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "car_rental",
+"shop": "caravan"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "chair"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "charging_station",
+"shop": "car"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "clinic"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "clinic",
+"healthcare": "dialysis"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "clock",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "community_centre"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "community_centre",
+"religion": "jewish"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "community_centre",
+"sport": "sailing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "courthouse"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "dentist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "dentist",
+"office": "physician"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "doctors",
+"healthcare": "alternative"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "doctors",
+"healthcare": "doctor",
+"office": "physician"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "doctors",
+"healthcare": "podiatrist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "dog_parking"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "dojo",
+"sport": "taekwondo"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "drinking_water",
+"emergency": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "driving_school"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "elevator",
+"highway": "elevator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "factory_outlet",
+"shop": "butcher"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "fast_food",
+"shop": "seafood"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "ferry_terminal",
+"bus": "yes",
+"ferry": "yes",
+"public_transport": "station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "ferry_terminal",
+"ferry": "yes",
+"public_transport": "stop_position",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "fire_station",
+"building": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "foot_shower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "freeshop"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "fuel",
+"shop": "car"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "fuel",
+"waterway": "fuel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "game_feeding"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "grave_yard",
+"religion": "christian"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "healthcare"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "hunting_stand",
+"barrier": "wall"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "ice_cream",
+"shop": "vacant"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "kindergarten",
+"building": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "laboratory"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "library",
+"tourism": "museum"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "lifesaver"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "lounger"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "mobile_bank"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "motorcycle_parking",
+"parking": "surface"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "nail_bar"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "nutrition_counselling",
+"healthcare": "nutritionist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking",
+"highway": "rest_area",
+"parking": "surface"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking",
+"park_ride": "no",
+"parking": "street_side"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking",
+"park_ride": "yes",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking",
+"parking": "street_side"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking_entrance",
+"barrier": "lift_gate"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking_entrance",
+"parking": "surface"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "parking_space",
+"parking": "surface"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "pharmacy",
+"historic": "building"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "place_of_worship",
+"historic": "monastery",
+"religion": "christian",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "place_of_worship",
+"religion": "none"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "polling_station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "post_office",
+"shop": "convenience"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "post_office",
+"shop": "stationery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "prison"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "pub",
+"sport": "9pin"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "public_bath",
+"leisure": "bathing_place"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "reception_desk",
+"office": "reception"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "recycling",
+"recycling_type": "container"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "recycling",
+"waste": "oil_can"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "restaurant",
+"craft": "brewery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "restaurant",
+"shop": "bakery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "restaurant",
+"shop": "wine"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "restaurant",
+"tourism": "motel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "sailing_school",
+"education": "centre",
+"office": "educational_institution",
+"sport": "sailing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "sanitary_dump_station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "shelter"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "shelter",
+"leisure": "picnic_table"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "shower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "smoking_area"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"healthcare": "hospice",
+"social_facility": "hospice"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"office": "nursing_service",
+"social_facility": "ambulatory_care",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "advice",
+"social_facility:for": "woman"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "ambulatory_care",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "assisted_living",
+"social_facility:for": "mental_health"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "day_care"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "food_bank",
+"social_facility:for": "pet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "group_home",
+"social_facility:for": "drug_addicted"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "nursing_home",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "outreach",
+"social_facility:for": "child,migrant,woman"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "outreach",
+"social_facility:for": "drug_addicted"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "outreach",
+"social_facility:for": "migrant"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "shelter",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "sozialpsychiatrische_dienste"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "social_facility",
+"social_facility:for": "juvenile"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "sport",
+"sport": "dog"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "stables",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "surf_school",
+"sport": "windsurfing;sailing;kitesurfing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "theatre"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "townhall"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "university",
+"education": "university"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "vehicle_inspection",
+"shop": "car_repair"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "vending_machine",
+"highway": "street_lamp"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "vending_machine",
+"tourism": "information"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "veterinary"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "washing_machine"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket",
+"highway": "street_lamp",
+"waste": "trash;cigarettes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket",
+"waste": "cigaret_buds"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket",
+"waste": "green_waste"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket",
+"waste": "none"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket",
+"waste": "trash"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_basket;bench"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_disposal",
+"waste": "grey_water"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "waste_disposal",
+"waste": "plastic;paper;mixed"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "water"
+}
+},
+{
+"kind": "point",
+"tags": {
+"amenity": "weighbridge"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "barbed_wire"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "block",
+"place": "locality"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "bollard",
+"emergency": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "chain"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "cycle_barrier",
+"railway": "crossing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "fence"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "gate"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "gate",
+"historic": "ruins"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "gate",
+"railway": "signal"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "guard_rail"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "jersey_barrier"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "lift_gate",
+"bus": "yes",
+"emergency": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "lift_gate",
+"railway": "level_crossing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "planter",
+"man_made": "planter"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "sally_port"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "stone",
+"natural": "stone"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "tree"
+}
+},
+{
+"kind": "point",
+"tags": {
+"barrier": "wood"
+}
+},
+{
+"kind": "point",
+"tags": {
+"boundary": "marker",
+"historic": "boundary_stone"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "allotment_house"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "bunker",
+"historic": "bunker",
+"military": "bunker"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "construction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "garage"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "no",
+"man_made": "street_cabinet",
+"power": "substation"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "roof",
+"man_made": "canopy"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "service",
+"power": "substation"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "static_caravan",
+"parking": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "transformer_tower",
+"man_made": "species_protection_tower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "yes",
+"generator:method": "wind_turbine",
+"power": "generator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "shooting"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "yes",
+"man_made": "street_cabinet",
+"power": "substation"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "yes",
+"shop": "beverages"
+}
+},
+{
+"kind": "point",
+"tags": {
+"building": "yes",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"bus": "yes",
+"highway": "bus_stop",
+"public_transport": "platform",
+"railway": "platform"
+}
+},
+{
+"kind": "point",
+"tags": {
+"bus": "yes",
+"highway": "turning_circle",
+"public_transport": "stop_position"
+}
+},
+{
+"kind": "point",
+"tags": {
+"bus": "yes",
+"public_transport": "stop_position",
+"tram": "no"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "agricultural_engines",
+"shop": "car_repair"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "bakery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "boatbuilder"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "builder",
+"office": "company"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "car_painter"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "carpenter",
+"shop": "doityourself"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "carpet_cleaner",
+"shop": "carpet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "cheese"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "confectionery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "dental"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "dressmaker"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "electronics"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "farrier"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "floorer",
+"office": "company"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "glas",
+"shop": "interior_decoration"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "handicraft",
+"shop": "art"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "hvac"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "it_consulting"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "juice_bottler"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "leather",
+"shop": "leather"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "metal_construction",
+"man_made": "works"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "painter"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "photographer",
+"shop": "photo_studio"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "plumber",
+"office": "company"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "printer",
+"shop": "clothes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "saddler"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "sculptor",
+"shop": "jewelry"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "shoemaker",
+"shop": "medical_supply"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "stonemason",
+"shop": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "tailor"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "tiler"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "watchmaker",
+"shop": "jewelry"
+}
+},
+{
+"kind": "point",
+"tags": {
+"craft": "welder"
+}
+},
+{
+"kind": "point",
+"tags": {
+"education": "coaching",
+"office": "education"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "air_rescue_service"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "defibrillator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "dry_riser_inlet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "fire_extinguisher"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "fire_hydrant",
+"highway": "turning_circle"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "fire_hydrant",
+"power": "tower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "fire_water_pond"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "ladders"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "lifeguard",
+"waterway": "baywatch"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "rescue_equipment",
+"sport": "swimming"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "suction_point",
+"highway": "emergency_access_point"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "water_tank",
+"man_made": "storage_tank"
+}
+},
+{
+"kind": "point",
+"tags": {
+"emergency": "yes",
+"healthcare": "department"
+}
+},
+{
+"kind": "point",
+"tags": {
+"ferry": "yes",
+"public_transport": "station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"generator:method": "anaerobic_digestion",
+"power": "generator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"generator:method": "water-pumped-storage",
+"power": "generator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "alternative",
+"office": "healer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "blood_bank"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "department"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "laboratory"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "optometrist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "physiotherapist",
+"office": "therapist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "psychotherapist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"healthcare": "speech_therapist",
+"office": "therapist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "construction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "emergency_access_point"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "milestone"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "proposed"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "speed_camera",
+"man_made": "street_cabinet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "street_lamp",
+"historic": "ruins"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "traffic_calming"
+}
+},
+{
+"kind": "point",
+"tags": {
+"highway": "turning_circle"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "altar",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "bell"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "boundary_stone",
+"tourism": "artwork"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "building",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "crane"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "generator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "highwater_mark",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "lighthouse",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "memorial",
+"natural": "stone"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "milestone"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "place"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "razed:mast"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "ship"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "technical_monument",
+"man_made": "crane",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "turning_circle"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "wayside_cross"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "wreck",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "yes",
+"man_made": "tower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"historic": "yes",
+"natural": "spring",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"industrial": "depot",
+"landuse": "industrial"
+}
+},
+{
+"kind": "point",
+"tags": {
+"industrial": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"landuse": "cemetery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"landuse": "village_green"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "bathing_place",
+"sport": "swimming"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "bleachers"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "dance",
+"sport": "ballet;dance"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "fishing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "fitness_centre",
+"sport": "fitness;bowls"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "fitness_centre",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "fitness_centre",
+"sport": "weightlifting"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "garden"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "horse_riding",
+"tourism": "trail_riding_station"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "marina",
+"seamark:harbour:category": "marina",
+"waterway": "boatyard"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "park"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "Boßeln"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "beachvolleyball;beachhandball;handball;beachsoccer;soccer;badminton;beachtennis"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "chess"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "dog_racing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "multi"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "pitch",
+"sport": "volleyball"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "playground",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "slipway"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "athletics"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "climbing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "fitness;tennis;padel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "martial_arts"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "pole_dance"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "sport"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_centre",
+"sport": "windsurfing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "sports_hall",
+"sport": "multi"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "swimming_pool",
+"sport": "swimming"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "track",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "point",
+"tags": {
+"leisure": "water_park",
+"sport": "wasser"
+}
+},
+{
+"kind": "point",
+"tags": {
+"light_rail": "yes",
+"public_transport": "station",
+"railway": "station",
+"train": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "advertising"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "beacon",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "blackboard"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "chimney"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "cross",
+"tourism": "register"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "fuel_pump"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "insect_hotel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "lightsignal"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "mast",
+"power": "tower"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "obelisk"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "passenger_information_display"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "pole"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "silo"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "street_cabinet",
+"power": "transformer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "telephone_box"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "utility_pole"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "water_tap"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "windmill",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"man_made": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"military": "office"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "beach",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "dune"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "gorge"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "plain"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "slope"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "storks_nest"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "tree_stump"
+}
+},
+{
+"kind": "point",
+"tags": {
+"natural": "wood"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "association"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "chamber"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "coaching"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "company",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "consulting"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "diplomatic"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "engineering"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "film_production"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "foundation"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "healer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "it"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "marketing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "ngo"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "podologist"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "publisher"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "research"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "tax_advisor"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "translator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"office": "water_utility"
+}
+},
+{
+"kind": "point",
+"tags": {
+"parking": "underground",
+"tourism": "hotel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"place": "hamlet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"place": "municipality"
+}
+},
+{
+"kind": "point",
+"tags": {
+"place": "suburb"
+}
+},
+{
+"kind": "point",
+"tags": {
+"power": "compensator"
+}
+},
+{
+"kind": "point",
+"tags": {
+"power": "pole"
+}
+},
+{
+"kind": "point",
+"tags": {
+"power": "substation",
+"tourism": "artwork"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "abandoned"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "emergency_exit",
+"subway": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "platform"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "station",
+"railway": "halt",
+"train": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "stop_position"
+}
+},
+{
+"kind": "point",
+"tags": {
+"public_transport": "stop_position",
+"railway": "stop",
+"train": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "buffer_stop"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "derail"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "het"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "loading_ramp"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "radio"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "site"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "subway_entrance"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway": "tram_level_crossing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"railway:preserved": "yes"
+}
+},
+{
+"kind": "point",
+"tags": {
+"religion": "muslim"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "Kebab"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "alcohol;tobacco;perfumery;deli"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "auction_house"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "bbq"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "beverages",
+"tourism": "attraction"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "bookmaker"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "candles"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "car_repair"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "chocolate"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "collector"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "copyshop"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "deli"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "dry_cleaning"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "erotic"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "farm",
+"tourism": "chalet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "flooring"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "furniture"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "general"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "hairdresser"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "health_food"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "honey"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "hunting"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "kitchen"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "locksmith"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "mobile_phone_accessories"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "musical_instrument"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "office_supply"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "party"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "pet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "pottery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "rental"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "scuba_diving"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "shoe_repair"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "sports",
+"sport": "billiards"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "sports",
+"sport": "sailing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "sports",
+"sport": "windsurfing;kitesurfing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "sweet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "telephones"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "tool_hire"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "trophy"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "vending_machine"
+}
+},
+{
+"kind": "point",
+"tags": {
+"shop": "wholesale"
+}
+},
+{
+"kind": "point",
+"tags": {
+"social_facility": "ambulantary_care"
+}
+},
+{
+"kind": "point",
+"tags": {
+"social_facility": "group_home"
+}
+},
+{
+"kind": "point",
+"tags": {
+"social_facility": "outreach",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "archery"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "beachvolleyball;basketball;table_tennis;table_soccer",
+"tourism": "hostel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "canoeing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "fishing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "karate"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "motorboat"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "sailing;canoe",
+"tourism": "hostel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "soccer"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "table_tennis"
+}
+},
+{
+"kind": "point",
+"tags": {
+"sport": "windsurfing"
+}
+},
+{
+"kind": "point",
+"tags": {
+"tourism": "apartment"
+}
+},
+{
+"kind": "point",
+"tags": {
+"tourism": "chalet"
+}
+},
+{
+"kind": "point",
+"tags": {
+"tourism": "hotel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"tourism": "photopoint"
+}
+},
+{
+"kind": "point",
+"tags": {
+"tourism": "wilderness_hut"
+}
+},
+{
+"kind": "point",
+"tags": {
+"water": "Brunnenschacht"
+}
+},
+{
+"kind": "point",
+"tags": {
+"waterway": "boatyard"
+}
+},
+{
+"kind": "point",
+"tags": {
+"waterway": "fuel"
+}
+},
+{
+"kind": "point",
+"tags": {
+"waterway": "sink"
+}
+},
+{
+"kind": "point",
+"tags": {
+"waterway": "water_point"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"admin_level": "4"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"admin_level": "6",
+"boundary": "administrative"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"admin_level": "8"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"aeroway": "aerodrome",
+"barrier": "fence"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"aeroway": "apron",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"aeroway": "hangar",
+"building": "yes",
+"military": "bunker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"aeroway": "preserved",
+"highway": "rest_area"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"aeroway": "terminal",
+"building": "transportation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "animal_boarding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "animal_breeding",
+"building": "sty"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "animal_shelter",
+"building": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "animal_training",
+"barrier": "fence"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "arts_centre",
+"building": "civic"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "arts_centre",
+"building": "yes",
+"craft": "carpenter"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "baking_oven",
+"building": "bakehouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bank",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bar",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bar",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bench"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bicycle_parking",
+"building": "garage"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bicycle_parking",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bicycle_rental",
+"building": "house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "boat_rental"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "boat_storage"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "building"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "building_yard",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "bus_station",
+"public_transport": "station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "cafe",
+"building": "detached"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "cafe",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "cafe",
+"building": "yes",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "canteen"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "car_rental",
+"building": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "car_wash"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "car_wash",
+"building": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "caravan_storage",
+"barrier": "fence"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "childcare"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "childcare",
+"building": "yes",
+"social_facility:for": "child"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "cinema",
+"building": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "clinic",
+"building": "yes",
+"emergency": "no",
+"healthcare": "clinic"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "clock",
+"building": "yes",
+"man_made": "tower",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "college",
+"building": "college",
+"education": "college"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "community_centre",
+"building": "apartments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "community_centre",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "community_centre",
+"building": "house",
+"sport": "fishing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "community_centre",
+"building": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "community_centre",
+"building": "yes",
+"office": "association"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "concert_hall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "courthouse",
+"building": "government"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "crematorium",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "dentist",
+"building": "house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "dentist",
+"building": "yes",
+"healthcare": "dentist",
+"office": "physician"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "doctors",
+"building": "detached",
+"healthcare": "doctor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "doctors",
+"building": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "doctors",
+"healthcare": "doctor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "drinking_water",
+"man_made": "water_well"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "driving_school",
+"building": "office",
+"education": "driving_school"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "events_venue",
+"building": "civic"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "events_venue",
+"building": "restaurant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fast_food",
+"building": "apartments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fast_food",
+"building": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fast_food",
+"building": "university"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "ferry_terminal"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "ferry_terminal",
+"ferry": "yes",
+"public_transport": "station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fire_station",
+"building": "fire_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fire_station",
+"building": "stable"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "food_court",
+"building": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fountain",
+"highway": "pedestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fuel",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fuel",
+"building": "house",
+"shop": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fuel",
+"building": "retail",
+"shop": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fuel",
+"building": "yes",
+"shop": "convenience"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "fuel",
+"shop": "convenience"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "funeral_hall",
+"building": "office"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "gambling",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "grave_yard",
+"barrier": "hedge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "grave_yard",
+"historic": "yes",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "greenhouse",
+"building": "greenhouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "hospital",
+"emergency": "no",
+"healthcare": "hospital"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "hunting_stand"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kanteen",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kindergarten",
+"building": "civic"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kindergarten",
+"building": "kindergarten",
+"education": "kindergarten"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kindergarten",
+"building": "yes",
+"education": "kindergarten",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kindergarten",
+"landuse": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "kneipp_water_cure",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "library",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "marketplace"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "mortuary"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "music_school"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "nightclub",
+"building": "bunker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "nursing_home",
+"building": "apartments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "nursing_home",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parcel_locker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"barrier": "lift_gate",
+"parking": "street_side"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"building": "commercial",
+"park_ride": "no",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"building": "garages",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"building": "parking",
+"parking": "garage_boxes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"building": "yes",
+"park_ride": "no",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"building": "yes",
+"parking": "surface"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"bus": "yes",
+"park_ride": "no",
+"parking": "surface"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"highway": "rest_area"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"man_made": "surveillance"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"park_ride": "no",
+"parking": "garage_boxes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"park_ride": "no",
+"parking": "street_side"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"park_ride": "train",
+"parking": "surface"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"parking": "carports"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"parking": "shoulder"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "parking_space",
+"park_ride": "no",
+"parking": "surface"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "payment_centre",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "pharmacy",
+"building": "yes",
+"healthcare": "pharmacy"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "place_of_worship",
+"building": "chapel",
+"historic": "building",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "place_of_worship",
+"building": "church",
+"historic": "church",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "place_of_worship",
+"building": "detached",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "place_of_worship",
+"building": "residential",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "place_of_worship",
+"building": "yes",
+"religion": "multifaith"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "police",
+"building": "civic"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "police",
+"building": "police"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "police",
+"landuse": "military"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "post_depot",
+"building": "logistics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "post_office",
+"building": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "private_parking",
+"building": "yes",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "pub",
+"building": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "public"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "recycling"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "recycling",
+"building": "shed",
+"recycling_type": "centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "recycling",
+"recycling_type": "green_waster_area"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "research_institute",
+"barrier": "fence"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "restaurant",
+"building": "apartments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "restaurant",
+"building": "hotel",
+"tourism": "hotel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "restaurant",
+"building": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "restaurant",
+"building": "yes",
+"craft": "brewery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "restaurant",
+"building": "yes",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "road_maintenance",
+"landuse": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "sailing_school",
+"building": "yes",
+"office": "educational_institution"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "school",
+"barrier": "fence"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "school",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "school",
+"landuse": "education"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "school",
+"social_facility:for": "juvenile"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "shelter",
+"building": "allotment_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "shelter",
+"building": "ruins"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "shelter",
+"building": "yes",
+"leisure": "bird_hide"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "shower"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_centre",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "apartments",
+"social_facility": "group_home"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "civic",
+"social_facility": "outreach",
+"social_facility:for": "homeless;underprivileged"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "detached",
+"social_facility": "group_home",
+"social_facility:for": "youth"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "dormitory",
+"social_facility": "shelter"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "house",
+"social_facility": "outreach",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "public",
+"social_facility": "nursing_home"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "residential",
+"social_facility": "group_home",
+"social_facility:for": "child"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "residential",
+"social_facility": "outreach",
+"social_facility:for": "drug_addicted"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"historic": "heritage",
+"social_facility": "assisted_living",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "assisted_living",
+"social_facility:for": "children;autism"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "clothing_bank"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "food_bank",
+"social_facility:for": "underprivileged"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "group_home",
+"social_facility:for": "mental_health"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "nursing_home"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "outreach",
+"social_facility:for": "child;juvenile"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility": "shelter",
+"social_facility:for": "homeless"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"building": "yes",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"healthcare": "rehabilitation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"landuse": "residential",
+"social_facility": "assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"landuse": "residential",
+"social_facility": "shelter",
+"social_facility:for": "migrant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "assisted_living",
+"social_facility:for": "disabled"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "group_home"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "group_home",
+"social_facility:for": "refugees"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "nursing_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "social_facility",
+"social_facility": "shelter",
+"social_facility:for": "refugee"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "spa",
+"building": "yes",
+"shop": "beauty"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "sport",
+"leisure": "pitch",
+"sport": "soccer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "stables",
+"landuse": "farmyard",
+"leisure": "horse_riding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "student_accommodation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "surf_school"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "technical_service"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "theatre",
+"building": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "toilets",
+"building": "commercial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "toilets",
+"building": "stilt_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "townhall",
+"building": "detached"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "townhall",
+"building": "townhall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "townhall",
+"building": "yes",
+"tourism": "information"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "trolley_bay",
+"building": "roof"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "university",
+"education": "university"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "vehicle_inspection",
+"building": "roof"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "veterinary",
+"building": "house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "waste_disposal",
+"barrier": "hedge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "waste_disposal",
+"waste": "recycling;paper"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"amenity": "waste_transfer_station",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "berm"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "ditch"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"building": "service"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"historic": "ruins"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "allotments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "cemetery",
+"natural": "wood"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "construction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "greenfield"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "industrial",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "meadow",
+"leisure": "dog_park"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "military",
+"military": "barracks"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"landuse": "railway"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"leisure": "dog_park",
+"natural": "scrub"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"leisure": "pitch",
+"sport": "basketball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"leisure": "pitch",
+"sport": "soccer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"leisure": "sports_centre",
+"sport": "soccer;equestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"man_made": "monitoring_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"man_made": "water_works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"power": "plant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "fence",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "handrail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "hedge",
+"landuse": "meadow"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "kerb",
+"bus": "yes",
+"highway": "platform",
+"public_transport": "platform"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "mound"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "retaining_wall",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "wall",
+"landuse": "grass"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"barrier": "wall",
+"natural": "wetland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"boundary": "civil"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"boundary": "lot"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"boundary": "protected_area"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"boundary": "protected_area",
+"natural": "wetland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"boundary": "region",
+"place": "region"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"bridge": "boardwalk",
+"man_made": "bridge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"bridge": "viaduct",
+"highway": "footway",
+"man_made": "bridge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"bridge": "yes",
+"highway": "footway"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"bridge": "yes",
+"man_made": "bridge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "22a"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "allotment_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"craft": "locksmith"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"healthcare": "dentist"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"leisure": "escape_game"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"office": "government"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"shop": "clothes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"shop": "hairdresser"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"shop": "music"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"shop": "tattoo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"social_facility": "assisted_living"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "apartments",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "barn",
+"craft": "carpenter"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "barn",
+"shop": "second_hand"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "boat",
+"historic": "ship",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "bungalow",
+"sport": "sailing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "bunker",
+"military": "bunker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "cabin",
+"tourism": "apartment"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "castle",
+"historic": "castle"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "chapel",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "church",
+"shop": "art"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "civic",
+"historic": "building"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "civic",
+"leisure": "sports_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "civic",
+"office": "employment_agency"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "clinic",
+"healthcare": "rehabilitation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "college"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "car_painter"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "floorer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "joiner"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "photographic_laboratory"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "stonemason",
+"shop": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"craft": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"healthcare": "physiotherapist"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"historic": "ruins",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"leisure": "bowling_alley",
+"sport": "9pin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"leisure": "sports_centre",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"man_made": "silo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"office": "harbour_master"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"office": "newspaper"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"office": "tax_advisor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "alcohol"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "butcher"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "clothes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "electronics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "furniture"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "houseware"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "mall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "power_tools"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "storage_rental"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "toys"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"shop": "wholesale"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"sport": "parachuting"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "commercial",
+"tourism": "hostel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "conservatory"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "container"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "container",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "destroyed"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"craft": "gardener"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"historic": "manor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"man_made": "windmill"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"office": "tax_advisor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"shop": "funeral_directors"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached",
+"sport": "soccer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "detached_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "digester",
+"man_made": "reservoir_covered",
+"power": "generator"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "dormitory",
+"tourism": "hotel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "farm"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "farm",
+"man_made": "silo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "farm_auxiliary"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "farm_auxiliary",
+"man_made": "storage_tank"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "farmhouse",
+"tourism": "hotel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "gabled"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "garage",
+"parking": "garage_boxes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "garages"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "gas_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "glasshouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "government",
+"tourism": "museum"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "greenhouse",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "gymnasium",
+"leisure": "sports_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hall",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "healthcare"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hospital"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hospital",
+"healthcare": "department"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hotel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"craft": "electronics_repair",
+"shop": "electronics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"craft": "plumber"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"healthcare": "hospice"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"historic": "building"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"historic": "watermill"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"leisure": "sports_centre",
+"sport": "handball;badminton;shooting;multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"office": "insurance"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"railway": "disused"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "bicycle"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "coffee"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "fireplace"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "hairdresser"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "optician"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"shop": "trophy"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"social_facility": "group_home",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "house",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "houseboat",
+"emergency": "water_rescue"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hut",
+"emergency": "water_rescue"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hut",
+"office": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "hut",
+"tourism": "picnic_site"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"craft": "caterer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"craft": "metal_construction",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"craft": "roofer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"historic": "building"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"industrial": "slaughterhouse",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"leisure": "sports_centre",
+"sport": "climbing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"man_made": "storage_tank"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"office": "logistics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"power": "substation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"shop": "agrarian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"shop": "caravan"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"shop": "seafood"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "industrial",
+"waterway": "boatyard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "kingdom_hall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "library"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "lighthouse",
+"historic": "lighthouse",
+"man_made": "lighthouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "manor_house",
+"historic": "manor",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "manufacture",
+"industrial": "factory",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "military"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "museum",
+"tourism": "museum"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"craft": "electrician"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"office": "company"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"office": "estate_agent"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"office": "logistics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"office": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "office",
+"shop": "interior_decoration"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "outbuilding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "pavilion"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "pavilion",
+"sport": "tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "prefabricated",
+"power": "switchgear"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "public"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "public",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "public",
+"office": "government"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "public_bath",
+"leisure": "swimming_pool",
+"sport": "swimming"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "rehabilitation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "residential",
+"healthcare": "centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "residential",
+"historic": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "residential",
+"shop": "beverages"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "residential",
+"tourism": "apartment"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "restaurant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"craft": "jeweller",
+"shop": "jewelry;optician"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"generator:method": "photovoltaic",
+"power": "generator"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"leisure": "indoor_play",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"office": "harbour_master"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "beverages"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "carpet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "convenience"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "equestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "garden_furniture"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "hearing_aids"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "medical_supply"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "seafood"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "ticket",
+"tourism": "information"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "vacant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"shop": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "retail",
+"waterway": "fuel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "riding_hall",
+"leisure": "pitch",
+"sport": "equestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "roof",
+"historic": "heritage"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "roof",
+"power": "substation"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "ruins",
+"landuse": "military",
+"military": "bunker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "school",
+"leisure": "pitch",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "school",
+"tourism": "apartment"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "semidetached_house",
+"office": "company"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "service",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "service",
+"man_made": "monitoring_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "service",
+"man_made": "tower"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "service",
+"power": "substation",
+"tourism": "artwork"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "service",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "shed",
+"leisure": "sauna"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "shed",
+"sport": "canoe"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "ship",
+"historic": "ship"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "silo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "slurry_tank",
+"man_made": "silo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "social_facility",
+"social_facility": "assisted_living",
+"social_facility:for": "senior"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports",
+"sport": "9pin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_centre",
+"leisure": "sports_centre",
+"sport": "shooting"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_centre",
+"leisure": "sports_hall",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_centre",
+"sport": "ice_skating"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_hall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_hall",
+"leisure": "sports_hall"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "sports_hall",
+"sport": "tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "stable",
+"sport": "equestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "static_caravan",
+"shop": "pastry"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "storage_tank"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "supermarket"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "synagogue"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "tent"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "terrace",
+"historic": "building"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "terrace;apartments"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "tower",
+"man_made": "monitoring_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "train_station",
+"historic": "heritage"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "transformer_tower",
+"historic": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "transportation",
+"railway": "wash"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "veranda"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "warehouse",
+"emergency": "lifeguard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "warehouse",
+"man_made": "pumping_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "warehouse",
+"shop": "houseware"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "warehouse",
+"sport": "tennis;squash"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "water_tower",
+"man_made": "water_tower"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "windmill"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "windmill",
+"man_made": "windmill",
+"tourism": "chalet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "agricultural_engines"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "blacksmith",
+"historic": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "builder"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "carpet_layer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "distillery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "gardener"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "hvac"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "metal_works",
+"shop": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "plumber",
+"shop": "bathroom_furnishing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "saddler"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"craft": "tiler"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"emergency": "ambulance_station"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"emergency": "water_rescue"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"healthcare": "alternative"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"healthcare": "doctor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"healthcare": "podiatrist"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "beacon"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "building",
+"man_made": "watermill",
+"tourism": "guest_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "building",
+"tourism": "museum"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "gatehouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "manor",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "monument",
+"man_made": "tower",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "windmill",
+"man_made": "windmill"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "yes",
+"man_made": "tower",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"historic": "yes",
+"military": "bunker"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"industrial": "slaughterhouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"landuse": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "bird_hide",
+"man_made": "tower"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "dance"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "horse_riding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "pitch",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "playground"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "9pin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "climbing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "gymnastics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "surfing;sailing; beachvolleyball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_centre",
+"sport": "tennis;fitness"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "sports_hall",
+"sport": "multi;volleyball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "stadium",
+"sport": "ice_skating"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"leisure": "wellness"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "bunker_silo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "gasometer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "obelisk"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "reservoir_covered"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "storage_tank",
+"water": "wastewater"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "tower",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "water_works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"natural": "water"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "camping"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "coworking"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "estate_agent"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "harbour_master"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "newspaper"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "political_party"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"office": "tax_advisor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"parking": "multi-storey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"power": "plant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"railway": "roundhouse"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "alcohol"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "bathroom_furnishing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "boat"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "car_repair"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "chemist"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "copyshop"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "doityourself"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "fabric"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "free_flying"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "golf"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "herbalist"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "kitchen"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "medical_supply"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "musical_instrument"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "pastry"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "printer_ink"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "second_hand"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "supermarket"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "ticket;gift"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "trade"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "variety_store"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"shop": "wine"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"social_facility:for": "drug_addicted"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"sport": "billard;table_soccer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"sport": "kitesurfing;windsurfing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"sport": "sailing",
+"tourism": "hostel"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"sport": "soccer;tennis;badminton;handball;kickboxing;table_tennis;gymnastics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"sport": "tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"tourism": "information"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"building": "yes;semidetached_house"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"bus": "yes",
+"highway": "service"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "boatbuilder",
+"landuse": "industrial",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "carpenter",
+"leisure": "marina",
+"seamark:harbour:category": "marina",
+"waterway": "boatyard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "gardener",
+"landuse": "greenhouse_horticulture",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "metal_construction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "roofer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"craft": "shipbuilder",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "air_rescue_service"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "fire_water_pond",
+"intermittent": "no",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "fire_water_pond",
+"leisure": "swimming_pool"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "landing_site"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "official"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"emergency": "water_tank",
+"natural": "water",
+"water": "basin"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"footway": "crossing",
+"highway": "footway"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"footway": "traffic_island",
+"highway": "path"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"generator:method": "photovoltaic",
+"landuse": "industrial",
+"power": "generator"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"healthcare": "laboratory"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "corridor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "footway",
+"man_made": "pier"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "path"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "pedestrian",
+"tourism": "viewpoint"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "raceway",
+"sport": "motocross"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "secondary"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "services",
+"shop": "car"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"highway": "unclassified"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "archaeological_site",
+"natural": "water"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "bridge",
+"man_made": "bridge"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "cemetery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "heritage",
+"landuse": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "military"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "ruins"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "technical_monument"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "wreck"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "yes",
+"landuse": "residential"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"historic": "yes",
+"man_made": "water_well"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"industrial": "cement",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"industrial": "factory",
+"landuse": "industrial",
+"man_made": "works"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"industrial": "oil",
+"landuse": "industrial",
+"natural": "coastline"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"industrial": "scrap_yard",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"industrial": "trucking",
+"landuse": "industrial"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"intermittent": "no",
+"natural": "water"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"intermittent": "no",
+"natural": "water",
+"water": "moat"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"intermittent": "no",
+"natural": "water",
+"water": "wastewater"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"intermittent": "yes",
+"natural": "water",
+"water": "ditch"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"intermittent": "yes",
+"natural": "water",
+"water": "reservoir"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "administrative"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "animal_keeping",
+"leisure": "horse_riding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "aquaculture",
+"natural": "water"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "basin",
+"water": "pond"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "cemetery",
+"religion": "christian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "commercial",
+"leisure": "resort"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "commercial",
+"power": "plant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "commercial",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "construction",
+"leisure": "park"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "dunes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "farmland",
+"natural": "tree_row"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "farmyard",
+"leisure": "horse_riding"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "farmyard",
+"natural": "scrub"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "farmyard",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "farmyard",
+"tourism": "farm"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "forest",
+"leisure": "dog_park"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "forest",
+"natural": "scrub"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "forest",
+"place": "islet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "garden",
+"natural": "grassland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "grass",
+"leisure": "garden"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "grass",
+"leisure": "pitch",
+"sport": "shooting"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "grass",
+"man_made": "dyke"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "grass",
+"natural": "scrub"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "grass",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "greenfield"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "harbour",
+"seamark:harbour:category": "fishing;ferry"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "industrial",
+"man_made": "reservoir_covered"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "industrial",
+"place": "islet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "industrial",
+"shop": "car_repair"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "institutional"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "marina"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"leisure": "kite"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"man_made": "clearcut"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"meadow": "meadow_orchard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"natural": "coastline",
+"place": "islet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"natural": "wetland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "meadow",
+"sport": "motocross"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "military",
+"military": "ammunition"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "military",
+"military": "training_area"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "orchard",
+"natural": "scrub"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "plant_nursery",
+"natural": "wood"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "radar",
+"natural": "heath"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "recreation_ground",
+"leisure": "park"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "recreation_ground",
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "recreation_ground",
+"natural": "grassland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "recreation_ground",
+"sport": "sailing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "recreation_ground",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "religious"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "reservoir",
+"natural": "water"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "residential",
+"leisure": "resort"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "residential",
+"place": "isolated_dwelling"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "residential",
+"residential": "garden"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "residential",
+"shop": "garden_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "retail"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "retail",
+"shop": "trade"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "sports"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "village_green"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"landuse": "water_wellfield"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "bathing_place",
+"natural": "beach"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "bowling_alley"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "dog_park",
+"natural": "beach"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "fitness_centre"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "fitness_station",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "high_ropes_course",
+"sport": "climbing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "kitesurfing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "marina",
+"seamark:harbour:category": "marina"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "miniature_golf"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "nature_reserve",
+"natural": "wetland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "park",
+"meadow": "meadow_orchard"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "park",
+"tourism": "artwork"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "Labyrinth"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "athletics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "basketball;five-a-side"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "basketball;volleyball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "bmx"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "climbing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "cycling;roller_skating"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "equestrian"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "futsal"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "handball;badminton;volleyball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "long_jump"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "mtb"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "multi;hockey"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "pitpat"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "rowing;canoe;sailing;windfoiling;windsurfing;wingfoiling;wingsurfing;"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "skateboard;cycling;bmx;roller_skating"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;archery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;basketball;handball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "soccer;others"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "pitch",
+"sport": "table_tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "playground"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "playground",
+"sport": "roller_skating"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "resort"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "soccer_golf"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "athletics;six-a-side"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "climbing_adventure;minature_golf"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "handball"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "multi"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "soccer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "soccer;tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "surfing;windsurfing;sailing;SUP;kitesurfing"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "sports_centre",
+"sport": "wakeboarding;water_ski"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "stadium",
+"sport": "motor"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "swimming_area",
+"natural": "beach",
+"sport": "swimming"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "track"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "track",
+"sport": "cycling;bmx"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "track",
+"sport": "running;athletics"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"leisure": "water_park",
+"sport": "swimming"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"light_rail": "yes",
+"public_transport": "platform",
+"railway": "platform",
+"train": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "beacon"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "bridge",
+"power": "plant"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "compass_rose"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "embankment"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "gasometer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "observatory"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "pier",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "quarry",
+"natural": "wetland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "shaft"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "street_cabinet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "telescope"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "ventilation_shaft"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "wastewater_plant",
+"natural": "water",
+"water": "wastewater"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"man_made": "windmill",
+"tourism": "attraction"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"military": "abandoned"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "bay"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "beach",
+"sport": "swimming"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "coastline",
+"place": "islet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "grassland"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "meadow"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "sand"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "scrub",
+"water": "reservoir"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "shrubbery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "tree_row"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "water",
+"sport": "swimming",
+"water": "pond"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "water",
+"water": "drain"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "water",
+"water": "lake"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "water",
+"water": "reflecting_pool"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "water",
+"water": "wastewater"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"natural": "wood",
+"place": "islet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"office": "electric_utility"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"office": "waterway_shipping"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"parking": "surface",
+"tourism": "caravan_site"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"place": "farm"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"place": "neighbourhood"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"power": "compensator"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"power": "transformer"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"public_transport": "platform",
+"railway": "platform",
+"train": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"public_transport": "station",
+"railway": "halt",
+"train": "yes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"railway": "miniature"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"railway": "traverser;miniature"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"religion": "muslim"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "bakery"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "butcher"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "clothes"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "fabric"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "general"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "jewelry"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "optician"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "sports"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"shop": "trade"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"social_facility": "group_home"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"sport": "bmx"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"sport": "petanque"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"sport": "table_tennis"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"tourism": "artwork"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"tourism": "chalet"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"tourism": "museum"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"tourism": "zoo"
+}
+},
+{
+"kind": "polygon",
+"tags": {
+"water": "reservoir"
+}
+}
+]

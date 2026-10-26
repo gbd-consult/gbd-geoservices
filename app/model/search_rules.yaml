@@ -1,0 +1,74 @@
+# The phrase search: rules in quasi-SQL, run step by step (search/rules.py).
+#
+# A step runs all of its rules; the first step that returns rows is the
+# answer, and the steps below it are not run. Within a step the rules come in
+# the order written here. `relevance` (0-100) is what every row of the step
+# reports as `match_relevance`; a request's `relevance` floor skips the steps
+# below it. A step with `enabled: false` is parsed and checked, never run.
+#
+# A rule is atoms joined by AND, an OR in parentheses, and an optional
+# ORDER BY distance(location, query.place). The atoms:
+#
+#   name = query.text | query.name             exact, on the normalised name
+#   name LIKE query.text | query.name          the fuzzy name channels
+#   category = query.text | query.category     the category or one below it
+#   location IN query.place                    on the place's address path, or in its polygon
+#   location NEAR query.place                  within the radius of a place mapped as a node only
+#   location NEAR query.street                 within `near_street_distance_m` of the street of that
+#                                              name nearest query.location (no location: no rows)
+#   location NEAR query.location               the request's point first (`near`, or the bbox centre)
+#   address.street = query.street              (objects) an address of the object is on the street
+#   address.street = | LIKE query.street       (addresses) the rest of an address:
+#   address.housenumber = query.housenumber      the address table, matched as the address mode does
+#   address.city = query.place
+#   address.postcode = query.postcode
+#
+# `query.text` is the whole query. The other parts come from parsing it, which
+# happens only when step 1 found nothing: a rule runs once for every reading
+# of the query that has exactly the parts the rule names.
+
+steps:
+  - relevance: 99
+    rules:
+      name_text: name = query.text                                                # "Kiel"
+      category_text: category = query.text AND location NEAR query.location       # "Apotheke"
+
+  - relevance: 100
+    rules:
+      address: >-                                                                 # "Holtenauer Straße 100, 24105 Kiel"
+        address.street = query.street AND address.housenumber = query.housenumber
+        AND (address.city = query.place OR address.postcode = query.postcode)
+
+  - relevance: 80
+    rules:
+      category_name_in_place: category = query.category AND name = query.name AND location IN query.place    # "Restaurant Maxim Kiel"
+      name_in_place: name = query.name AND location IN query.place                                            # "Holtenauer Straße Kiel"
+      name_on_street: name = query.name AND address.street = query.street                                     # "Hundert Holtenauer Straße"
+      category_name: category = query.category AND name = query.name                                          # "Restaurant Maxim"
+      category_in_place: category = query.category AND location IN query.place                               # "Restaurant Kiel"
+      category_on_street_in_place: category = query.category AND address.street = query.street AND location IN query.place  # "Bäckerei Holtenauer Straße Kiel"
+
+  - relevance: 60
+    rules:
+      category_on_street: category = query.category AND address.street = query.street  # "Bäckerei Holtenauer Straße"
+      name_near_place: name = query.name AND location NEAR query.place                  # "Dorfstraße Höhndorf"
+      category_near_place: category = query.category AND location NEAR query.place      # "Restaurant Wilstedt Siedlung"
+      category_near_street: category = query.category AND location NEAR query.street    # "Apotheke Holtenauer Straße"
+
+  - relevance: 40
+    rules:
+      category_name_like_in_place: category = query.category AND name LIKE query.name AND (location IN query.place OR location NEAR query.place)  # "Restaurant Maxim Kiel"
+      name_like_in_place: name LIKE query.name AND (location IN query.place OR location NEAR query.place)  # "Holtenauer Kiel"
+      category_name_like: category = query.category AND name LIKE query.name                             # "Restaurant Kieler Hof"
+
+  - relevance: 20
+    enabled: false
+    rules:
+      name_nearest_place: name = query.name ORDER BY distance(location, query.place)   # "Hauptstraße Bargteheide"
+      address_like: >-                                                                 # "Holtenaur Strasse 100 Kiel"
+        address.street LIKE query.street AND address.housenumber = query.housenumber
+        AND (address.city = query.place OR address.postcode = query.postcode)
+
+  - relevance: 20
+    rules:
+      name_like_text: name LIKE query.text                                             # "Lübek"

@@ -1,0 +1,688 @@
+# The texts a person reads: the landing page, the devtools, and in time the
+# API's error messages. One entry per message id, one text per language of the
+# `languages` option; `lib/i18n.py` reads it, and `test_i18n.py` refuses an
+# entry that lacks one. `{name}` is a placeholder, filled by `i18n.t(...)`.
+#
+# Ids are `<where>.<what>`. Not here: anything a client parses -- JSON keys,
+# mode, parameter, theme and grid names, URLs -- which is the same in every
+# language.
+
+# A language's name in itself, for the switch between them.
+language.name:
+  de: Deutsch
+  en: English
+
+landing.subtitle:
+  de: OpenStreetMap-Rasterkacheln und Suche
+  en: OpenStreetMap raster tiles and search
+landing.area:
+  de: Gebiet
+  en: area
+landing.version:
+  de: Version
+  en: version
+landing.tiles:
+  de: Kacheln
+  en: Tiles
+landing.themes:
+  de: Kartenstile
+  en: Themes
+landing.no_themes:
+  de: keine kompiliert
+  en: none compiled
+landing.grids:
+  de: Kachelgitter
+  en: Grids
+landing.search:
+  de: Suche
+  en: Search
+landing.this_server:
+  de: Dieser Server
+  en: This server
+landing.metadata:
+  de: Version, Gebiet, Kartenstile, Kachelgitter, Kategorien und die Dienst-URLs
+  en: version, area, themes, grids, categories and the service URLs
+landing.status:
+  de: Build, Import und Stand der Kartenstile; braucht einen API-Schlüssel
+  en: build, import and theme generations; needs a key
+landing.health:
+  de: Erreichbarkeit
+  en: liveness
+landing.docs:
+  de: die generierte API-Referenz (Englisch)
+  en: the generated API reference
+landing.devtools:
+  de: der Entwickler-Viewer
+  en: the viewer
+# OpenStreetMap's own wording of its attribution in each language.
+landing.attribution:
+  de: Kartendaten © OpenStreetMap-Mitwirkende, ODbL.
+  en: Map data © OpenStreetMap contributors, ODbL.
+
+# The devtools page (`web/devtools/templates/devtools.html`). An entry with
+# markup is rendered as it is: the catalogue is ours, not a viewer's input.
+devtools.title:
+  de: gbd-geoservices Devtools (dev only)
+  en: gbd-geoservices devtools (dev only)
+devtools.dev_only:
+  de: Dev only
+  en: Dev only
+devtools.tab_tiles:
+  de: Kacheln
+  en: Tiles
+devtools.tab_search:
+  de: Suche
+  en: Search
+devtools.color_theme:
+  de: Farbschema
+  en: Colour theme
+devtools.detail_level:
+  de: Detailstufe
+  en: Detail level
+devtools.detail_std:
+  de: Standard
+  en: standard
+devtools.schema_hint:
+  de: nur lesbar — gesetzt durch <code>GEOSERVICES_SCHEMA</code>
+  en: read-only — set by <code>GEOSERVICES_SCHEMA</code>
+devtools.request_mode:
+  de: Abfrageart
+  en: Request mode
+devtools.wmts_only:
+  de: (nur WMTS)
+  en: (WMTS only)
+devtools.debug_grid:
+  de: Debug-Raster
+  en: Debug grid
+devtools.debug_hint:
+  de: Rote Kachelränder mit <code>z/x/y</code> jeder Kachel, im Raster, das die Kachelebene anfragt — im WMTS-Modus ist das TILEMATRIX/TILECOL/TILEROW.
+  en: Red tile borders with each tile's <code>z/x/y</code>, on the grid the tile layer requests — in WMTS mode that is TILEMATRIX/TILECOL/TILEROW.
+devtools.request_url:
+  de: Anfrage-URL
+  en: Request URL
+devtools.reload_themes:
+  de: Kartenstile neu laden
+  en: Reload themes
+devtools.reload_themes_title:
+  de: Liest /metadata neu; übernimmt einen Kartenstil, der neu kompiliert und geladen wurde, während die Seite offen ist
+  en: Re-read /metadata; picks up a theme recompiled and reloaded while the page is open
+devtools.mode:
+  de: Modus
+  en: Mode
+devtools.smode_name:
+  de: Name
+  en: Name
+devtools.smode_address:
+  de: Adresse
+  en: Address
+devtools.smode_phrase:
+  de: Freitext
+  en: Free text
+devtools.smode_here:
+  de: Was ist hier
+  en: What's here
+devtools.radius_placeholder:
+  de: 'leer: die Standardwerte des Servers'
+  en: 'empty: the server''s defaults'
+devtools.click_map:
+  de: in die Karte klicken
+  en: click the map
+devtools.query:
+  de: Suchbegriff
+  en: Query
+devtools.query_placeholder:
+  de: z. B. Rathaus
+  en: e.g. Rathaus
+devtools.street:
+  de: Straße
+  en: Street
+devtools.street_placeholder:
+  de: z. B. Holtenauer Straße
+  en: e.g. Holtenauer Straße
+devtools.number:
+  de: Hausnummer
+  en: Number
+devtools.postcode:
+  de: PLZ
+  en: Postcode
+devtools.city:
+  de: Ort
+  en: City
+devtools.category:
+  de: Kategorie
+  en: Category
+devtools.category_hint:
+  de: übergeordnete Kategorien schließen ihre Unterkategorien ein; ohne Suchbegriff wird die Kategorie durchsucht
+  en: parents include their leaves; with no query this is a category browse
+devtools.in_view:
+  de: Nur im aktuellen Kartenausschnitt
+  en: Only in the current view
+devtools.within:
+  de: 'Gezeichnete Form: vollständig innerhalb'
+  en: 'Drawn shape: entirely inside'
+devtools.fuzzy:
+  de: 'Unscharf: nur die unscharfe Namenssuche, Tippfehler und Wortteile (/search/fuzzy)'
+  en: 'Fuzzy: the fuzzy name search alone, typos and fragments (/search/fuzzy)'
+devtools.fuzzy_hint:
+  de: 'Die unscharfe Suche ist noch in Entwicklung: Suchen damit können etwas länger dauern.'
+  en: 'Fuzzy search is still in development: searches with it may take a little longer.'
+devtools.sort:
+  de: Sortierung
+  en: Sort
+devtools.sort_score:
+  de: Score
+  en: score
+devtools.sort_distance:
+  de: Entfernung zur Kartenmitte
+  en: distance from centre
+devtools.sort_name:
+  de: Name
+  en: name
+devtools.sort_address:
+  de: Adresse
+  en: address
+devtools.fuzziness:
+  de: Unschärfe
+  en: Fuzziness
+devtools.fuzziness_hint:
+  de: 1 unscharf … 10 streng
+  en: 1 fuzzy … 10 strict
+devtools.search:
+  de: Suchen
+  en: Search
+devtools.clear:
+  de: Leeren
+  en: Clear
+devtools.geom_note:
+  de: Suche innerhalb der gezeichneten Form. Mit ✕ auf der Karte wird sie entfernt.
+  en: Searching inside the shape you drew. Use ✕ on the map to clear it.
+devtools.searching:
+  de: Suche läuft
+  en: searching
+devtools.prev:
+  de: ‹ Zurück
+  en: ‹ Prev
+devtools.next:
+  de: Weiter ›
+  en: Next ›
+devtools.api_key:
+  de: API-Schlüssel
+  en: API key
+devtools.api_key_placeholder:
+  de: keiner — der Server ist offen
+  en: none — the server is open
+devtools.use:
+  de: Übernehmen
+  en: Use
+devtools.api_key_hint:
+  de: nur in diesem Browser gespeichert; nie in der Seite oder der URL
+  en: kept in this browser only; never in the page or the URL
+devtools.key_missing:
+  de: Kein API-Schlüssel eingetragen
+  en: No API key entered
+devtools.key_invalid:
+  de: Der API-Schlüssel ist ungültig
+  en: The API key is not valid
+devtools.key_needed:
+  de: Dieser Server liefert Karte und Suche nur mit einem gültigen Schlüssel. Im Tab „Status“ unter „{field}“ eintragen, dann „{button}“.
+  en: This server serves the map and search only with a valid key. Enter it on the Status tab under “{field}”, then “{button}”.
+devtools.key_go:
+  de: Zum Tab „Status“
+  en: Go to the Status tab
+devtools.styles:
+  de: Stile
+  en: Styles
+devtools.checking:
+  de: wird geprüft…
+  en: checking…
+
+# The devtools' scripts: the page hands every `devtools.js.*` entry to them
+# (`static/i18n.js`), placeholders unfilled. `decimal` and `thousands` are the
+# separators Leaflet.draw writes its lengths and areas with.
+devtools.js.imported:
+  de: importiert {when}
+  en: imported {when}
+devtools.js.no_import:
+  de: kein Import für dieses Gebiet
+  en: no import for this area
+devtools.js.auth_open:
+  de: ohne Schlüssel offen
+  en: auth open
+devtools.js.not_watching:
+  de: nicht beobachtet
+  en: not watching
+devtools.js.not_watching_off:
+  de: nicht beobachtet (devtools_watch ist aus)
+  en: not watching (devtools_watch is off)
+devtools.js.compiling:
+  de: wird kompiliert… ({changed})
+  en: compiling… ({changed})
+devtools.js.compile_failed:
+  de: 'Kompilieren fehlgeschlagen ({changed}): {error}'
+  en: 'compile failed ({changed}): {error}'
+devtools.js.watching:
+  de: beobachtet styles/
+  en: watching styles/
+devtools.js.watching_compiled:
+  de: beobachtet styles/ · kompiliert {when} in {seconds} s ({changed})
+  en: watching styles/ · compiled {when} in {seconds} s ({changed})
+devtools.js.no_themes:
+  de: keine kompilierten Kartenstile -- manage.py compile-styles ausführen
+  en: no compiled themes -- run manage.py compile-styles
+devtools.js.theme_hint:
+  de: zeigt {name} — Farben in styles/palettes.yaml ({color}), Detailstufe {detail} in styles/details.yaml; neu kompilieren mit manage.py compile-styles
+  en: serving {name} — colours in styles/palettes.yaml ({color}), detail {detail} in styles/details.yaml; recompile with manage.py compile-styles
+devtools.js.grid_levels:
+  de: '{crs} · {levels} Stufen'
+  en: '{crs} · {levels} levels'
+devtools.js.grid_precached:
+  de: '{crs} · {levels} Stufen · vorberechnet bis {depth}'
+  en: '{crs} · {levels} levels · pre-cached to {depth}'
+devtools.js.tier_precache:
+  de: 'Stufe {zoom}: aus dem Vorab-Cache'
+  en: 'level {zoom}: from the pre-cache'
+devtools.js.tier_on_demand:
+  de: 'Stufe {zoom}: bei Bedarf gerendert, dann gecacht'
+  en: 'level {zoom}: rendered on demand, then cached'
+devtools.js.themes_error:
+  de: 'Kartenstile: {message}'
+  en: 'themes: {message}'
+devtools.js.themes_error_key:
+  de: 'Kartenstile: {message} — API-Schlüssel im Tab „Status“ eingeben'
+  en: 'themes: {message} — enter a key on the Status tab'
+devtools.js.themes_count:
+  de: '{count} Kartenstile'
+  en: '{count} themes'
+devtools.js.tile_failed:
+  de: eine Kachel konnte nicht geladen werden — siehe Netzwerk-Tab
+  en: a tile failed to load — see the network tab
+devtools.js.grids_error:
+  de: 'Kachelgitter: {message}'
+  en: 'grids: {message}'
+devtools.js.draw_line:
+  de: Linie zeichnen
+  en: Draw a line
+devtools.js.draw_polygon:
+  de: Polygon zeichnen
+  en: Draw a polygon
+devtools.js.draw_rectangle:
+  de: Rechteck zeichnen
+  en: Draw a rectangle
+devtools.js.draw_circle:
+  de: Kreis zeichnen
+  en: Draw a circle
+devtools.js.zoom_in:
+  de: Hineinzoomen
+  en: Zoom in
+devtools.js.zoom_out:
+  de: Herauszoomen
+  en: Zoom out
+devtools.js.home:
+  de: Zurück zum ganzen Gebiet
+  en: Back to the whole area
+devtools.js.clear_shape:
+  de: Gezeichnete Form entfernen
+  en: Clear the drawn shape
+devtools.js.legend:
+  de: Legende
+  en: Legend
+devtools.js.legend_close:
+  de: Legende schließen
+  en: Close the legend
+devtools.js.legend_missing:
+  de: Keine Legende — die Stile mit manage.py compile-styles neu kompilieren.
+  en: No legend — recompile the styles with manage.py compile-styles.
+devtools.js.hint_name:
+  de: 'ein Name (Groß- und Kleinschreibung, Umlaute, „Str.“ normalisiert); ohne genauen Treffer auch Tippfehler und Wortteile'
+  en: 'a name (case, umlauts, "Str." normalised); without an exact match, typos and fragments too'
+devtools.js.hint_phrase:
+  de: 'frei: ein Name, eine Kategorie, ein Ort oder gemischt — „restaurant kiel“'
+  en: 'free form: a name, a category, a place, or any mix — "restaurant kiel"'
+devtools.js.enter_address:
+  de: Straße und Hausnummer eingeben
+  en: enter a street and a number
+devtools.js.enter_query:
+  de: Suchbegriff eingeben oder Kategorie wählen
+  en: enter a query or pick a category
+devtools.js.summary:
+  de: '{total} Treffer · Seite {page} · {ms} ms Antwortzeit'
+  en: '{total} hits · page {page} · {ms} ms round trip'
+devtools.js.here_summary:
+  de: 'was ist hier: {count} Treffer'
+  en: 'what''s here: {count} results'
+devtools.js.read_text:
+  de: Text „{value}“
+  en: text “{value}”
+devtools.js.read_name:
+  de: Name „{value}“
+  en: name “{value}”
+devtools.js.read_category:
+  de: Kategorie {value}
+  en: category {value}
+devtools.js.read_place:
+  de: Ort {value}
+  en: place {value}
+devtools.js.read_street:
+  de: Straße {value}
+  en: street {value}
+devtools.js.read_address:
+  de: Adresse {value}
+  en: address {value}
+devtools.js.zoom_to:
+  de: hinzoomen
+  en: zoom to
+devtools.js.all_properties:
+  de: alle Eigenschaften
+  en: all properties
+devtools.js.unnamed:
+  de: (ohne Namen)
+  en: (unnamed)
+devtools.js.page_of:
+  de: Seite {page} von {pages}
+  en: Page {page} of {pages}
+devtools.js.categories_error:
+  de: 'Kategorien: {message}'
+  en: 'categories: {message}'
+devtools.js.draw_line_start:
+  de: Klicken, um eine Linie zu beginnen.
+  en: Click to start drawing line.
+devtools.js.draw_line_cont:
+  de: Klicken, um die Linie fortzusetzen.
+  en: Click to continue drawing line.
+devtools.js.draw_line_end:
+  de: Letzten Punkt anklicken, um die Linie abzuschließen.
+  en: Click last point to finish line.
+devtools.js.draw_line_error:
+  de: <strong>Fehler:</strong> Kanten dürfen sich nicht kreuzen!
+  en: <strong>Error:</strong> shape edges cannot cross!
+devtools.js.draw_shape_start:
+  de: Klicken, um eine Form zu beginnen.
+  en: Click to start drawing shape.
+devtools.js.draw_shape_cont:
+  de: Klicken, um die Form fortzusetzen.
+  en: Click to continue drawing shape.
+devtools.js.draw_shape_end:
+  de: Ersten Punkt anklicken, um die Form zu schließen.
+  en: Click first point to close this shape.
+devtools.js.draw_rectangle_start:
+  de: Klicken und ziehen, um ein Rechteck zu zeichnen.
+  en: Click and drag to draw rectangle.
+devtools.js.draw_circle_start:
+  de: Klicken und ziehen, um einen Kreis zu zeichnen.
+  en: Click and drag to draw circle.
+devtools.js.draw_release:
+  de: Maus loslassen, um das Zeichnen abzuschließen.
+  en: Release mouse to finish drawing.
+devtools.js.decimal:
+  de: ','
+  en: .
+devtools.js.thousands:
+  de: .
+  en: ','
+
+# The legend (styles/legend.yaml): group titles and the entries that are classes. An icon is named
+# as its category is (categories.yaml).
+legend.group.roads:
+  de: Straßen und Wege
+  en: Roads and paths
+legend.group.rail:
+  de: Bahn und Fähre
+  en: Rail and ferry
+legend.group.air:
+  de: Luftverkehr
+  en: Air transport
+legend.group.water:
+  de: Gewässer
+  en: Water
+legend.group.relief:
+  de: Relief
+  en: Relief
+legend.group.landcover:
+  de: Natur
+  en: Land cover
+legend.group.landuse:
+  de: Nutzung
+  en: Land use
+legend.group.boundaries:
+  de: Grenzen
+  en: Boundaries
+legend.group.places:
+  de: Ortsnamen
+  en: Place names
+legend.group.parks:
+  de: Parks und Gärten
+  en: Parks and gardens
+legend.motorway:
+  de: Autobahn
+  en: Motorway
+legend.trunk:
+  de: Schnellstraße
+  en: Trunk road
+legend.primary:
+  de: Bundesstraße
+  en: Primary road
+legend.secondary:
+  de: Landesstraße
+  en: Secondary road
+legend.tertiary:
+  de: Kreisstraße
+  en: Tertiary road
+legend.minor:
+  de: Nebenstraße
+  en: Minor road
+legend.service:
+  de: Zufahrt
+  en: Service road
+legend.busway:
+  de: Busstraße
+  en: Busway
+legend.bus_guideway:
+  de: Spurbus
+  en: Guided busway
+legend.raceway:
+  de: Rennstrecke
+  en: Raceway
+legend.track:
+  de: Wirtschaftsweg
+  en: Track
+legend.path:
+  de: Fuß- und Radweg
+  en: Footway and cycleway
+legend.platform:
+  de: Bahnsteig, Haltestelle
+  en: Platform
+legend.bridge:
+  de: Brücke
+  en: Bridge
+legend.tunnel:
+  de: Tunnel
+  en: Tunnel
+legend.rail:
+  de: Eisenbahn
+  en: Railway
+legend.rail_bridge:
+  de: Eisenbahnbrücke
+  en: Railway bridge
+legend.rail_tunnel:
+  de: Eisenbahntunnel
+  en: Railway tunnel
+legend.narrow_gauge:
+  de: Schmalspur-, Standseilbahn
+  en: Narrow gauge, funicular
+legend.tram:
+  de: Straßen-, Stadtbahn
+  en: Tram, light rail
+legend.subway:
+  de: U-Bahn
+  en: Subway
+legend.ferry:
+  de: Fähre
+  en: Ferry
+legend.aerodrome:
+  de: Flugplatz
+  en: Airfield
+legend.runway:
+  de: Start- und Landebahn
+  en: Runway
+legend.taxiway:
+  de: Rollweg
+  en: Taxiway
+legend.water:
+  de: Meer, See, Wasserfläche
+  en: Sea, lake, water
+legend.coastline:
+  de: Küstenlinie
+  en: Coastline
+legend.river:
+  de: Fluss
+  en: River
+legend.canal:
+  de: Kanal
+  en: Canal
+legend.stream:
+  de: Bach
+  en: Stream
+legend.ditch:
+  de: Graben
+  en: Ditch, drain
+legend.river_intermittent:
+  de: Fluss, zeitweise trocken
+  en: Intermittent river
+legend.stream_intermittent:
+  de: Bach, zeitweise trocken
+  en: Intermittent stream
+legend.contour_1000:
+  de: Höhenlinie 1000 m
+  en: Contour 1000 m
+legend.contour_500:
+  de: Höhenlinie 500 m
+  en: Contour 500 m
+legend.contour_250:
+  de: Höhenlinie 250 m
+  en: Contour 250 m
+legend.contour_100:
+  de: Höhenlinie 100 m
+  en: Contour 100 m
+legend.contour_50:
+  de: Höhenlinie 50 m
+  en: Contour 50 m
+legend.wood:
+  de: Mischwald, Wald ohne Angabe
+  en: Mixed or unspecified wood
+legend.wood_broadleaved:
+  de: Laubwald
+  en: Broadleaved wood
+legend.wood_needleleaved:
+  de: Nadelwald
+  en: Needleleaved wood
+legend.scrub:
+  de: Gebüsch
+  en: Scrub
+legend.heath:
+  de: Heide, Zwergstrauchheide
+  en: Heath
+legend.orchard:
+  de: Obst- und Weinbau
+  en: Orchard, vineyard
+legend.bog:
+  de: Moor
+  en: Bog, fen
+legend.grass:
+  de: Wiese
+  en: Grass
+legend.farmland:
+  de: Acker
+  en: Farmland
+legend.wetland:
+  de: Feuchtgebiet
+  en: Wetland
+legend.sand:
+  de: Sand, Strand
+  en: Sand, beach
+legend.rock:
+  de: Fels, Geröll
+  en: Rock, scree
+legend.ice:
+  de: Gletscher
+  en: Glacier
+legend.protected:
+  de: Schutzgebiet
+  en: Protected area
+legend.residential:
+  de: Wohngebiet
+  en: Residential
+legend.retail:
+  de: Handel, Büros
+  en: Retail, commercial
+legend.industrial:
+  de: Industrie, Bahngelände
+  en: Industrial, railway land
+legend.quarry:
+  de: Steinbruch, Tagebau
+  en: Quarry
+legend.military:
+  de: Militärgebiet
+  en: Military area
+legend.parking:
+  de: Parkplatz, Garagen, Busbahnhof
+  en: Parking, garages, bus station
+legend.hospital:
+  de: Krankenhausgelände
+  en: Hospital grounds
+legend.school:
+  de: Schule, Hochschule, Bibliothek
+  en: School, university, library
+legend.pitch:
+  de: Sportplatz, Stadion
+  en: Pitch, stadium
+legend.park:
+  de: Spielplatz, Freizeitpark, Zoo
+  en: Playground, theme park, zoo
+legend.cemetery:
+  de: Friedhof
+  en: Cemetery
+legend.building:
+  de: Gebäude
+  en: Building
+legend.boundary_country:
+  de: Staatsgrenze
+  en: National border
+legend.boundary_state:
+  de: Landesgrenze
+  en: State border
+legend.boundary_district:
+  de: Kreisgrenze
+  en: District border
+legend.boundary_municipality:
+  de: Gemeindegrenze
+  en: Municipal border
+legend.city:
+  de: Großstadt
+  en: City
+legend.town:
+  de: Stadt
+  en: Town
+legend.village:
+  de: Dorf
+  en: Village
+legend.suburb:
+  de: Stadtteil
+  en: Suburb
+legend.quarter:
+  de: Ortsteil
+  en: Quarter
+legend.hamlet:
+  de: Weiler, Siedlung
+  en: Hamlet, neighbourhood
+legend.island:
+  de: Insel
+  en: Island
+legend.shop:
+  de: Geschäft
+  en: Shop
+legend.tram_stop:
+  de: Straßen-, Stadtbahnhaltestelle
+  en: Tram, light rail stop
+legend.subway_stop:
+  de: U-Bahn-Haltestelle
+  en: Subway stop

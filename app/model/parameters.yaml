@@ -1,0 +1,185 @@
+# The numbers the importer, the renderer and the search agree on. This file is the value of record;
+# DESIGN.md explains them where they are used ("Sizes and zooms", "Zoom bands", "Draw order",
+# "Search"). Pixels are Web Mercator pixels (156543 m/px at z0, halved per zoom); no latitude
+# correction anywhere.
+
+size:                       # size minzoom = ceil(log2(156543 * sqrt(px2 / area))) resp. ceil(log2(156543 * px / length))
+                            # Lines have no size test for drawing -- they start at their class zoom, because
+                            # OSM cuts a road at every junction and a per-way length drew main roads as dashes.
+                            # Only a line's *label* is sized, since it has to fit on the one way it is placed on.
+  polygon_px2: 4            # a polygon is drawn from the zoom where it covers this many px²
+  building_px2: 1           # rules with class building use this instead (min_px in classifier)
+  polygon_label_px2: 400    # a polygon is labelled from this area in px²
+  line_label_px: 100        # a line is labelled from this length in px
+  zoom_min: 0
+  zoom_max: 21
+
+bands:                      # zoom bands served from generalized tables; tolerance in metres = 0.5 px at the band's finest zoom
+  - {suffix: _z6,  zoom_max: 6,  tolerance_m: 1223, union_cell_deg: 4}
+  - {suffix: _z9,  zoom_max: 9,  tolerance_m: 153,  union_cell_deg: 1}
+  - {suffix: _z12, zoom_max: 12, tolerance_m: 19,   union_cell_deg: 0}   # 0 = no union
+
+z_order:                    # z_order = layer_tag * 1000 + rank; label layers sort descending, places use population
+                            # rank lookup: the class itself, else the longest key that is a prefix of the class, else default
+  layer_tag_min: -5
+  layer_tag_max: 5
+  rank:
+    cls_rail: 95
+    cls_transit: 93
+    cls_road_motorway: 90
+    cls_road_trunk: 85
+    cls_road_primary: 80
+    cls_road_secondary: 75
+    cls_road_tertiary: 70
+    cls_road_minor: 60
+    cls_road_busway: 55
+    cls_road_service: 50
+    cls_road_raceway: 45
+    cls_road_track: 40
+    cls_road_path: 30
+    cls_waterway_river: 20
+    cls_waterway_canal: 18
+    cls_waterway_stream: 15
+    cls_waterway_drain: 10
+    cls_waterway_ditch: 10
+    default: 0
+
+buildings:                  # osm_building.height; height_src records which of the three was used
+  level_height_m: 3.2       # building:levels * this, when there is no height tag
+  default_height_m: 8.0     # the estimate when there is neither; one value, since there is one building class
+
+streets:
+  merge_by: [end_node, name]     # no distance fallback
+
+places:                     # the address path: the places a search row lies in (importer/places.py)
+  levels: [4, 6, 8, 9, 10, 11]      # admin_level of the boundary=administrative areas; every one the row intersects. Not 7 (Amt): an administrative grouping nobody gives as part of an address
+                            # German: what a level means differs per country (7 is an Amt only
+                            # here), so an area outside Germany needs its own list. Not 2: every
+                            # path would start with the country -- at the cost of an empty path
+                            # for a Land, which lies in nothing coarser
+  categories: [cat_poi, cat_built, cat_geography_places, cat_geography_admin, cat_geography_landcover,
+               cat_geography_landuse, cat_geography_terrain, cat_geography_water_lake,
+               cat_geography_water_pond, cat_geography_water_waterfall, cat_geography_boundaries_military]
+                            # rows of these get a path; addresses always do. Not rivers, streams,
+                            # canals, ditches or coastline: a line lies in every area it touches
+  subdivide_vertices: 128   # ST_Subdivide of the areas before the intersection
+  area_share: 0.25          # an area object lies in an area that holds at least this share of it
+
+# The phrase rule `location NEAR query.street`: an object this close to a street of that
+# name, from its centre to the street's line.
+near_street_distance_m: 100
+# Which streets of the name: the one nearest the request's location, and every
+# other row of the name within this distance of it (a merged street is one row
+# per connected piece).
+near_street_group_m: 1000
+
+place_radius_km:            # when a place has no polygon
+  city: 10
+  town: 5
+  village: 2
+  suburb: 1.5
+  quarter: 1.5
+  neighbourhood: 1.5
+  hamlet: 1
+
+whats_here:
+  point_radius_m: 50
+  line_radius_m: 25
+
+search:
+  polygon_simplify_m: 5          # tolerance for osm_search_object.geom_polygon, the highlight geometry
+  merge_classes: [cls_road_*]    # line classes merged into one search object; a river split into 40 ways
+                                 # is 40 hits until waterway_* is added here
+
+water:
+  bbox_margin_deg: 0.5      # the osmdata sets are clipped to the extract's bbox plus this, so the
+                            # clip seam falls outside any tile the area actually serves
+
+contours:                   # manage.py init-elevation and the import's contours step (importer/elevation.py)
+  # The intervals, coarsest first; the last is the one gdal_contour draws. A line belongs to the
+  # first level its height is a multiple of, class cls_contour_<level>: 1250 m is cls_contour_250.
+  # Each class starts at the zoom where its spacing stays readable on steep ground
+  # (styles/classes.yaml) and stays from there on, so 250 and 750 are still drawn at the 100 m zoom.
+  levels_m: [1000, 500, 250, 100, 50]
+  cell_m: 60                # the DEM is resampled to this cell (3857 metres, averaging) before contouring:
+                            # Copernicus GLO-30 is a surface model, and averaging damps canopy and roofs
+  min_ring_m: 300           # a closed contour shorter than this is dropped as a tree or building bump
+  simplify_m: 5             # Douglas-Peucker tolerance on the lines, ~0.5 px at z15
+  subdivide_vertices: 256   # a contour can follow a valley for kilometres; cut into pieces of at most this
+                            # many vertices, so a tile reads the pieces it touches and not the whole line
+  bbox_margin_deg: 0.05     # the import copies the contours in the extract's bbox plus this
+
+import:
+  copy_batch: 10000        # rows per COPY flush; also the batch the geometry is projected in
+  index_workers: 4          # parallel connections for the index build
+  progress_s: 10            # a pass, or the index build, logs its progress this often
+  location_store: flex_mem  # pyosmium node cache; 'sparse_file_array,/data/tmp/nodes.idx' bounds
+                            # RAM for an area too large to hold in memory (de_sh measures 365 MB)
+  # The report against the previous import (importer/changes.py): a count is listed when it
+  # moved by more than `report_change_pct` percent and by at least `report_min_rows` rows --
+  # the second keeps a class of 3 rows turning 4 out of it. One that appeared or vanished is
+  # always listed.
+  report_change_pct: 2
+  report_min_rows: 10
+
+ranking:                    # the name score; DESIGN.md "Relevance and score"
+  name:
+    similarity: 0.40
+    word_similarity: 0.35
+    phonetic: 0.25
+    exact_bonus: 0.30
+    prefix_bonus: 0.10
+  min_score: 0.15
+  relaxed_min_score: 0.05
+  # The one retry when the strict pass found nothing at all. Not a cascade:
+  # a second round trip turns an empty result into a usable one, a third is
+  # latency every hopeless query pays.
+  relaxed_trgm_threshold: 0.12
+  relaxed_word_threshold: 0.30
+  # `similarity` (1 very fuzzy .. 10 near-exact) maps linearly onto
+  # pg_trgm.similarity_threshold across this range; 4 lands on 0.30, which is
+  # pg_trgm's own default. word_similarity_threshold is held `word_offset`
+  # above it and clamped to word_range: `<%` compares against the best extent
+  # of the target, so it scores far higher on the same pair and needs a
+  # higher bar to stay selective. 4 lands on 0.60, again pg_trgm's default.
+  trgm_range: [0.15, 0.60]
+  word_offset: 0.30
+  word_range: [0.30, 0.90]
+  # The phrase mode's LIKE rules that carry another part, strict and never
+  # relaxed. Street names share "strasse": on de_sh, "hauptstrasse" scored
+  # 0.41-0.44 against Dorf-, Schul-, Otto-Hahn-Straße, and real partial names
+  # 0.61 and up ("Holtenauer Reede" for "holtenauer strasse", "Restaurant
+  # Dubrovnik" for "restaurant"). Like every floor, it judges the text match
+  # without importance; 0.50 is the 0.55 these numbers were taken at, less the
+  # importance they carried. Below it the rule finds nothing, and the fuzzy
+  # step after it returns far more rows that are no better ("Restaurant Maksim
+  # Kiel": 51 against 5).
+  phrase_strict_min_score: 0.50
+  # And no lower than this share of the rule's best row. A floor alone cannot
+  # tell them apart: on de_sh "Kieferorthopäden in der Holtenau" matched 0.52
+  # for "Holtenauer Kiel", "Atlantic Hotel" 0.59 for "Hotel Atlantik Kiel" --
+  # but the first beside a 0.87 "Holtenauer Reede". The misses were at 0.60-0.62
+  # of the best row, "Christian-Albrechts-Universität zu Kiel" (for
+  # "Universität Kiel") at 0.66.
+  phrase_strict_best_share: 0.65
+  relevance:                # 0-100, reported with every name and address result: how literally it
+                            # matched; the request's `relevance` drops results below it. The phrase
+                            # mode's are per step, in search_rules.yaml.
+    address: 100            # an address matched in every part given, and only that
+    name: 99                # the normalised name
+    name_fuzzy: 20          # the name mode's fallback when the exact name finds nothing, and /search/fuzzy: a typo or a fragment
+    point: 99               # what lies at a point; its nearest address, first, is `address`
+  inside_view_bonus: 0.10   # added when geom_center lies inside the request's bbox / area
+  # Importance (0-100, model/importance.yaml) is added to the score times this, after the
+  # floors above, so it orders what matched and lets nothing in. On de_sh, of 41 typos,
+  # prefixes and phrases with a known answer, 0.001 put 35 first, 0.005 38, 0.01 41 -- "Lubek"
+  # finds Lübeck, not "lubeka" -- and kept the streets named after a city ("Kieler Strase")
+  # first; 0.02 added nothing.
+  importance_weight: 0.01
+
+# Not read by any code: the pre-cache depths are the `precache` option (config/options.yaml).
+precache:
+  EPSG:3857: 12
+  EPSG:25832: 8
+  EPSG:25833: 8
+  other_crs_scale_from: EPSG:3857/12

@@ -1,0 +1,403 @@
+# The category tree: what an object is, for search and for its icon. Hand-written;
+# tools/gen_classifier.py reads it and writes model/generated/categories.yaml (the deep
+# tree, with names and search terms from iD) and model/generated/classifier.yaml.
+#
+# id: `cat_` plus segments joined with `_`; a segment never contains `_` itself.
+# presets: iD preset ids (id-tagging-schema, the version gen_classifier.py pins). An id
+#   stands for that preset and every preset below it, unless a more specific id is listed
+#   at another node. Every preset a node claims becomes a child of it in the deep tree,
+#   nested the way iD nests them -- except where a node lists exactly one preset: that
+#   preset is the node itself.
+# main: the one of `presets` that is the node itself: its objects are filed at the node, and
+#   its search terms are the node's; the other presets become children. A node that lists
+#   exactly one preset needs none -- that preset is the node.
+# name_en / name_de: display names. A generated child takes its names from iD.
+# marker: presets below get a POI class, one per second-level category (cls_poi_food), where
+#   OpenMapTiles counts them as a POI -- and so a marker with the category's icon. Inherited;
+#   set on cat_poi and on the few built/geography nodes that are dotted too (parking, fuel,
+#   stops, ...). Which icon, and whether it is drawn, is styles/icons.yaml.
+# How important a category is -- search order, and which icons a theme draws from which zoom --
+# is model/importance.yaml.
+#
+# See DESIGN.md "The category tree".
+
+- id: cat_geography
+  name_en: Geography
+  name_de: Geografie
+  subs:
+  - id: cat_geography_places
+    name_en: Places
+    name_de: Orte
+    subs:
+    - {id: cat_geography_places_continent, name_en: Continent, name_de: Kontinent}
+    - {id: cat_geography_places_country, name_en: Country, name_de: Staat}
+    - {id: cat_geography_places_state, name_en: State, name_de: Bundesland}
+    - {id: cat_geography_places_city, name_en: City, name_de: Stadt, presets: [place/city]}
+    - {id: cat_geography_places_town, name_en: Town, name_de: Kleinstadt, presets: [place/town]}
+    - {id: cat_geography_places_village, name_en: Village, name_de: Dorf, presets: [place/village]}
+    - {id: cat_geography_places_hamlet, name_en: Hamlet, name_de: Weiler, presets: [place/hamlet, place/isolated_dwelling], main: place/hamlet}
+    - {id: cat_geography_places_district, name_en: District, name_de: Stadtteil, presets: [place/suburb, place/quarter, place/neighbourhood, place/city_block, place/plot]}
+    - {id: cat_geography_places_locality, name_en: Locality, name_de: Flurname, presets: [place/locality]}
+    - {id: cat_geography_places_island, name_en: Island, name_de: Insel, presets: [place/island, place/islet], main: place/island}
+    - {id: cat_geography_places_square, name_en: Square, name_de: Platz, presets: [place/square]}
+    - {id: cat_geography_places_region, name_en: Region, name_de: Region}
+    - {id: cat_geography_places_address, name_en: Address, name_de: Adresse}
+    - {id: cat_geography_places_other, name_en: Other place, name_de: Sonstiger Ort, presets: [place]}
+  - id: cat_geography_admin
+    name_en: Administrative area
+    name_de: Verwaltungsgebiet
+    subs:
+    - {id: cat_geography_admin_2, name_en: Country, name_de: Staat}
+    - {id: cat_geography_admin_3, name_en: Country part, name_de: Landesteil}
+    - {id: cat_geography_admin_4, name_en: State, name_de: Bundesland}
+    - {id: cat_geography_admin_5, name_en: Government region, name_de: Regierungsbezirk}
+    - {id: cat_geography_admin_6, name_en: District, name_de: Kreis}
+    - {id: cat_geography_admin_7, name_en: Municipal association, name_de: Amt}
+    - {id: cat_geography_admin_8, name_en: Municipality, name_de: Gemeinde}
+    - {id: cat_geography_admin_9, name_en: Borough, name_de: Stadtbezirk}
+    - {id: cat_geography_admin_10, name_en: Town part, name_de: Ortsteil}
+    - {id: cat_geography_admin_11, name_en: Town part subdivision, name_de: Ortsteilbereich}
+  - id: cat_geography_boundaries
+    name_en: Boundaries
+    name_de: Grenzen
+    subs:
+    - {id: cat_geography_boundaries_admin, name_en: Administrative boundary, name_de: Verwaltungsgrenze, presets: [boundary/administrative]}
+    - {id: cat_geography_boundaries_military, name_en: Military area, name_de: Militärgebiet, presets: [landuse/military, military], main: landuse/military}
+    - {id: cat_geography_boundaries_hazard, name_en: Hazard area, name_de: Gefahrenzone, presets: [boundary/hazard]}
+    - {id: cat_geography_boundaries_political, name_en: Electoral district, name_de: Wahlkreis}
+    - {id: cat_geography_boundaries_other, name_en: Other boundary, name_de: Sonstige Grenze, presets: [boundary]}
+  - id: cat_geography_terrain
+    name_en: Terrain
+    name_de: Gelände
+    subs:
+    - {id: cat_geography_terrain_peak, name_en: Peak, name_de: Gipfel, presets: [natural/peak]}
+    - {id: cat_geography_terrain_volcano, name_en: Volcano, name_de: Vulkan, presets: [natural/volcano]}
+    - {id: cat_geography_terrain_ridge, name_en: Ridge, name_de: Grat, presets: [natural/ridge, natural/arete, natural/saddle], main: natural/ridge}
+    - {id: cat_geography_terrain_valley, name_en: Valley, name_de: Tal, presets: [natural/valley]}
+    - {id: cat_geography_terrain_cliff, name_en: Cliff, name_de: Felswand, presets: [natural/cliff, natural/arch], main: natural/cliff}
+    - {id: cat_geography_terrain_cave, name_en: Cave, name_de: Höhle, presets: [natural/cave_entrance, natural/sinkhole], main: natural/cave_entrance}
+    - {id: cat_geography_terrain_rock, name_en: Rock, name_de: Fels, presets: [natural/rock, natural/stone], main: natural/rock}
+    - {id: cat_geography_terrain_coast, name_en: Coastal feature, name_de: Küstenform, presets: [natural/cape, natural/peninsula, natural/bay, natural/strait, natural/reef]}
+    - {id: cat_geography_terrain_spring, name_en: Spring, name_de: Quelle, presets: [natural/spring, natural/hot_spring, natural/geyser], main: natural/spring}
+    - {id: cat_geography_terrain_other, name_en: Other natural feature, name_de: Sonstiges Naturobjekt, presets: [natural]}
+  - id: cat_geography_water
+    name_en: Water
+    name_de: Gewässer
+    subs:
+    - {id: cat_geography_water_sea, name_en: Sea, name_de: Meer}
+    - {id: cat_geography_water_coastline, name_en: Coastline, name_de: Küste, presets: [natural/coastline]}
+    - {id: cat_geography_water_lake, name_en: Lake, name_de: See, presets: [natural/water, natural/water/lake, natural/water/oxbow, natural/water/reservoir, natural/water/basin], main: natural/water/lake}
+    - {id: cat_geography_water_pond, name_en: Pond, name_de: Teich, presets: [natural/water/pond, natural/water/moat], main: natural/water/pond}
+    - {id: cat_geography_water_river, name_en: River, name_de: Fluss, presets: [waterway/river, natural/water/river, waterway/tidal_channel], main: waterway/river}
+    - {id: cat_geography_water_stream, name_en: Stream, name_de: Bach, presets: [waterway/stream, waterway/stream_intermittent, natural/water/stream], main: waterway/stream}
+    - {id: cat_geography_water_canal, name_en: Canal, name_de: Kanal, presets: [waterway/canal, natural/water/canal], main: waterway/canal}
+    - {id: cat_geography_water_ditch, name_en: Ditch, name_de: Graben, presets: [waterway/ditch, waterway/drain], main: waterway/ditch}
+    - {id: cat_geography_water_waterfall, name_en: Waterfall, name_de: Wasserfall, presets: [waterway/waterfall]}
+    - {id: cat_geography_water_other, name_en: Other waterway, name_de: Sonstiges Gewässer, presets: [waterway]}
+  - id: cat_geography_landcover
+    name_en: Land cover
+    name_de: Bodenbedeckung
+    subs:
+    - {id: cat_geography_landcover_forest, name_en: Forest, name_de: Wald, presets: [natural/wood, landuse/forest], main: natural/wood}
+    - {id: cat_geography_landcover_grass, name_en: Grass, name_de: Wiese, presets: [landuse/grass, landuse/meadow, landuse/meadow_orchard/meadow, natural/grassland], main: landuse/grass}
+    - {id: cat_geography_landcover_heath, name_en: Heath, name_de: Heide, presets: [natural/heath, natural/fell], main: natural/heath}
+    - {id: cat_geography_landcover_scrub, name_en: Scrub, name_de: Gebüsch, presets: [natural/scrub, natural/shrub], main: natural/scrub}
+    - {id: cat_geography_landcover_wetland, name_en: Wetland, name_de: Feuchtgebiet, presets: [natural/wetland, natural/mud], main: natural/wetland}
+    - {id: cat_geography_landcover_sand, name_en: Sand, name_de: Sand, presets: [natural/sand]}
+    - {id: cat_geography_landcover_beach, name_en: Beach, name_de: Strand, presets: [natural/beach, natural/shingle], main: natural/beach}
+    - {id: cat_geography_landcover_rock, name_en: Bare rock, name_de: Fels, presets: [natural/bare_rock, natural/scree], main: natural/bare_rock}
+    - {id: cat_geography_landcover_glacier, name_en: Glacier, name_de: Gletscher, presets: [natural/glacier]}
+    - {id: cat_geography_landcover_tree, name_en: Tree, name_de: Baum, presets: [natural/tree, natural/tree_row, natural/tree_stump], main: natural/tree}
+    - {id: cat_geography_landcover_park, name_en: Park, name_de: Park, presets: [leisure/park, leisure/common, leisure/garden, landuse/flowerbed], marker: true, main: leisure/park}
+    - {id: cat_geography_landcover_naturereserve, name_en: Nature reserve, name_de: Naturschutzgebiet, presets: [leisure/nature_reserve]}
+  - id: cat_geography_landuse
+    name_en: Land use
+    name_de: Flächennutzung
+    subs:
+    - {id: cat_geography_landuse_residential, name_en: Residential, name_de: Wohngebiet, presets: [landuse/residential]}
+    - {id: cat_geography_landuse_commercial, name_en: Commercial, name_de: Gewerbegebiet, presets: [landuse/commercial]}
+    - {id: cat_geography_landuse_retail, name_en: Retail, name_de: Einzelhandelsfläche, presets: [landuse/retail]}
+    - {id: cat_geography_landuse_industrial, name_en: Industrial, name_de: Industriegebiet, presets: [landuse/industrial]}
+    - {id: cat_geography_landuse_farmland, name_en: Farmland, name_de: Ackerland, presets: [landuse/farmland, landuse/farmyard, landuse/greenhouse_horticulture, landuse/plant_nursery, landuse/aquaculture, landuse/salt_pond], main: landuse/farmland}
+    - {id: cat_geography_landuse_orchard, name_en: Orchard, name_de: Obstplantage, presets: [landuse/orchard, landuse/meadow_orchard, landuse/olive_grove, landuse/vineyard], main: landuse/orchard}
+    - {id: cat_geography_landuse_allotments, name_en: Allotments, name_de: Kleingärten, presets: [landuse/allotments, allotments/plot], main: landuse/allotments}
+    - {id: cat_geography_landuse_quarry, name_en: Quarry, name_de: Steinbruch, presets: [landuse/quarry]}
+    - {id: cat_geography_landuse_landfill, name_en: Landfill, name_de: Deponie, presets: [landuse/landfill]}
+    - {id: cat_geography_landuse_construction, name_en: Construction site, name_de: Baustelle, presets: [landuse/construction, landuse/brownfield, landuse/greenfield], main: landuse/construction}
+    - {id: cat_geography_landuse_railway, name_en: Railway land, name_de: Bahngelände, presets: [landuse/railway]}
+    - {id: cat_geography_landuse_harbour, name_en: Harbour area, name_de: Hafengelände, presets: [landuse/harbour]}
+    - {id: cat_geography_landuse_garages, name_en: Garages, name_de: Garagenhof, presets: [landuse/garages]}
+    - {id: cat_geography_landuse_education, name_en: Education area, name_de: Bildungsgelände, presets: [landuse/education]}
+    - {id: cat_geography_landuse_religious, name_en: Religious area, name_de: Religiöses Gelände, presets: [landuse/religious]}
+    - {id: cat_geography_landuse_recreation, name_en: Recreation ground, name_de: Erholungsfläche, presets: [landuse/recreation_ground]}
+    - {id: cat_geography_landuse_other, name_en: Other land use, name_de: Sonstige Flächennutzung, presets: [landuse]}
+- id: cat_built
+  name_en: Built environment
+  name_de: Bauten
+  subs:
+  - id: cat_built_buildings
+    name_en: Buildings
+    name_de: Gebäude
+    presets: [building, building_part, building/construction, building/ruins]
+    main: building
+    subs:
+    - {id: cat_built_buildings_residential, name_en: Residential building, name_de: Wohngebäude, presets: [building/apartments, building/bungalow, building/cabin, building/detached, building/dormitory, building/ger, building/house, building/houseboat, building/residential, building/semidetached_house, building/terrace, building/static_caravan, building/farm], main: building/residential}
+    - {id: cat_built_buildings_commercial, name_en: Commercial building, name_de: Geschäftsgebäude, presets: [building/commercial, building/office, building/retail, building/hotel], main: building/commercial}
+    - {id: cat_built_buildings_industrial, name_en: Industrial building, name_de: Industriegebäude, presets: [building/industrial, building/warehouse, building/hangar], main: building/industrial}
+    - {id: cat_built_buildings_agricultural, name_en: Agricultural building, name_de: Landwirtschaftsgebäude, presets: [building/barn, building/cowshed, building/farm_auxiliary, building/greenhouse, building/stable, building/sty]}
+    - {id: cat_built_buildings_public, name_en: Public building, name_de: Öffentliches Gebäude, presets: [building/civic, building/public, building/fire_station, building/hospital, building/school, building/college, building/university, building/kindergarten, building/train_station, building/transportation], main: building/public}
+    - {id: cat_built_buildings_religious, name_en: Religious building, name_de: Religiöses Gebäude, presets: [building/cathedral, building/chapel, building/church, building/mosque, building/synagogue, building/temple]}
+    - {id: cat_built_buildings_sports, name_en: Sports building, name_de: Sportgebäude, presets: [building/grandstand, building/stadium, building/riding_hall]}
+    - {id: cat_built_buildings_outbuilding, name_en: Outbuilding, name_de: Nebengebäude, presets: [building/garage, building/garages, building/carport, building/shed, building/hut, building/allotment_house, building/boathouse, building/bakehouse, building/service, building/pavilion, building/roof, building/tent]}
+    - {id: cat_built_buildings_entrance, name_en: Entrance, name_de: Eingang, presets: [entrance]}
+    - {id: cat_built_buildings_indoor, name_en: Indoor, name_de: Innenraum, presets: [indoor]}
+  - id: cat_built_roads
+    name_en: Roads
+    name_de: Straßen
+    subs:
+    - {id: cat_built_roads_motorway, name_en: Motorway, name_de: Autobahn, presets: [highway/motorway, highway/motorway_link, highway/motorway_junction], main: highway/motorway}
+    - {id: cat_built_roads_trunk, name_en: Trunk road, name_de: Schnellstraße, presets: [highway/trunk, highway/trunk_link], main: highway/trunk}
+    - {id: cat_built_roads_primary, name_en: Primary road, name_de: Hauptstraße, presets: [highway/primary, highway/primary_link], main: highway/primary}
+    - {id: cat_built_roads_secondary, name_en: Secondary road, name_de: Landesstraße, presets: [highway/secondary, highway/secondary_link], main: highway/secondary}
+    - {id: cat_built_roads_tertiary, name_en: Tertiary road, name_de: Kreisstraße, presets: [highway/tertiary, highway/tertiary_link], main: highway/tertiary}
+    - {id: cat_built_roads_minor, name_en: Minor road, name_de: Nebenstraße, presets: [highway/unclassified, highway/residential, highway/living_street, highway/road, highway/passing_place], main: highway/unclassified}
+    - {id: cat_built_roads_service, name_en: Service road, name_de: Zufahrt, presets: [highway/service]}
+    - {id: cat_built_roads_track, name_en: Track, name_de: Wirtschaftsweg, presets: [highway/track]}
+    - {id: cat_built_roads_busway, name_en: Busway, name_de: Busspur, presets: [highway/busway, highway/bus_guideway], main: highway/busway}
+    - {id: cat_built_roads_pedestrian, name_en: Pedestrian area, name_de: Fußgängerzone, presets: [highway/pedestrian_area, highway/pedestrian_line], main: highway/pedestrian_area}
+    - {id: cat_built_roads_footway, name_en: Footway, name_de: Fußweg, presets: [highway/footway, highway/corridor, highway/steps, highway/ladder, highway/elevator, highway/elevator_line], main: highway/footway}
+    - {id: cat_built_roads_cycleway, name_en: Cycleway, name_de: Radweg, presets: [highway/cycleway, cycleway/asl], main: highway/cycleway}
+    - {id: cat_built_roads_path, name_en: Path, name_de: Pfad, presets: [highway/path, highway/bridleway], main: highway/path}
+    - {id: cat_built_roads_construction, name_en: Road under construction, name_de: Straße im Bau, presets: [highway/construction]}
+    - {id: cat_built_roads_crossing, name_en: Crossing, name_de: Kreuzung, presets: [junction, highway/crossing, highway/footway/crossing, highway/cycleway/crossing, highway/path/crossing, highway/mini_roundabout, highway/turning_circle, highway/turning_loop, ford], main: highway/crossing}
+    - {id: cat_built_roads_traffic, name_en: Traffic control, name_de: Verkehrsregelung, presets: [highway/traffic_signals, highway/stop, highway/give_way, highway/speed_camera, highway/speed_display, highway/traffic_mirror, highway/toll_gantry, highway/cyclist_waiting_aid, man_made/gantry, highway/milestone, highway/emergency_bay, highway/emergency_access_point, highway/escape, traffic_calming, traffic_sign, noexit, network, highway/footway/traffic_island, highway/cycleway/traffic_island, highway/cycleway/traffic_island_shared, highway/path/traffic_island_shared]}
+    - {id: cat_built_roads_restarea, name_en: Rest area, name_de: Rastplatz, presets: [highway/rest_area, highway/services], main: highway/rest_area}
+    - {id: cat_built_roads_parking, name_en: Parking, name_de: Parkplatz, presets: [amenity/parking, amenity/parking_entrance, amenity/parking_space, amenity/parking_surface, amenity/motorcycle_parking, amenity/bicycle_parking], marker: true, main: amenity/parking}
+    - {id: cat_built_roads_fuel, name_en: Fuel, name_de: Tankstelle, presets: [amenity/fuel, shop/fuel, shop/gas, man_made/fuel_pump, amenity/compressed_air], marker: true, main: amenity/fuel}
+    - {id: cat_built_roads_charging, name_en: Charging station, name_de: Ladestation, presets: [amenity/charging_station, man_made/charge_point], marker: true, main: amenity/charging_station}
+    - {id: cat_built_roads_carrental, name_en: Car rental, name_de: Autovermietung, presets: [amenity/car_rental, amenity/car_sharing], marker: true, main: amenity/car_rental}
+    - {id: cat_built_roads_carpooling, name_en: Car pooling, name_de: Mitfahrgelegenheit, presets: [amenity/car_pooling, highway/hitchhiking], marker: true, main: amenity/car_pooling}
+    - {id: cat_built_roads_bikerental, name_en: Bike rental, name_de: Fahrradverleih, presets: [amenity/bicycle_rental, amenity/motorcycle_rental, amenity/bicycle_repair_station, amenity/bicycle_wash], marker: true, main: amenity/bicycle_rental}
+    - {id: cat_built_roads_other, name_en: Other road, name_de: Sonstige Straße, presets: [highway]}
+  - id: cat_built_transport
+    name_en: Transport
+    name_de: Verkehr
+    subs:
+    - {id: cat_built_transport_railway, name_en: Railway, name_de: Eisenbahn, presets: [railway/rail, railway/light_rail, railway/narrow_gauge, railway/subway, railway/tram, railway/monorail, railway/funicular, railway/miniature, railway/preserved, railway/abandoned, railway/disused, railway/construction], main: railway/rail}
+    - {id: cat_built_transport_railinfra, name_en: Railway facility, name_de: Bahnanlage, presets: [railway/buffer_stop, railway/crossing, railway/level_crossing, railway/railway_crossing, railway/tram_crossing, railway/tram_level_crossing, railway/derail, railway/milestone, railway/signal, railway/signal_box, railway/switch, railway/turntable, railway/yard, railway/train_wash]}
+    - {id: cat_built_transport_station, name_en: Station, name_de: Bahnhof, presets: [public_transport/station_train, public_transport/station_train_halt, public_transport/station_subway, public_transport/station_light_rail, public_transport/station_monorail, public_transport/station_tram, railway/subway_entrance], marker: true, main: public_transport/station_train}
+    - {id: cat_built_transport_busstation, name_en: Bus station, name_de: Busbahnhof, presets: [public_transport/station_bus, public_transport/station_trolleybus], marker: true}
+    - {id: cat_built_transport_stop, name_en: Stop, name_de: Haltestelle, presets: [public_transport/stop_area, public_transport/stop_position_bus, public_transport/stop_position_trolleybus, public_transport/stop_position_tram, public_transport/stop_position_train, public_transport/stop_position_subway, public_transport/stop_position_light_rail, public_transport/stop_position_monorail, public_transport/platform, highway/bus_stop, railway/tram_stop, amenity/shelter/public_transport, amenity/ticket_validator, amenity/vending_machine/public_transport_tickets], marker: true}
+    - {id: cat_built_transport_airport, name_en: Airport, name_de: Flughafen, presets: [aeroway/aerodrome, aeroway/terminal, aeroway/spaceport], main: aeroway/aerodrome}
+    - {id: cat_built_transport_airinfra, name_en: Airport facility, name_de: Flughafenanlage, presets: [aeroway/runway, aeroway/taxiway, aeroway/apron, aeroway/gate, aeroway/hangar, aeroway/helipad, aeroway/holding_position, aeroway/jet_bridge, aeroway/parking_position, aeroway/windsock]}
+    - {id: cat_built_transport_ferry, name_en: Ferry, name_de: Fähre, presets: [route/ferry, public_transport/station_ferry, public_transport/stop_position_ferry, public_transport/platform/ferry], main: route/ferry, marker: true}
+    - {id: cat_built_transport_port, name_en: Port, name_de: Hafen, presets: [waterway/dock, waterway/boatyard, waterway/fuel, waterway/water_point, waterway/sanitary_dump_station, waterway/access_point, waterway/milestone, seamark], marker: true}
+    - {id: cat_built_transport_cablecar, name_en: Cable car, name_de: Seilbahn, presets: [aerialway, public_transport/station_aerialway, public_transport/stop_position_aerialway, public_transport/platform/aerialway], marker: true}
+    - {id: cat_built_transport_taxi, name_en: Taxi, name_de: Taxi, presets: [amenity/taxi], marker: true}
+    - {id: cat_built_transport_other, name_en: Other transport, name_de: Sonstiger Verkehr, presets: [railway, aeroway]}
+  - id: cat_built_infrastructure
+    name_en: Infrastructure
+    name_de: Infrastruktur
+    subs:
+    - {id: cat_built_infrastructure_power, name_en: Power, name_de: Energie, presets: [power, power/cable], main: power}
+    - {id: cat_built_infrastructure_pipeline, name_en: Pipeline, name_de: Rohrleitung, presets: [man_made/pipeline, pipeline, marker], main: man_made/pipeline}
+    - {id: cat_built_infrastructure_water, name_en: Water supply, name_de: Wasserversorgung, presets: [man_made/water_works, man_made/water_tower, man_made/reservoir_covered, man_made/water_well, man_made/pumping_station, man_made/storage_tank/water, man_made/windpump]}
+    - {id: cat_built_infrastructure_wastewater, name_en: Wastewater, name_de: Abwasser, presets: [man_made/wastewater_plant, man_made/clarifier, natural/water/wastewater, man_made/manhole], main: man_made/wastewater_plant}
+    - {id: cat_built_infrastructure_telecom, name_en: Telecommunication, name_de: Telekommunikation, presets: [telecom, man_made/mast/communication, man_made/antenna, man_made/satellite_dish, man_made/street_cabinet, man_made/tower/communication], main: telecom}
+    - {id: cat_built_infrastructure_industry, name_en: Industrial plant, name_de: Industrieanlage, presets: [man_made/works, man_made/chimney, man_made/crane, man_made/gasometer, man_made/silo, man_made/storage_tank, man_made/flare, man_made/petroleum_well, man_made/goods_conveyor, man_made/bunker_silo, man_made/tower/cooling]}
+    - {id: cat_built_infrastructure_mining, name_en: Mining, name_de: Bergbau, presets: [man_made/adit, man_made/mineshaft, man_made/tailings_pond]}
+    - {id: cat_built_infrastructure_waste, name_en: Waste disposal, name_de: Abfallentsorgung, presets: [amenity/waste_transfer_station, amenity/waste_disposal], marker: true}
+    - {id: cat_built_infrastructure_monitoring, name_en: Monitoring, name_de: Messstation, presets: [man_made/monitoring_station, man_made/survey_point, man_made/surveillance], main: man_made/monitoring_station}
+    - {id: cat_built_infrastructure_pole, name_en: Utility pole, name_de: Mast, presets: [man_made/utility_pole, man_made/mast], main: man_made/utility_pole}
+  - id: cat_built_structures
+    name_en: Structures
+    name_de: Bauwerke
+    subs:
+    - {id: cat_built_structures_wall, name_en: Wall, name_de: Mauer, presets: [barrier/wall, barrier/retaining_wall, barrier/city_wall], main: barrier/wall}
+    - {id: cat_built_structures_fence, name_en: Fence, name_de: Zaun, presets: [barrier, barrier/fence, barrier/hedge, barrier/cable_barrier, barrier/guard_rail, barrier/jersey_barrier, barrier/ditch], main: barrier/fence}
+    - {id: cat_built_structures_gate, name_en: Gate, name_de: Tor, presets: [barrier/gate, barrier/lift_gate, barrier/swing_gate, barrier/kissing_gate, barrier/stile, barrier/turnstile, barrier/full-height_turnstile, barrier/hampshire_gate, barrier/wicket_gate, barrier/sally_port, barrier/bump_gate, barrier/cattle_grid, barrier/toll_booth, barrier/border_control], main: barrier/gate}
+    - {id: cat_built_structures_bollard, name_en: Bollard, name_de: Poller, presets: [barrier/block, barrier/bollard, barrier/bollard_line, barrier/chain, barrier/rope, barrier/log, barrier/spikes, barrier/bus_trap, barrier/cycle_barrier, barrier/motorcycle_barrier, barrier/height_restrictor, barrier/kerb], main: barrier/bollard}
+    - {id: cat_built_structures_tower, name_en: Tower, name_de: Turm, presets: [man_made/tower, man_made/flagpole], main: man_made/tower}
+    - {id: cat_built_structures_lighthouse, name_en: Lighthouse, name_de: Leuchtturm, presets: [man_made/lighthouse, man_made/beacon], main: man_made/lighthouse}
+    - {id: cat_built_structures_bridge, name_en: Bridge, name_de: Brücke, presets: [man_made/bridge, bridge], main: man_made/bridge}
+    - {id: cat_built_structures_tunnel, name_en: Tunnel, name_de: Tunnel, presets: [man_made/tunnel]}
+    - {id: cat_built_structures_pier, name_en: Pier, name_de: Anleger, presets: [man_made/pier, man_made/quay, man_made/breakwater, man_made/groyne], main: man_made/pier}
+    - {id: cat_built_structures_dyke, name_en: Dyke, name_de: Deich, presets: [man_made/dyke, man_made/embankment], main: man_made/dyke}
+    - {id: cat_built_structures_dam, name_en: Dam, name_de: Damm, presets: [waterway/dam, waterway/weir, waterway/lock_gate, waterway/canal/lock, waterway/fish_pass], main: waterway/dam}
+    - {id: cat_built_structures_observatory, name_en: Observatory, name_de: Sternwarte, presets: [man_made/observatory, man_made/telescope], main: man_made/observatory}
+    - {id: cat_built_structures_streetfurniture, name_en: Street furniture, name_de: Stadtmobiliar, presets: [amenity/bench, amenity/clock, amenity/lounger, amenity/waste_basket, amenity/waste/dog_excrement, amenity/grit_bin, highway/street_lamp, man_made/mast/lighting, advertising, man_made/video_wall, man_made/planter, man_made/compass_rose, man_made/insect_hotel, man_made/beehive, amenity/smoking_area, man_made/dovecote, man_made/milk_churn_stand, man_made/carpet_hanger, man_made/cairn, man_made/cutline, man_made/clearcut, amenity/trolley_bay, amenity/weighbridge, amenity/loading_dock, amenity/vacuum_cleaner]}
+    - {id: cat_built_structures_other, name_en: Other structure, name_de: Sonstiges Bauwerk, presets: [man_made]}
+- id: cat_poi
+  name_en: Points of interest
+  name_de: Sehenswertes und Einrichtungen
+  marker: true
+  subs:
+  - id: cat_poi_food
+    name_en: Food
+    name_de: Gastronomie
+    subs:
+    - {id: cat_poi_food_restaurant, name_en: Restaurant, name_de: Restaurant, presets: [amenity/restaurant]}
+    - {id: cat_poi_food_fastfood, name_en: Fast Food, name_de: Imbiss, presets: [amenity/fast_food]}
+    - {id: cat_poi_food_cafe, name_en: Café, name_de: Café, presets: [amenity/cafe]}
+    - {id: cat_poi_food_bar, name_en: Bar, name_de: Bar, presets: [amenity/bar, amenity/hookah_lounge], main: amenity/bar}
+    - {id: cat_poi_food_pub, name_en: Pub, name_de: Kneipe, presets: [amenity/pub]}
+    - {id: cat_poi_food_biergarten, name_en: Beer garden, name_de: Biergarten, presets: [amenity/biergarten]}
+    - {id: cat_poi_food_icecream, name_en: Ice cream, name_de: Eisdiele, presets: [amenity/ice_cream]}
+    - {id: cat_poi_food_foodcourt, name_en: Food court, name_de: Food-Court, presets: [amenity/food_court]}
+    - {id: cat_poi_food_bakery, name_en: Bakery, name_de: Bäckerei, presets: [shop/bakery, shop/pastry], main: shop/bakery}
+  - id: cat_poi_shopping
+    name_en: Shopping
+    name_de: Einkaufen
+    presets: [shop, shop/vacant]
+    main: shop
+    subs:
+    - {id: cat_poi_shopping_supermarket, name_en: Supermarket, name_de: Supermarkt, presets: [shop/supermarket]}
+    - {id: cat_poi_shopping_convenience, name_en: Convenience store, name_de: Kiosk, presets: [shop/convenience, shop/kiosk, shop/newsagent, shop/general, shop/country_store, shop/variety_store], main: shop/convenience}
+    - {id: cat_poi_shopping_groceries, name_en: Groceries, name_de: Lebensmittel, presets: [shop/butcher, shop/cheese, shop/chocolate, shop/coffee, shop/confectionery, shop/dairy, shop/deli, shop/farm, shop/frozen_food, shop/greengrocer, shop/health_food, shop/honey, shop/nuts, shop/pasta, shop/rice, shop/seafood, shop/spices, shop/tea, shop/water, shop/nutrition_supplements]}
+    - {id: cat_poi_shopping_beverages, name_en: Beverages, name_de: Getränke, presets: [shop/beverages, shop/alcohol, shop/wine, shop/brewing_supplies], main: shop/beverages}
+    - {id: cat_poi_shopping_clothes, name_en: Clothes, name_de: Bekleidung, presets: [shop/clothes, shop/shoes, shop/bag, shop/fashion_accessories, shop/leather, shop/wigs], main: shop/clothes}
+    - {id: cat_poi_shopping_jewelry, name_en: Jewellery, name_de: Schmuck, presets: [shop/jewelry, shop/watches, shop/gold_buyer], main: shop/jewelry}
+    - {id: cat_poi_shopping_drugstore, name_en: Drugstore, name_de: Drogerie, presets: [shop/chemist, shop/cosmetics, shop/perfumery, shop/herbalist], main: shop/chemist}
+    - {id: cat_poi_shopping_tobacco, name_en: Tobacco, name_de: Tabakwaren, presets: [shop/tobacco, shop/e-cigarette, shop/cannabis], main: shop/tobacco}
+    - {id: cat_poi_shopping_home, name_en: Home furnishing, name_de: Einrichtung, presets: [shop/furniture, shop/bed, shop/bathroom_furnishing, shop/kitchen, shop/houseware, shop/household_linen, shop/interior_decoration, shop/curtain, shop/window_blind, shop/carpet, shop/flooring, shop/lighting, shop/doors, shop/fireplace, shop/tiles, shop/candles, shop/frame]}
+    - {id: cat_poi_shopping_diy, name_en: DIY and garden, name_de: Baumarkt, presets: [shop/doityourself, shop/hardware, shop/paint, shop/trade, shop/groundskeeping, shop/garden_centre, shop/agrarian]}
+    - {id: cat_poi_shopping_florist, name_en: Florist, name_de: Blumen, presets: [shop/florist]}
+    - {id: cat_poi_shopping_electronics, name_en: Electronics, name_de: Elektronik, presets: [shop/electronics, shop/computer, shop/mobile_phone, shop/mobile_phone_accessories, shop/hifi, shop/camera, shop/appliance, shop/electrical, shop/radiotechnics, shop/telecommunication, shop/video_games, shop/printer_ink, shop/vacuum_cleaner, shop/video], main: shop/electronics}
+    - {id: cat_poi_shopping_books, name_en: Books, name_de: Bücher, presets: [shop/books, shop/stationery], main: shop/books}
+    - {id: cat_poi_shopping_hobby, name_en: Hobby, name_de: Hobby, presets: [shop/art, shop/craft, shop/fabric, shop/sewing, shop/model, shop/games, shop/toys, shop/music, shop/musical_instrument, shop/collector, shop/antiques, shop/anime, shop/trophy, shop/party, shop/pyrotechnics, shop/photo]}
+    - {id: cat_poi_shopping_sports, name_en: Sports shop, name_de: Sportgeschäft, presets: [shop/sports, shop/outdoor, shop/bicycle, shop/scuba_diving, shop/water_sports, shop/fishing, shop/hunting, shop/weapons, shop/military_surplus, shop/swimming_pool], main: shop/sports}
+    - {id: cat_poi_shopping_vehicles, name_en: Vehicles, name_de: Fahrzeuge, presets: [shop/car, shop/car_parts, shop/motorcycle, shop/caravan, shop/boat, shop/tyres]}
+    - {id: cat_poi_shopping_mall, name_en: Shopping centre, name_de: Einkaufszentrum, presets: [shop/mall, shop/department_store, shop/wholesale, shop/catalogue, shop/outpost, amenity/marketplace], main: shop/mall}
+    - {id: cat_poi_shopping_secondhand, name_en: Second hand, name_de: Gebrauchtwaren, presets: [shop/second_hand, shop/charity], main: shop/second_hand}
+    - {id: cat_poi_shopping_pet, name_en: Pet shop, name_de: Zoohandlung, presets: [shop/pet]}
+    - {id: cat_poi_shopping_gift, name_en: Gifts, name_de: Geschenke, presets: [shop/gift, shop/erotic, shop/esoteric, shop/religion], main: shop/gift}
+    - {id: cat_poi_shopping_vending, name_en: Vending machine, name_de: Automat, presets: [amenity/vending_machine]}
+  - id: cat_poi_accommodation
+    name_en: Accommodation
+    name_de: Unterkunft
+    subs:
+    - {id: cat_poi_accommodation_hotel, name_en: Hotel, name_de: Hotel, presets: [tourism/hotel, tourism/motel, amenity/love_hotel], main: tourism/hotel}
+    - {id: cat_poi_accommodation_guesthouse, name_en: Guest house, name_de: Pension, presets: [tourism/guest_house, tourism/apartment, tourism/chalet, leisure/resort], main: tourism/guest_house}
+    - {id: cat_poi_accommodation_hostel, name_en: Hostel, name_de: Herberge, presets: [tourism/hostel]}
+    - {id: cat_poi_accommodation_hut, name_en: Mountain hut, name_de: Hütte, presets: [tourism/alpine_hut, tourism/wilderness_hut]}
+  - id: cat_poi_health
+    name_en: Health
+    name_de: Gesundheit
+    presets: [healthcare]
+    subs:
+    - {id: cat_poi_health_hospital, name_en: Hospital, name_de: Krankenhaus, presets: [amenity/hospital, healthcare/birthing_center, healthcare/hospice], main: amenity/hospital}
+    - {id: cat_poi_health_clinic, name_en: Clinic, name_de: Klinik, presets: [amenity/clinic, healthcare/laboratory, healthcare/sample_collection, healthcare/blood_donation, healthcare/rehabilitation], main: amenity/clinic}
+    - {id: cat_poi_health_doctor, name_en: Doctor, name_de: Arzt, presets: [amenity/doctors]}
+    - {id: cat_poi_health_dentist, name_en: Dentist, name_de: Zahnarzt, presets: [amenity/dentist, healthcare/dentist], main: amenity/dentist}
+    - {id: cat_poi_health_pharmacy, name_en: Pharmacy, name_de: Apotheke, presets: [amenity/pharmacy]}
+    - {id: cat_poi_health_therapy, name_en: Therapy, name_de: Therapie, presets: [healthcare/physiotherapist, healthcare/occupational_therapist, healthcare/psychotherapist, healthcare/speech_therapist, healthcare/counselling, healthcare/podiatrist, healthcare/audiologist, healthcare/optometrist, healthcare/midwife, healthcare/alternative]}
+    - {id: cat_poi_health_medicalsupply, name_en: Medical supplies, name_de: Sanitätshaus, presets: [shop/medical_supply, shop/hearing_aids, shop/optician], main: shop/medical_supply}
+    - {id: cat_poi_health_care, name_en: Care, name_de: Pflege, presets: [amenity/social_facility]}
+    - {id: cat_poi_health_veterinary, name_en: Veterinary, name_de: Tierarzt, presets: [amenity/veterinary, amenity/veterinary_pharmacy], main: amenity/veterinary}
+  - id: cat_poi_education
+    name_en: Education
+    name_de: Bildung
+    presets: [education]
+    subs:
+    - {id: cat_poi_education_kindergarten, name_en: Kindergarten, name_de: Kindergarten, presets: [education/kindergarten, amenity/childcare], main: education/kindergarten}
+    - {id: cat_poi_education_school, name_en: School, name_de: Schule, presets: [education/school, education/prep_school, leisure/schoolyard], main: education/school}
+    - {id: cat_poi_education_university, name_en: University, name_de: Hochschule, presets: [education/university, education/college], main: education/university}
+    - {id: cat_poi_education_otherschool, name_en: Other school, name_de: Sonstige Schule, presets: [education/driving_school, education/language_school, education/music_school, education/dancing_school, amenity/driver_training]}
+    - {id: cat_poi_education_research, name_en: Research, name_de: Forschung, presets: [amenity/research_institute, office/research], main: amenity/research_institute}
+  - id: cat_poi_services
+    name_en: Services
+    name_de: Dienstleistungen
+    subs:
+    - {id: cat_poi_services_bank, name_en: Bank, name_de: Bank, presets: [amenity/bank, amenity/atm, amenity/bureau_de_change, amenity/money_transfer, amenity/payment_centre, amenity/payment_terminal, shop/money_lender, shop/pawnbroker], main: amenity/bank}
+    - {id: cat_poi_services_post, name_en: Post, name_de: Post, presets: [amenity/post_office, amenity/post_box, amenity/post_depot, amenity/parcel_locker, amenity/letter_box, man_made/street_cabinet/postal_service], main: amenity/post_office}
+    - {id: cat_poi_services_beauty, name_en: Beauty, name_de: Körperpflege, presets: [shop/hairdresser, shop/beauty, shop/hairdresser_supply, shop/tattoo, shop/piercing, shop/massage], main: shop/beauty}
+    - {id: cat_poi_services_laundry, name_en: Laundry, name_de: Wäscherei, presets: [shop/laundry, shop/dry_cleaning, amenity/lavoir], main: shop/laundry}
+    - {id: cat_poi_services_repair, name_en: Repair, name_de: Reparatur, presets: [shop/repair, shop/car_repair, shop/motorcycle_repair, shop/tailor, shop/locksmith, amenity/vehicle_inspection, amenity/car_wash], main: shop/repair}
+    - {id: cat_poi_services_craft, name_en: Craft, name_de: Handwerk, presets: [craft]}
+    - {id: cat_poi_services_office, name_en: Office, name_de: Büro, presets: [office]}
+    - {id: cat_poi_services_rental, name_en: Rental, name_de: Verleih, presets: [shop/rental, shop/tool_hire, shop/storage_rental, amenity/luggage_locker], main: shop/rental}
+    - {id: cat_poi_services_travel, name_en: Travel agency, name_de: Reisebüro, presets: [shop/travel_agency, shop/ticket], main: shop/travel_agency}
+    - {id: cat_poi_services_funeral, name_en: Funeral, name_de: Bestattung, presets: [shop/funeral_directors, amenity/funeral_hall, amenity/crematorium, amenity/mortuary], main: shop/funeral_directors}
+    - {id: cat_poi_services_pet, name_en: Pet services, name_de: Tierservice, presets: [shop/pet_grooming, amenity/animal_boarding, amenity/animal_breeding, amenity/animal_shelter], main: shop/pet_grooming}
+    - {id: cat_poi_services_copyshop, name_en: Copy shop, name_de: Copyshop, presets: [shop/copyshop, amenity/photo_booth], main: shop/copyshop}
+    - {id: cat_poi_services_studio, name_en: Studio, name_de: Studio, presets: [amenity/studio]}
+    - {id: cat_poi_services_lottery, name_en: Lottery, name_de: Lotto, presets: [shop/lottery, shop/bookmaker, shop/psychic], main: shop/lottery}
+  - id: cat_poi_public
+    name_en: Public facilities
+    name_de: Öffentliche Einrichtungen
+    subs:
+    - {id: cat_poi_public_townhall, name_en: Town hall, name_de: Rathaus, presets: [amenity/townhall, office/government], main: amenity/townhall}
+    - {id: cat_poi_public_embassy, name_en: Embassy, name_de: Botschaft, presets: [office/diplomatic]}
+    - {id: cat_poi_public_court, name_en: Court, name_de: Gericht, presets: [amenity/courthouse]}
+    - {id: cat_poi_public_police, name_en: Police, name_de: Polizei, presets: [amenity/police, police/checkpoint], main: amenity/police}
+    - {id: cat_poi_public_firestation, name_en: Fire station, name_de: Feuerwehr, presets: [amenity/fire_station]}
+    - {id: cat_poi_public_emergency, name_en: Emergency, name_de: Notfall, presets: [emergency]}
+    - {id: cat_poi_public_prison, name_en: Prison, name_de: Gefängnis, presets: [amenity/prison]}
+    - {id: cat_poi_public_toilets, name_en: Toilets, name_de: Toiletten, presets: [amenity/toilets, amenity/shower, amenity/dressing_room, amenity/sanitary_dump_station, amenity/dog_toilet], main: amenity/toilets}
+    - {id: cat_poi_public_drinkingwater, name_en: Drinking water, name_de: Trinkwasser, presets: [amenity/drinking_water, amenity/water_point, amenity/watering_place, man_made/water_tap], main: amenity/drinking_water}
+    - {id: cat_poi_public_recycling, name_en: Recycling, name_de: Wertstoffe, presets: [amenity/recycling, amenity/recycling_container, amenity/recycling_centre], main: amenity/recycling}
+    - {id: cat_poi_public_shelter, name_en: Shelter, name_de: Schutzhütte, presets: [amenity/shelter]}
+    - {id: cat_poi_public_social, name_en: Social facility, name_de: Soziale Einrichtung, presets: [amenity/social_centre, amenity/refugee_site, amenity/give_box, amenity/kitchen], main: amenity/social_centre}
+    - {id: cat_poi_public_polling, name_en: Polling station, name_de: Wahllokal, presets: [amenity/polling_station, polling_station], main: amenity/polling_station}
+    - {id: cat_poi_public_telephone, name_en: Telephone, name_de: Telefon, presets: [amenity/telephone, internet_access, amenity/device_charging_station], main: amenity/telephone}
+  - id: cat_poi_culture
+    name_en: Culture
+    name_de: Kultur
+    subs:
+    - {id: cat_poi_culture_museum, name_en: Museum, name_de: Museum, presets: [tourism/museum]}
+    - {id: cat_poi_culture_gallery, name_en: Gallery, name_de: Galerie, presets: [tourism/gallery, amenity/arts_centre], main: tourism/gallery}
+    - {id: cat_poi_culture_theatre, name_en: Theatre, name_de: Theater, presets: [amenity/theatre, amenity/events_venue, amenity/conference_centre, amenity/exhibition_centre], main: amenity/theatre}
+    - {id: cat_poi_culture_cinema, name_en: Cinema, name_de: Kino, presets: [amenity/cinema]}
+    - {id: cat_poi_culture_library, name_en: Library, name_de: Bibliothek, presets: [amenity/library, amenity/library_dropoff, amenity/toy_library, amenity/public_bookcase], main: amenity/library}
+    - {id: cat_poi_culture_nightclub, name_en: Nightclub, name_de: Nachtclub, presets: [amenity/nightclub, amenity/stripclub, amenity/swingerclub, amenity/karaoke_box], main: amenity/nightclub}
+    - {id: cat_poi_culture_casino, name_en: Casino, name_de: Spielbank, presets: [amenity/casino, amenity/gambling, leisure/adult_gaming_centre, leisure/amusement_arcade], main: amenity/casino}
+    - {id: cat_poi_culture_community, name_en: Community centre, name_de: Gemeinschaftszentrum, presets: [amenity/community_centre, club, leisure/hackerspace], main: amenity/community_centre}
+    - {id: cat_poi_culture_planetarium, name_en: Planetarium, name_de: Planetarium, presets: [amenity/planetarium]}
+    - {id: cat_poi_culture_internetcafe, name_en: Internet café, name_de: Internetcafé, presets: [amenity/internet_cafe]}
+  - id: cat_poi_sights
+    name_en: Sights
+    name_de: Sehenswürdigkeiten
+    subs:
+    - {id: cat_poi_sights_attraction, name_en: Attraction, name_de: Sehenswürdigkeit, presets: [tourism/attraction]}
+    - {id: cat_poi_sights_monument, name_en: Monument, name_de: Denkmal, presets: [historic/monument, historic/memorial, man_made/obelisk, man_made/cross], main: historic/monument}
+    - {id: cat_poi_sights_castle, name_en: Castle, name_de: Burg, presets: [historic/castle, historic/fort, historic/manor, historic/city_gate], main: historic/castle}
+    - {id: cat_poi_sights_ruins, name_en: Ruins, name_de: Ruine, presets: [historic/ruins, historic/archaeological_site, historic/tomb], main: historic/ruins}
+    - {id: cat_poi_sights_historic, name_en: Historic object, name_de: Historisches Objekt, presets: [historic, historic/building, historic/aircraft, historic/cannon, historic/boundary_stone, historic/millstone, historic/pillory, historic/wreck, historic/wayside_cross, historic/wayside_shrine], main: historic}
+    - {id: cat_poi_sights_artwork, name_en: Artwork, name_de: Kunstwerk, presets: [tourism/artwork, man_made/geoglyph, man_made/geoglyph_multilinestring], main: tourism/artwork}
+    - {id: cat_poi_sights_viewpoint, name_en: Viewpoint, name_de: Aussichtspunkt, presets: [tourism/viewpoint, man_made/tower/observation], main: tourism/viewpoint}
+    - {id: cat_poi_sights_information, name_en: Tourist information, name_de: Touristeninformation, presets: [tourism/information, amenity/ranger_station], main: tourism/information}
+    - {id: cat_poi_sights_zoo, name_en: Zoo, name_de: Zoo, presets: [tourism/zoo, tourism/aquarium], main: tourism/zoo}
+    - {id: cat_poi_sights_themepark, name_en: Theme park, name_de: Freizeitpark, presets: [tourism/theme_park, attraction, roller_coaster], main: tourism/theme_park}
+    - {id: cat_poi_sights_fountain, name_en: Fountain, name_de: Brunnen, presets: [amenity/fountain]}
+    - {id: cat_poi_sights_mill, name_en: Mill, name_de: Mühle, presets: [man_made/windmill, man_made/watermill]}
+    - {id: cat_poi_sights_ceremonialgate, name_en: Ceremonial gate, name_de: Zeremonielles Tor, presets: [man_made/ceremonial_gate]}
+  - id: cat_poi_leisure
+    name_en: Leisure
+    name_de: Freizeit
+    subs:
+    - {id: cat_poi_leisure_playground, name_en: Playground, name_de: Spielplatz, presets: [leisure/playground, playground], main: leisure/playground}
+    - {id: cat_poi_leisure_sportscentre, name_en: Sports centre, name_de: Sportzentrum, presets: [leisure/sports_centre, leisure/sports_hall, leisure/fitness_centre, leisure/fitness_station, amenity/dojo, leisure/dance], main: leisure/sports_centre}
+    - {id: cat_poi_leisure_pitch, name_en: Sports ground, name_de: Sportplatz, presets: [leisure/pitch, leisure/track, leisure/stadium, leisure/bleachers], main: leisure/pitch}
+    - {id: cat_poi_leisure_swimming, name_en: Swimming, name_de: Schwimmen, presets: [leisure/swimming_pool, leisure/water_park, leisure/swimming_area, leisure/bathing_place, leisure/beach_resort, amenity/public_bath, leisure/sauna, leisure/hot_tub, amenity/kneipp_water_cure], main: leisure/swimming_pool}
+    - {id: cat_poi_leisure_golf, name_en: Golf, name_de: Golf, presets: [leisure/golf_course, golf, leisure/miniature_golf, leisure/disc_golf_course, disc_golf], main: leisure/golf_course}
+    - {id: cat_poi_leisure_marina, name_en: Marina, name_de: Marina, presets: [leisure/marina, leisure/marina_no_facilities, leisure/slipway, leisure/slipway_drivable, amenity/boat_rental, amenity/boat_storage, amenity/dive_centre], main: leisure/marina}
+    - {id: cat_poi_leisure_camping, name_en: Camping, name_de: Camping, presets: [tourism/camp_site, tourism/caravan_site, tourism/camp_pitch, leisure/summer_camp]}
+    - {id: cat_poi_leisure_picnic, name_en: Picnic site, name_de: Picknickplatz, presets: [tourism/picnic_site, leisure/picnic_table, leisure/firepit, amenity/bbq, amenity/baking_oven, leisure/outdoor_seating, leisure/bandstand], main: tourism/picnic_site}
+    - {id: cat_poi_leisure_wintersports, name_en: Winter sports, name_de: Wintersport, presets: [piste, landuse/winter_sports, man_made/ski_jump], main: landuse/winter_sports}
+    - {id: cat_poi_leisure_motorsport, name_en: Motorsport, name_de: Motorsport, presets: [highway/raceway]}
+    - {id: cat_poi_leisure_equestrian, name_en: Horse riding, name_de: Reiten, presets: [leisure/horse_riding, tourism/trail_riding_station, animal/horse_walker]}
+    - {id: cat_poi_leisure_dogpark, name_en: Dog park, name_de: Hundeauslauf, presets: [leisure/dog_park]}
+    - {id: cat_poi_leisure_hunting, name_en: Hunting and fishing, name_de: Jagd und Angeln, presets: [leisure/fishing, amenity/hunting_stand]}
+    - {id: cat_poi_leisure_wildlife, name_en: Wildlife watching, name_de: Naturbeobachtung, presets: [leisure/bird_hide, amenity/binoculars]}
+    - {id: cat_poi_leisure_indoor, name_en: Indoor activities, name_de: Indoor-Aktivitäten, presets: [leisure/indoor_play, leisure/trampoline_park, leisure/bowling_alley, leisure/escape_game, leisure/ice_rink]}
+    - {id: cat_poi_leisure_climbing, name_en: Climbing, name_de: Klettern, presets: [climbing]}
+    - {id: cat_poi_leisure_trafficpark, name_en: Traffic park, name_de: Verkehrsübungsplatz, presets: [amenity/traffic_park]}
+    - {id: cat_poi_leisure_trailhead, name_en: Trailhead, name_de: Wanderparkplatz, presets: [highway/trailhead]}
+  - id: cat_poi_religion
+    name_en: Religion
+    name_de: Religion
+    subs:
+    - {id: cat_poi_religion_worship, name_en: Place of worship, name_de: Gotteshaus, presets: [amenity/place_of_worship]}
+    - {id: cat_poi_religion_monastery, name_en: Monastery, name_de: Kloster, presets: [amenity/monastery]}
+    - {id: cat_poi_religion_cemetery, name_en: Cemetery, name_de: Friedhof, presets: [landuse/cemetery, amenity/grave_yard, cemetery], main: landuse/cemetery}
+  - {id: cat_poi_other, name_en: Other, name_de: Sonstiges, presets: [amenity, leisure, tourism]}

@@ -1,0 +1,47 @@
+# Caddy for the dev stack: the production Caddyfile's filtering and proxying
+# without the certificate, so the log filter and the forwarded headers can be
+# tried before they reach a server. Opt-in:
+#
+#   docker compose -f docker-compose.local.yml --profile caddy up -d
+#
+# then http://localhost:8004 is the app behind Caddy (8003 stays the app
+# itself). Keep the site block in step with config.example/Caddyfile.
+{
+	auto_https off
+	admin off
+	# Caddy's *error* log for a request -- a timeout, a refused dial -- is not
+	# the site's access log below, and without this carries the raw URI,
+	# `?key=` and all. Found by sending a keyed request to a starting app.
+	log default {
+		output stdout
+		format filter {
+			request>uri query {
+				delete key
+			}
+		}
+	}
+}
+
+:80 {
+	log {
+		output stdout
+		format filter {
+			request>uri query {
+				delete key
+			}
+		}
+	}
+
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy app:8000 {
+		header_up X-Forwarded-For {remote_host}
+
+		transport http {
+			dial_timeout 10s
+			read_timeout 120s
+		}
+	}
+}

@@ -1,0 +1,8 @@
+# The test stack's deployment options, mounted at /config by docker-compose.test.yml.
+# Only what the suite needs to differ from the defaults: the dev stack's database, reached
+# through its published port, and the imported `li` area. Every grid, theme and detail
+# is left at its default, so a dev config serving fewer does not narrow what is tested.
+serve_area: li
+db:
+  host: host.docker.internal
+  port: 7778

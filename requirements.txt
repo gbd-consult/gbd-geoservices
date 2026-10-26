@@ -1,0 +1,59 @@
+# The container's Python dependencies, each with the reason it is here.
+
+# --- importer ---
+# pyosmium: the whole parse. with_locations() resolves node coordinates and
+# with_areas() assembles multipolygons, both in C++; the Python side only ever
+# sees finished objects.
+osmium
+# shapely: geometry in the importer -- parsing osmium's WKB, the vectorised
+# 4326 -> 3857 projection (shapely.transform over one coordinate array is 8x
+# the per-geometry call), areas, lengths, label anchors. Brings numpy, which is
+# what makes the vectorised projection possible without pyproj.
+shapely
+# psycopg 3, not 2: `cursor.copy()` is the COPY interface the importer writes
+# every table through. -binary so the image needs no libpq-dev/gcc layer.
+psycopg[binary]
+# pyshp: the osmdata water polygons ship as split shapefiles and nothing else
+# in the stack reads one. Pure Python, no GDAL -- which is the reason it is
+# here rather than fiona or ogr2ogr.
+pyshp
+PyYAML
+
+# --- renderer ---
+# mapnik 4 installs from PyPI on python:3.12-bookworm with no apt package
+# and no build step: the wheel brings its own libmapnik, the postgis plugin
+# and 22 DejaVu font faces (the styles name Noto Sans, from the Dockerfile).
+mapnik
+
+# --- web ---
+# fastapi: the routes are thin translations onto renderer/search calls, so what
+# is actually used here is dependency injection (one key check, declared once
+# per router) and the request/response models. Starlette comes with it and
+# carries the static files, templates and CORS.
+fastapi
+# uvicorn[standard]: the ASGI server. The extras bring httptools and uvloop,
+# which matter because a tile request's own work is a few milliseconds of
+# cache lookup and the rest is protocol.
+uvicorn[standard]
+# jinja2: the landing page and the devtools viewer. Already a transitive
+# dependency of starlette's templating, named here because it is used directly.
+jinja2
+#
+# pmtiles arrives with the vector-tile module.
+
+# --- dev/test ---
+pytest
+# httpx2: what fastapi.testclient drives the app with. A route test runs the
+# real ASGI app in-process -- same dependency injection, same middleware, same
+# status codes -- without a server or a port. httpx (1.x) still works and
+# starlette deprecation-warns on every import of it.
+httpx2
+# Pinned: ruff enables new rules in minor releases, so an unpinned one turns an
+# unrelated rebuild into a lint failure on code nobody touched.
+ruff==0.15.22
+
+# --- profiling ---
+# psycopg2-binary: `app/tools/profile_render.py` is standalone, with no
+# app.* imports, and imports psycopg2 -- so the *image* has to supply it.
+# The application itself uses psycopg 3 and nothing else imports this.
+psycopg2-binary

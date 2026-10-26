@@ -1,0 +1,149 @@
+# Details: how much a theme draws -- a theme is a palette (palettes.yaml) times a detail. Named
+# details rather than levels so they are not taken for zoom levels. Each lists all it draws, as
+# class globs: a class listed here is drawn by every layer that lists it -- or, written
+# `{glob: [modes]}`, only by the layers of those modes.
+#
+# `min` is the least a map needs: water, settlement areas, the connected road network down to the
+# residential streets with their names, place names down to villages, national and state borders.
+# No buildings, landcover, rail or POIs. `nav` holds only what navigation needs: every street,
+# service roads and ferries with their names and refs, the buildings with their house numbers,
+# rail, water and settlement areas for orientation, place names down to the hamlet -- no landcover,
+# no POIs. `std` is the full map with the important icons, `max` draws everything, contours
+# included. `topographic` is `std` with the contour lines. `vegetation` puts the landcover first:
+# every vegetation unit, water and protected areas, with only the main roads, rail, borders and
+# place names down to villages for orientation -- no buildings, no POIs.
+#
+# Icons are not selected by class: `symbols.icons` maps an importance (model/importance.yaml,
+# 1-100) to the zoom icons of at least that importance start at -- an icon starts at the zoom of
+# the highest entry its importance reaches, and below the lowest entry it is never drawn.
+# `symbols.labels` does the same for the icon's label, which is drawn with its icon or not at
+# all (classes.yaml says what it looks like), so no label may start before its icon. No
+# `symbols` means no icons. A more important icon or label may never start later than a less
+# important one.
+min:
+  classes:
+    - cls_ocean
+    - cls_coastline
+    - cls_water_lake
+    - cls_waterway_river
+    - cls_waterway_canal
+    - cls_landuse_residential: [fill]
+    - cls_road_motorway*
+    - cls_road_trunk*
+    - cls_road_primary*
+    - cls_road_secondary*
+    - cls_road_tertiary*
+    - cls_road_minor*
+    - cls_boundary_admin_2
+    - cls_boundary_admin_4
+    - cls_place_city
+    - cls_place_town
+    - cls_place_village
+  symbols: {}
+nav:
+  classes:
+    - cls_ocean
+    - cls_coastline
+    - cls_ferry
+    - cls_water_lake
+    - cls_water_dock
+    - cls_waterway_river
+    - cls_waterway_canal
+    - cls_landuse_residential: [fill]
+    - cls_landuse_industrial: [fill]
+    - cls_landuse_commercial: [fill]
+    - cls_landuse_retail: [fill]
+    - cls_road_motorway*
+    - cls_road_trunk*
+    - cls_road_primary*
+    - cls_road_secondary*
+    - cls_road_tertiary*
+    - cls_road_minor*
+    - cls_road_service*
+    - cls_rail_rail*
+    - cls_building: [fill, number]
+    - cls_boundary_admin_2
+    - cls_boundary_admin_4
+    - cls_place_city
+    - cls_place_town
+    - cls_place_village
+    - cls_place_suburb
+    - cls_place_quarter
+    - cls_place_hamlet
+  symbols: {}
+std:
+  classes:
+    - cls_ocean
+    - cls_coastline
+    - cls_ferry
+    - cls_landcover_*
+    - cls_landuse_*
+    - cls_protected_area
+    - cls_water_*
+    - cls_waterway_*
+    - cls_road_*
+    - cls_rail_*
+    - cls_transit_*
+    - cls_aeroway_*
+    - cls_building
+    - cls_boundary_admin_2
+    - cls_boundary_admin_4
+    - cls_boundary_admin_6
+    - cls_boundary_admin_8
+    - cls_place_*
+    - cls_public_transport_path
+  symbols:
+    icons: {100: 17, 80: 17, 60: 18}
+    labels: {60: 18}
+topographic:
+  classes:
+    - cls_ocean
+    - cls_coastline
+    - cls_ferry
+    - cls_landcover_*
+    - cls_landuse_*
+    - cls_protected_area
+    - cls_water_*
+    - cls_waterway_*
+    - cls_contour*
+    - cls_road_*
+    - cls_rail_*
+    - cls_transit_*
+    - cls_aeroway_*
+    - cls_building
+    - cls_boundary_admin_2
+    - cls_boundary_admin_4
+    - cls_boundary_admin_6
+    - cls_boundary_admin_8
+    - cls_place_*
+    - cls_public_transport_path
+  symbols:
+    icons: {100: 17, 80: 17, 60: 18}
+    labels: {60: 18}
+vegetation:
+  classes:
+    - cls_ocean
+    - cls_coastline
+    - cls_landcover_*
+    - cls_landuse_*: [fill]
+    - cls_protected_area
+    - cls_water_*
+    - cls_waterway_*
+    - cls_road_motorway*
+    - cls_road_trunk*
+    - cls_road_primary*
+    - cls_road_secondary*
+    - cls_road_tertiary*
+    - cls_rail_rail*
+    - cls_boundary_admin_2
+    - cls_boundary_admin_4
+    - cls_place_city
+    - cls_place_town
+    - cls_place_village
+  symbols: {}
+max:
+  classes:
+    - '*'
+  symbols:
+    icons: {100: 15, 80: 16, 60: 17, 40: 18, 20: 18}
+    labels: {20: 18}

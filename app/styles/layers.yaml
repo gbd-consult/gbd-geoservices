@@ -1,0 +1,42 @@
+# Draw order, bottom to top. One entry = the classes drawn in one mode. The tables follow from
+# the mode and from which tables hold the classes (import_meta.table_classes), so one entry
+# can become several Mapnik layers; the name is optional and
+# only appears in the profiler's per-layer table. The map background is the `clr_land` token of the
+# palette (Mapnik background-color); everything not covered by a polygon shows it, including sea
+# outside the imported water polygons.
+- {name: ocean,            mode: fill,   classes: [cls_ocean]}
+- {name: landcover,        mode: fill,   classes: [cls_landcover_*]}
+- {name: landuse,          mode: fill,   classes: [cls_landuse_*, cls_aeroway_aerodrome, cls_aeroway_apron, cls_aeroway_helipad]}
+- {name: protected,        mode: fill,   classes: [cls_protected_area]}
+- {name: water,            mode: fill,   classes: [cls_water_*]}
+# Contours: one layer per level, so each reads only its own lines through its own partial index --
+# a z9 tile must not scan the 50 m lines to draw the 1000 m ones. Finest first, coarsest on top.
+- {name: contours_50,      mode: line,   classes: [cls_contour_50]}
+- {name: contours_100,     mode: line,   classes: [cls_contour_100]}
+- {name: contours_250,     mode: line,   classes: [cls_contour_250]}
+- {name: contours_500,     mode: line,   classes: [cls_contour_500]}
+- {name: contours_1000,    mode: line,   classes: [cls_contour_1000]}
+- {name: waterways,        mode: line,   classes: [cls_waterway_*, cls_coastline, cls_ferry]}
+- {name: aeroways,         mode: line,   classes: [cls_aeroway_runway, cls_aeroway_taxiway]}
+- {name: buildings,        mode: fill,   classes: [cls_building]}
+- {name: tunnels_casing,   mode: casing, classes: ['*_tunnel']}
+- {name: tunnels_fill,     mode: fill,   classes: ['*_tunnel']}
+- {name: roads_casing,     mode: casing, classes: [cls_road_motorway, cls_road_trunk, cls_road_primary, cls_road_secondary, cls_road_tertiary, cls_road_minor, cls_road_service]}
+- {name: roads_fill,       mode: fill,   classes: [cls_road_*, cls_public_transport_path]}
+- {name: rail,             mode: fill,   classes: [cls_rail_*, cls_transit_*]}
+- {name: bridges_casing,   mode: casing, classes: ['*_bridge']}
+- {name: bridges_fill,     mode: fill,   classes: ['*_bridge']}
+- {name: boundaries,       mode: line,   classes: [cls_boundary_admin_*]}
+- {name: labels_area,      mode: label,  classes: [cls_landcover_wood*, cls_landuse_*, cls_protected_area, cls_water_lake, cls_aeroway_aerodrome, cls_building]}
+- {name: numbers,          mode: number, classes: [cls_building]}   # after the names: a name keeps its spot
+- {name: labels_line,      mode: label,  classes: [cls_waterway_*, cls_road_*, cls_rail_rail]}
+- {name: shields,          mode: shield, classes: [cls_road_motorway, cls_road_trunk, cls_road_primary, cls_road_secondary]}
+- {name: places,           mode: label,  classes: [cls_place_*]}
+- {name: pois,             mode: marker, classes: ['*']}   # every class with a marker entry in classes.yaml
+- {name: labels_poi,       mode: label,  classes: [cls_public_transport_path]}
+# The heights last, coarsest first: every other text has taken its place before them.
+- {name: heights_1000,     mode: label,  classes: [cls_contour_1000]}
+- {name: heights_500,      mode: label,  classes: [cls_contour_500]}
+- {name: heights_250,      mode: label,  classes: [cls_contour_250]}
+- {name: heights_100,      mode: label,  classes: [cls_contour_100]}
+- {name: heights_50,       mode: label,  classes: [cls_contour_50]}

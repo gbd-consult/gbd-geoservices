@@ -1,0 +1,158 @@
+# Hand-written rules. The importer reads these before model/generated/classifier.yaml, and a
+# generated rule with the same match is dropped (tools/gen_classifier.py), so a rule here wins.
+# Most specific first: a road with bridge=* must hit its _bridge class before the plain road rule.
+# A term without `=` restricts the rule to one geometry: point, line or polygon.
+# Categories may be any node of model/generated/categories.yaml; the generator refuses an unknown one.
+
+# --- structures: bridge and tunnel variants of every drawn road and rail class
+- {match: highway=motorway + bridge=* + line, category: cat_built_roads_motorway, class: cls_road_motorway_bridge}
+- {match: highway=motorway + tunnel=* + line, category: cat_built_roads_motorway, class: cls_road_motorway_tunnel}
+- {match: highway=motorway_link + bridge=* + line, category: cat_built_roads_motorway_motorwaylink, class: cls_road_motorway_bridge}
+- {match: highway=motorway_link + tunnel=* + line, category: cat_built_roads_motorway_motorwaylink, class: cls_road_motorway_tunnel}
+- {match: highway=trunk + bridge=* + line, category: cat_built_roads_trunk, class: cls_road_trunk_bridge}
+- {match: highway=trunk + tunnel=* + line, category: cat_built_roads_trunk, class: cls_road_trunk_tunnel}
+- {match: highway=trunk_link + bridge=* + line, category: cat_built_roads_trunk_trunklink, class: cls_road_trunk_bridge}
+- {match: highway=trunk_link + tunnel=* + line, category: cat_built_roads_trunk_trunklink, class: cls_road_trunk_tunnel}
+- {match: highway=primary + bridge=* + line, category: cat_built_roads_primary, class: cls_road_primary_bridge}
+- {match: highway=primary + tunnel=* + line, category: cat_built_roads_primary, class: cls_road_primary_tunnel}
+- {match: highway=primary_link + bridge=* + line, category: cat_built_roads_primary_primarylink, class: cls_road_primary_bridge}
+- {match: highway=primary_link + tunnel=* + line, category: cat_built_roads_primary_primarylink, class: cls_road_primary_tunnel}
+- {match: highway=secondary + bridge=* + line, category: cat_built_roads_secondary, class: cls_road_secondary_bridge}
+- {match: highway=secondary + tunnel=* + line, category: cat_built_roads_secondary, class: cls_road_secondary_tunnel}
+- {match: highway=secondary_link + bridge=* + line, category: cat_built_roads_secondary_secondarylink, class: cls_road_secondary_bridge}
+- {match: highway=secondary_link + tunnel=* + line, category: cat_built_roads_secondary_secondarylink, class: cls_road_secondary_tunnel}
+- {match: highway=tertiary + bridge=* + line, category: cat_built_roads_tertiary, class: cls_road_tertiary_bridge}
+- {match: highway=tertiary + tunnel=* + line, category: cat_built_roads_tertiary, class: cls_road_tertiary_tunnel}
+- {match: highway=tertiary_link + bridge=* + line, category: cat_built_roads_tertiary_tertiarylink, class: cls_road_tertiary_bridge}
+- {match: highway=tertiary_link + tunnel=* + line, category: cat_built_roads_tertiary_tertiarylink, class: cls_road_tertiary_tunnel}
+- {match: highway=unclassified + bridge=* + line, category: cat_built_roads_minor, class: cls_road_minor_bridge}
+- {match: highway=unclassified + tunnel=* + line, category: cat_built_roads_minor, class: cls_road_minor_tunnel}
+- {match: highway=residential + bridge=* + line, category: cat_built_roads_minor_residential, class: cls_road_minor_bridge}
+- {match: highway=residential + tunnel=* + line, category: cat_built_roads_minor_residential, class: cls_road_minor_tunnel}
+- {match: highway=living_street + bridge=* + line, category: cat_built_roads_minor_livingstreet, class: cls_road_minor_bridge}
+- {match: highway=living_street + tunnel=* + line, category: cat_built_roads_minor_livingstreet, class: cls_road_minor_tunnel}
+- {match: highway=service + bridge=* + line, category: cat_built_roads_service, class: cls_road_service_bridge}
+- {match: highway=service + tunnel=* + line, category: cat_built_roads_service, class: cls_road_service_tunnel}
+- {match: highway=track + bridge=* + line, category: cat_built_roads_track, class: cls_road_track_bridge}
+- {match: highway=track + tunnel=* + line, category: cat_built_roads_track, class: cls_road_track_tunnel}
+- {match: highway=path + bridge=* + line, category: cat_built_roads_path, class: cls_road_path_bridge}
+- {match: highway=path + tunnel=* + line, category: cat_built_roads_path, class: cls_road_path_tunnel}
+- {match: highway=footway + bridge=* + line, category: cat_built_roads_footway, class: cls_road_path_bridge}
+- {match: highway=footway + tunnel=* + line, category: cat_built_roads_footway, class: cls_road_path_tunnel}
+- {match: highway=cycleway + bridge=* + line, category: cat_built_roads_cycleway, class: cls_road_path_bridge}
+- {match: highway=cycleway + tunnel=* + line, category: cat_built_roads_cycleway, class: cls_road_path_tunnel}
+- {match: highway=steps + bridge=* + line, category: cat_built_roads_footway_steps, class: cls_road_path_bridge}
+- {match: highway=steps + tunnel=* + line, category: cat_built_roads_footway_steps, class: cls_road_path_tunnel}
+- {match: highway=pedestrian + bridge=* + line, category: cat_built_roads_pedestrian_pedestrianline, class: cls_road_path_bridge}
+- {match: highway=pedestrian + tunnel=* + line, category: cat_built_roads_pedestrian_pedestrianline, class: cls_road_path_tunnel}
+- {match: railway=rail + bridge=* + line, category: cat_built_transport_railway, class: cls_rail_rail_bridge}
+- {match: railway=rail + tunnel=* + line, category: cat_built_transport_railway, class: cls_rail_rail_tunnel}
+
+# --- intermittent water
+- {match: waterway=stream + intermittent=yes + line, category: cat_geography_water_stream, class: cls_waterway_stream_intermittent}
+- {match: waterway=river + intermittent=yes + line, category: cat_geography_water_river, class: cls_waterway_river_intermittent}
+
+# --- administrative boundaries and areas (German admin levels: 2 country, 4 state, 6 district,
+# 8 municipality). One relation is both: its member ways are the border, drawn; the assembled
+# polygon is the area, searched. The border's category has importance 0, so a named border way
+# is never a search row -- the area is what a search finds.
+- {match: boundary=administrative + admin_level=2 + line, category: cat_geography_boundaries_admin, class: cls_boundary_admin_2}
+- {match: boundary=administrative + admin_level=4 + line, category: cat_geography_boundaries_admin, class: cls_boundary_admin_4}
+- {match: boundary=administrative + admin_level=6 + line, category: cat_geography_boundaries_admin, class: cls_boundary_admin_6}
+- {match: boundary=administrative + admin_level=8 + line, category: cat_geography_boundaries_admin, class: cls_boundary_admin_8}
+
+# The area, per admin level, search-only: nothing draws it, but the address path
+# (importer/places.py) names the areas a row lies in. Restricted to polygons, so a border way
+# (above, or the synthetic one importer/passes.py writes per relation level) stays a border and
+# is never filed as a municipality.
+- {match: boundary=administrative + admin_level=2 + polygon, category: cat_geography_admin_2}
+- {match: boundary=administrative + admin_level=3 + polygon, category: cat_geography_admin_3}
+- {match: boundary=administrative + admin_level=4 + polygon, category: cat_geography_admin_4}
+- {match: boundary=administrative + admin_level=5 + polygon, category: cat_geography_admin_5}
+- {match: boundary=administrative + admin_level=6 + polygon, category: cat_geography_admin_6}
+- {match: boundary=administrative + admin_level=7 + polygon, category: cat_geography_admin_7}
+- {match: boundary=administrative + admin_level=8 + polygon, category: cat_geography_admin_8}
+- {match: boundary=administrative + admin_level=9 + polygon, category: cat_geography_admin_9}
+- {match: boundary=administrative + admin_level=10 + polygon, category: cat_geography_admin_10}
+- {match: boundary=administrative + admin_level=11 + polygon, category: cat_geography_admin_11}
+# An administrative area is never drawn, whatever else it is tagged: a municipality relation often
+# carries place=city, and the place=city rule would make it a second city label next to the place
+# node's (Kiel on de_sh, twice from z9). `class: none` decides the class and there is none; the area
+# keeps its category above and its search row.
+- {match: boundary=administrative + polygon, category: cat_geography_admin, class: none}
+
+# Two boundaries iD has no preset for, which would fall through to boundary=* as "Sonstige Grenze": a
+# region (Südschleswig, Schwansen) is a place; an electoral district (boundary=political,
+# "Flensburg - Schleswig") is a boundary of its own, "Wahlkreis".
+- {match: boundary=region, category: cat_geography_places_region}
+- {match: place=region, category: cat_geography_places_region}
+- {match: boundary=political, category: cat_geography_boundaries_political}
+# Place kinds iD has no preset for, which would fall through to place=* as "Sonstiger Ort". A sea is
+# water, not a place; an archipelago is filed with the islands.
+- {match: place=continent, category: cat_geography_places_continent}
+- {match: place=country, category: cat_geography_places_country}
+- {match: place=state, category: cat_geography_places_state}
+- {match: place=sea, category: cat_geography_water_sea}
+- {match: place=ocean, category: cat_geography_water_sea}
+- {match: place=archipelago, category: cat_geography_places_island}
+
+# --- protected areas, coastline, parking. `ocean` has no rule: the water-polygon import assigns it.
+- {match: boundary=national_park + polygon, category: cat_geography_landcover_naturereserve, class: cls_protected_area}
+- {match: boundary=protected_area + polygon, category: cat_geography_landcover_naturereserve, class: cls_protected_area}
+- {match: leisure=nature_reserve + polygon, category: cat_geography_landcover_naturereserve, class: cls_protected_area}
+- {match: natural=coastline + line, category: cat_geography_water_coastline, class: cls_coastline}
+- {match: amenity=parking + polygon, category: cat_built_roads_parking, class: cls_landuse_parking}
+- {match: amenity=parking + point, category: cat_built_roads_parking, class: cls_poi_roads}
+
+# --- vegetation units OpenMapTiles merges: scrub, heath and fell into grass, bog into wetland,
+# orchard and vineyard into farmland, every wood regardless of leaf type. A vegetation map tells
+# them apart (detail `vegetation`). Each keeps the category of the generated rule it replaces.
+- {match: natural=wood + leaf_type=broadleaved + polygon, category: cat_geography_landcover_forest, class: cls_landcover_wood_broadleaved}
+- {match: natural=wood + leaf_type=needleleaved + polygon, category: cat_geography_landcover_forest, class: cls_landcover_wood_needleleaved}
+- {match: landuse=forest + leaf_type=broadleaved + polygon, category: cat_geography_landcover_forest_forest, class: cls_landcover_wood_broadleaved}
+- {match: landuse=forest + leaf_type=needleleaved + polygon, category: cat_geography_landcover_forest_forest, class: cls_landcover_wood_needleleaved}
+- {match: natural=scrub + polygon, category: cat_geography_landcover_scrub, class: cls_landcover_scrub}
+- {match: natural=heath + polygon, category: cat_geography_landcover_heath, class: cls_landcover_heath}
+- {match: natural=fell + polygon, category: cat_geography_landcover_heath_fell, class: cls_landcover_heath}
+- {match: natural=wetland + wetland=bog + polygon, category: cat_geography_landcover_wetland_bog, class: cls_landcover_bog}
+- {match: natural=wetland + wetland=fen + polygon, category: cat_geography_landcover_wetland_fen, class: cls_landcover_bog}
+- {match: natural=wetland + wetland=string_bog + polygon, category: cat_geography_landcover_wetland_stringbog, class: cls_landcover_bog}
+- {match: landuse=orchard + orchard=meadow_orchard + polygon, category: cat_geography_landuse_orchard_orchard, class: cls_landcover_orchard}
+- {match: landuse=orchard + trees=olive_trees + polygon, category: cat_geography_landuse_orchard_olivegrove, class: cls_landcover_orchard}
+- {match: landuse=orchard + polygon, category: cat_geography_landuse_orchard, class: cls_landcover_orchard}
+- {match: landuse=vineyard + polygon, category: cat_geography_landuse_orchard_vineyard, class: cls_landcover_orchard}
+
+# A halt is also tagged as a station, and the station rule comes first in the generated file:
+# without this the halt would be filed as a plain station.
+- {match: public_transport=station + train=yes + railway=halt, category: cat_built_transport_station_stationtrainhalt, class: cls_poi_transport}
+
+# --- platforms mapped as points are stops: the transport icon, not the platform class, whose
+# points are drawn as dots. Half of the bus stops on de_sh carry public_transport=platform + bus=yes
+# (8 572 of 17 037), and the generated platform rules come first: without these rules those would be
+# dots at importance 20 while the other half gets the bus icon at 60. A bus stop is a Bus Stop however it is tagged;
+# every other platform keeps the category it had. Platforms mapped as ways stay cls_public_transport_path.
+- {match: highway=bus_stop + point, category: cat_built_transport_stop_busstop, class: cls_poi_transport}
+- {match: public_transport=platform + bus=yes + tram=yes + point, category: cat_built_transport_stop_platform_bustrampoint, class: cls_poi_transport}
+- {match: public_transport=platform + bus=yes + point, category: cat_built_transport_stop_busstop, class: cls_poi_transport}
+- {match: public_transport=platform + trolleybus=yes + point, category: cat_built_transport_stop_platform_trolleybuspoint, class: cls_poi_transport}
+- {match: public_transport=platform + tram=yes + point, category: cat_built_transport_stop_platform_trampoint, class: cls_poi_transport}
+- {match: public_transport=platform + light_rail=yes + point, category: cat_built_transport_stop_platform_lightrail, class: cls_poi_transport}
+- {match: public_transport=platform + subway=yes + point, category: cat_built_transport_stop_platform_subway, class: cls_poi_transport}
+- {match: public_transport=platform + monorail=yes + point, category: cat_built_transport_stop_platform_monorail, class: cls_poi_transport}
+- {match: public_transport=platform + train=yes + point, category: cat_built_transport_stop_platform_train, class: cls_poi_transport}
+- {match: public_transport=platform + ferry=yes + point, category: cat_built_transport_ferry_ferry, class: cls_poi_transport}
+- {match: public_transport=platform + aerialway=yes + point, category: cat_built_transport_cablecar_platformaerialway, class: cls_poi_transport}
+- {match: public_transport=platform + point, category: cat_built_transport_stop_platform, class: cls_poi_transport}
+
+# --- tags iD has replaced but the data still uses: its presets for them are unsearchable, so no
+# category claims them and they would fall through to the "other" fallbacks (de_sh: 33 nursing homes, 19
+# farms, 14 basins and reservoirs). Each goes where its replacement goes.
+- {match: amenity=nursing_home, category: cat_poi_health_care_nursinghome, class: cls_poi_health}
+- {match: place=farm, category: cat_geography_places_hamlet_isolateddwelling, class: cls_place_isolated_dwelling}
+- {match: landuse=basin + polygon, category: cat_geography_water_lake_water_basin, class: cls_water_lake}
+- {match: landuse=reservoir + polygon, category: cat_geography_water_lake_water_reservoir, class: cls_water_lake}
+- {match: amenity=coworking_space, category: cat_poi_services_office_coworking, class: cls_poi_services}
+
+# --- mapped as a point where iD only has an area preset: still a beach, still a swimming area.
+- {match: natural=beach + point, category: cat_geography_landcover_beach}
+- {match: leisure=swimming_area + point, category: cat_poi_leisure_swimming_swimmingarea, class: cls_poi_leisure}

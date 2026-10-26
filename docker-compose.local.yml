@@ -1,0 +1,131 @@
+# The local dev stack: PostGIS plus the app image the import runs in, and
+# Caddy on request (`--profile caddy`).
+#
+#   docker compose -f docker-compose.local.yml up -d
+#   docker compose -f docker-compose.local.yml exec app python tools/manage.py import li
+#
+# Configured from config.local/, the tracked dev counterpart of production's
+# config/: options.yaml for the app, postgres.env for all three,
+# postgresql.conf and pg_hba.conf for postgres, pgbouncer.ini for pgbouncer,
+# Caddyfile for caddy.
+#
+# Ports and names are chosen not to collide with other stacks on this
+# machine: 7778 for Postgres, 8003 for the app, 8004 for Caddy, and the -03
+# suffixes below.
+
+name: gbd-geoservices-03
+
+services:
+  postgres:
+    # 17 + PostGIS 3.5 per DESIGN.md "Deployment".
+    image: postgis/postgis:17-3.5
+    container_name: gbd-geoservices-03-postgres
+    # The same env_file and command as docker-compose.yml's; see there.
+    env_file: ./config.local/postgres.env
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+    ports:
+      # Loopback only. Not 5432 (usually taken), not 5433 (in use on this
+      # machine).
+      - "127.0.0.1:7778:5432"
+    # Docker's default 64 MB /dev/shm is where Postgres puts parallel workers'
+    # shared memory. A VACUUM ANALYZE of a city-sized area dies there with
+    # "could not resize shared memory segment", which reads like a full disk
+    # and is not one. The band builds use parallel workers too.
+    shm_size: 1gb
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./config.local/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./config.local/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  pgbouncer:
+    # The same service as docker-compose.yml's, which says why it is there.
+    image: edoburu/pgbouncer:v1.25.2-p0
+    container_name: gbd-geoservices-03-pgbouncer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: ./config.local/postgres.env
+    volumes:
+      - ./config.local/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - printf '"%s" "%s"\n' "$$POSTGRES_USER" "$$POSTGRES_PASSWORD" > /tmp/pgbouncer_auth_file
+        && exec pgbouncer /etc/pgbouncer/pgbouncer.ini
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: gbd-geoservices-03
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    # Run as the invoking user so files written through the bind mounts --
+    # everything under data/ -- do not come back root-owned on the host.
+    user: "${GEOSERVICES_UID:-1000}:${GEOSERVICES_GID:-1000}"
+    env_file: ./config.local/postgres.env
+    volumes:
+      # Host edits take effect without a rebuild.
+      - ./app:/app
+      - ./config.local:/config:ro
+      # Everything that outlives a container: downloads/, styles/, cache/,
+      # import.log -- including the .osm.pbf extracts, which go in
+      # data/downloads/. A bind mount rather than a named volume so the
+      # extracts and the compiled styles are inspectable from the host.
+      - ./data:/data
+      # The whole checkout, read-only, for app/scripts/test.sh: pytest and
+      # ruff run from the repository root, where pyproject.toml is and where
+      # the deploy and config tests find the compose files and config
+      # directories. Nothing at runtime reads this.
+      - .:/repo:ro
+    # No GEOSERVICES_DB_* of any kind. The connection is config.local's and
+    # only config.local's; restating user or password here would be a second
+    # place for them to drift, and the symptom of that drift is a blank tile.
+    # 8003, for the same reason Postgres is on 7778.
+    ports:
+      - "127.0.0.1:${GEOSERVICES_HOST_PORT:-8003}:8000"
+    # --reload, because app/ is bind-mounted: an edit on the host restarts
+    # the server rather than needing a rebuild. Never in the image's own CMD,
+    # which is what a deployment runs.
+    # --no-access-log for the same reason the image's CMD has it: uvicorn's
+    # access logger prints the query string verbatim, key included, and the
+    # app's own access log already covers every request with it stripped.
+    command: ["uvicorn", "web.main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--no-access-log", "--reload", "--reload-dir", "/app"]
+    environment:
+      # The served area is config.local's `serve_area`, `de_sh`, the test area.
+      # Export GEOSERVICES_SERVE_AREA=li to point the dev server at
+      # Liechtenstein, which imports in 26 seconds; unset, this is empty and
+      # changes nothing. (`devtools` is on in config.local and only there.)
+      GEOSERVICES_SERVE_AREA: ${GEOSERVICES_SERVE_AREA:-}
+      # The tile cache, off in config.local for style work. Set
+      # GEOSERVICES_NOCACHE=false to turn it on, as profile_render.py needs.
+      # Unset, this is empty and changes nothing.
+      GEOSERVICES_NOCACHE: ${GEOSERVICES_NOCACHE:-}
+
+  caddy:
+    # Opt-in: `--profile caddy`. The production Caddyfile's log filter and
+    # proxying in front of the dev app, over plain http on 8004.
+    image: caddy:2-alpine
+    container_name: gbd-geoservices-03-caddy
+    profiles: [caddy]
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - "127.0.0.1:${GEOSERVICES_CADDY_HOST_PORT:-8004}:80"
+    volumes:
+      - ./config.local/Caddyfile:/etc/caddy/Caddyfile:ro

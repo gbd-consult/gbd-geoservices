@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27">
+  <circle cx="13.5" cy="13.5" r="13.5" fill="#ffffff"/>
+  <circle cx="13.5" cy="13.5" r="11.5" fill="$color"/>
+  <g transform="translate(6 6)" fill="#ffffff">$icon</g>
+</svg>

@@ -1,0 +1,70 @@
+# The TLS front end of the deployed stack -- the template. deploy.sh ships
+# config/Caddyfile, the copy with this deployment's host name and address in
+# it; docker-compose.yml mounts it at /etc/caddy/Caddyfile, so this is the
+# whole Caddy configuration.
+#
+# - no /pmtiles block yet. The vector-tile archive does not exist until the
+#   renderer's vector half is written; its range-serving goes here then
+#   (TODO.md).
+# - no rate limiting. It lives in the app, on the key record's `rate`
+#   (DESIGN.md "Authentication"); doing it here too would be worse than
+#   either.
+# - both logs drop `key` from the query string: the access log, and the
+#   error log a failed request writes, which is configured separately. It is
+#   the only carrier that reaches a log at all (DESIGN.md "Authentication"),
+#   and the app strips it from its own log the same way.
+#
+# Caddy obtains and renews the certificate itself and picks the challenge
+# type on its own -- tls-alpn-01 (port 443) or http-01 (port 80) -- so both
+# ports have to stay open. Its state lives in caddy/ next to
+# docker-compose.yml on the server.
+#
+# The site address is written out, not read from options.yaml:
+# Caddy cannot read that file, and mounting it here would hand the API keys
+# to the one container facing the internet. deploy.sh checks that
+# the address below is the `host` in options.yaml.
+{
+	email admin@example.org
+	# Caddy's *error* log for a request -- a timeout, a refused dial -- is not
+	# the site's access log below, and without this carries the raw URI,
+	# `?key=` and all. Found by sending a keyed request to a starting app.
+	log default {
+		output stdout
+		format filter {
+			request>uri query {
+				delete key
+			}
+		}
+	}
+}
+
+geoservices.example.org {
+	log {
+		output stdout
+		format filter {
+			request>uri query {
+				delete key
+			}
+		}
+	}
+
+	# The search API takes JSON POST bodies (/search, /search/count).
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy app:8000 {
+		# Caddy already replaces a client-supplied X-Forwarded-For rather than
+		# appending to it, so a spoofed `X-Forwarded-For: 127.0.0.1` cannot
+		# reach the app as loopback. Stated explicitly because uvicorn runs
+		# with --forwarded-allow-ips=* and the loopback-only reload route
+		# would fall to anyone the moment that default changed.
+		header_up X-Forwarded-For {remote_host}
+
+		transport http {
+			dial_timeout 10s
+			# A cold low-zoom tile is a live Mapnik render against PostGIS.
+			read_timeout 120s
+		}
+	}
+}

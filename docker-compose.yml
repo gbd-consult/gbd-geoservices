@@ -1,0 +1,204 @@
+# The deployed stack: postgres, pgbouncer, the app, and Caddy in front. Runs on the
+# production host from /opt/gbd-geoservices/v0.3/, with the app image
+# app/scripts/deploy.sh built there, from src/ next to this file. There is
+# no `build:` here: deploy.sh builds with the commit id as a build argument,
+# which a bare `docker compose up --build` would drop.
+# docker-compose.local.yml is the development counterpart.
+#
+# Configured from config/ next to this file:
+#
+#   config/options.yaml              the app's options and API keys
+#   config/postgres.env              the database credentials, for postgres
+#                                    and the app alike
+#   config/postgresql.conf           postgres
+#   config/pg_hba.conf               postgres
+#   config/pgbouncer.ini             pgbouncer
+#   config/Caddyfile                 caddy
+#
+# NO CREDENTIAL IN THIS FILE, OR IN GIT. config/ is git-ignored: it exists
+# on the machine deploy.sh runs from and on the server, which deploy.sh
+# copies it to. config.example/ is
+# the tracked template, config.local/ the dev stack's.
+
+name: gbd-geoservices-v03
+
+networks:
+  default:
+    # Named, so it is stable whatever directory this is run from.
+    name: gbd-geoservices-v03-net
+  # postgres, pgbouncer and the app, and not caddy: pgbouncer trusts every
+  # client that reaches it, so the container facing the internet must not.
+  db:
+    name: gbd-geoservices-v03-db
+    internal: true
+
+# Every service logs to the host's syslog, tagged with its container name;
+# app/scripts/setup.sh has rsyslog write data/log/<service>.log from it.
+# Docker keeps a local copy for `docker compose logs`, capped here at 1 MB
+# per container: the files in data/log are the record.
+x-logging: &logging
+  driver: syslog
+  options:
+    tag: "{{.Name}}"
+    cache-max-size: 1m
+    cache-max-file: "1"
+
+services:
+  postgres:
+    # 17 + PostGIS 3.5 per DESIGN.md "Deployment".
+    image: postgis/postgis:17-3.5
+    container_name: gbd-geoservices-v03-postgres
+    logging: *logging
+    restart: unless-stopped
+    # POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD: the same file the app
+    # connects with, so the two cannot drift. Used only when pgdata is
+    # initialised, on the very first start: changing the password in the
+    # file later changes nothing in the database -- that takes
+    # `ALTER ROLE geoservices PASSWORD ...` as well.
+    env_file: ./config/postgres.env
+    # The whole configuration is config/'s, not initdb's file in pgdata.
+    # Not mounted over initdb's files there either: the image's entrypoint
+    # chowns everything in pgdata on start and fails on a read-only mount,
+    # and initdb refuses a directory that is not empty. postgresql.conf names
+    # pg_hba.conf itself (hba_file).
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    # Docker's 64 MB /dev/shm is too small for parallel workers' shared
+    # memory; the band builds need them.
+    shm_size: 1gb
+    # No published port: Docker's rules run ahead of ufw, so a published
+    # port puts the database on the internet regardless of `ufw status`. The app reaches it through pgbouncer inside the network;
+    # the operator uses `docker exec gbd-geoservices-v03-postgres psql`.
+    networks: [db]
+    # Its two files, not config/: postgres needs nothing else there. Read
+    # when postgres starts, so a change takes `manage.sh restart`.
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  pgbouncer:
+    # Mapnik's PostGIS plugin opens a new connection for every layer it
+    # loads and runs a `LIMIT 0` query on it to learn the columns. Against
+    # postgres that is a backend fork, a SCRAM exchange and a cold catalog
+    # cache per layer, ~0.95 s per Map; through pgbouncer, which hands out
+    # warm backends and trusts its clients, 0.06 s.
+    # Session mode: every client keeps its backend, so nothing the app does
+    # needs to know it is there.
+    image: edoburu/pgbouncer:v1.25.2-p0
+    container_name: gbd-geoservices-v03-pgbouncer
+    logging: *logging
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # For its own login to postgres, which stays SCRAM.
+    env_file: ./config/postgres.env
+    networks: [db]
+    # config/pgbouncer.ini alone, not config/: it needs nothing else there.
+    volumes:
+      - ./config/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+    # The auth file holds the password in plain text, for pgbouncer's SCRAM
+    # login to postgres, written from postgres.env so it is in one place.
+    # The image's own entrypoint is bypassed: it writes an md5 hash there
+    # whenever clients are not SCRAM, and postgres refuses an md5 hash for a
+    # SCRAM password ("wrong password type").
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - printf '"%s" "%s"\n' "$$POSTGRES_USER" "$$POSTGRES_PASSWORD" > /tmp/pgbouncer_auth_file
+        && exec pgbouncer /etc/pgbouncer/pgbouncer.ini
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    # The moving 0.3 tag: deploy.sh builds :0.3 and :<version> on the server
+    # on every deploy, and this runs the former. Local only, never pulled:
+    # not publish.sh's gbdconsult/ repository.
+    image: gbd-geoservices:${GBD_TAG:-0.3}
+    pull_policy: never
+    container_name: gbd-geoservices-v03-app
+    logging: *logging
+    restart: unless-stopped
+    # --proxy-headers/--forwarded-allow-ips: without them uvicorn ignores
+    # Caddy's X-Forwarded-Proto/Host, and WMTS GetCapabilities advertises
+    # http://app:8000/... tile URLs that resolve nowhere outside this
+    # network. --no-access-log: uvicorn's own access log writes the raw
+    # request line, ?key= and all; web.main logs every request with the key
+    # stripped instead.
+    command: >
+      uvicorn web.main:app --host 0.0.0.0 --port 8000
+      --proxy-headers --forwarded-allow-ips=* --no-access-log
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    # default for Caddy and the downloads, db for pgbouncer.
+    networks: [default, db]
+    # The database credentials, which lib.config hands to libpq.
+    env_file: ./config/postgres.env
+    # /config is where lib.config reads options.yaml. data/ is
+    # everything that outlives the container: downloads/, styles/, cache/,
+    # import.log, import.status.
+    volumes:
+      - ./config:/config:ro
+      - ./data:/data
+    # Loopback only, and load-bearing rather than cosmetic: Docker's rules
+    # bypass ufw, and on 0.0.0.0 a spoofed X-Forwarded-For would open the
+    # loopback-only reload route to anyone. Published at all only so the
+    # operator can reach the app from the host without Caddy (`docker
+    # compose port app 8000` names the port); nothing in the stack uses it.
+    ports:
+      - 127.0.0.1::8000
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # The lifespan loads a Mapnik Map pool per theme and grid before the
+      # first request: measured at 111 s for twelve themes and two grids.
+      start_period: 300s
+
+  caddy:
+    # TLS in front. The only service published to the outside world. It
+    # obtains and renews its own certificate, so there is nothing to
+    # provision on the host.
+    image: caddy:2-alpine
+    container_name: gbd-geoservices-v03-caddy
+    logging: *logging
+    restart: unless-stopped
+    # Started, not healthy: a slow Map-pool preload then shows as a 502 for
+    # a minute rather than as no server at all.
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - 80:80
+      - 443:443
+      # HTTP/3. Caddy advertises it via Alt-Svc; without the UDP publish,
+      # clients take that advertisement and fail before falling back to TCP.
+      - 443:443/udp
+    # The Caddyfile alone, not config/: this is the container facing the
+    # internet, and config/ holds the database password and the API keys.
+    # Read when Caddy starts, so a change takes `manage.sh restart`.
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+      # The certificate store. Losing it means re-registering and
+      # re-issuing against Let's Encrypt's 5-duplicates-per-week limit.
+      - ./caddy/data:/data
+      - ./caddy/config:/config

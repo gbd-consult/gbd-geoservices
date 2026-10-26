@@ -1,0 +1,35 @@
+[tool.pytest.ini_options]
+# app/ is mounted as /app with PYTHONPATH=/app, so the packages under it are
+# top-level (`import lib.text`, not `import app.lib.text`). This mirrors that
+# for a test run on the host or in a throwaway container.
+pythonpath = ["app"]
+testpaths = ["app/tests"]
+markers = [
+    "slow: needs a database or a full extract; deselected by default",
+]
+addopts = "-m 'not slow'"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+# app/ is mounted as /app with PYTHONPATH=/app, so `importer` and `lib` are
+# first-party imports. Without this, import sorting depends on which
+# directory ruff was invoked from.
+src = ["app"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+# Named rather than left to `src` discovery: app/tools/ has no __init__.py,
+# so whether `tools` looks first-party depended on the directory ruff was
+# invoked from, and the import order it wanted differed between them.
+known-first-party = ["importer", "lib", "renderer", "search", "tools", "web"]
+
+[tool.ruff.lint.per-file-ignores]
+# The standalone scripts (see their docstrings) do not follow these rules
+# yet. They are cleaned up when each is next touched rather than in one
+# sweep.
+# Both spellings, so the result does not depend on where ruff was invoked.
+"app/tools/*" = ["E501", "SIM115", "B007", "UP017"]
+"tools/*" = ["E501", "SIM115", "B007", "UP017"]

@@ -1,0 +1,400 @@
+# Appearance per mode, class and zoom. Under each mode, a key is "<class> <zoom>" or just "<class>".
+# A zoom key holds until the next key of the same class and mode; later keys override single
+# properties. A key without a zoom applies at every zoom the class is drawn in that mode.
+#
+# The lowest zoom a class has in fill, line or casing is where it starts: the importer writes it
+# into every row's minzoom (and the band tables are built from it), so moving it earlier takes a
+# re-import. The lowest in label, shield or number is where its text starts, which the importer writes into
+# minzoom_label. Marker keys need no zoom: from which zoom an icon and its label are drawn is the
+# row's importance (model/importance.yaml) and the theme's detail (details.yaml `symbols`).
+#
+# `defaults` are applied under every entry of their mode. `templates` holds YAML anchors and is
+# not read otherwise: `{<<: *name, ...}` merges one, `{<<: [*a, *b], ...}` several (the earlier
+# wins a key both have; the entry's own keys win over all of them).
+# Colors are tokens from palettes.yaml, never literals. Fonts are named only by the first three
+# templates, and everything else merges them: Noto Sans is what the image installs.
+
+templates:
+  regular: &regular {font: Noto Sans Regular}
+  bold: &bold {font: Noto Sans Bold}
+  italic: &italic {font: Noto Sans Italic}
+  
+  halo: &halo {halo: clr_halo, halo-radius: halo_radius}
+  halo_place: &halo_place {halo: clr_halo, halo-radius: halo_radius_place}
+  halo_road: &halo_road {halo: clr_halo, halo-radius: halo_radius_road}
+  
+  line_label: &line_label {placement: line, spacing: 400}
+  water_label: &water_label {<<: [*italic, *halo], size: 10, fill: clr_label_water}
+  water_line_label: &water_line_label {<<: [*water_label, *line_label]}
+  road_label: &road_label {<<: [*regular, *halo_road, *line_label], fill: clr_label_road}
+  rail_label: &rail_label {<<: [*regular, *halo, *line_label], fill: clr_label_rail, spacing: 600}
+  area_label: &area_label {<<: [*regular, *halo], size: 10, wrap: 60}
+  
+  place_1: &place_1 {<<: [*regular, *halo_place], wrap: 70, fill: clr_label}
+  place_2: &place_2 {<<: [*regular, *halo_place], wrap: 70, fill: clr_label}
+  place_3: &place_3 {<<: [*regular, *halo_place], fill: clr_label_minor}
+  place_4: &place_4 {<<: [*italic, *halo_place], fill: clr_label_minor}
+  
+  minor_label: &minor_label {<<: [*regular, *halo], fill: clr_label_minor}
+  # The text is in marker mode on purpose: it is drawn with its icon, as one shield, or not at
+  # all -- never a label whose icon lost its spot. `size` is the icon's there, `text-size` the text's.
+  poi_label: &poi_label {<<: [*regular, *halo], text: name, text-size: 10, dy: 17, wrap: 60}
+
+defaults:
+  label: {text: name}
+  shield: {<<: [*bold, *halo_place], text: label, size: 9, fill: clr_label_road, placement: line, spacing: 600}
+  # One class per second-level category; the icon and its colour are the row's (styles/icons.yaml).
+  marker: {icon: true, size: 27}
+
+'*':
+  cls_road_motorway: {line-cap: round, line-join: round}
+  cls_road_trunk: {line-cap: round, line-join: round}
+  cls_road_primary: {line-cap: round, line-join: round}
+  cls_road_secondary: {line-cap: round, line-join: round}
+  cls_road_tertiary: {line-cap: round, line-join: round}
+  cls_road_minor: {line-cap: round, line-join: round}
+  cls_road_service: {line-cap: round, line-join: round}
+
+fill:
+  # --- land cover and land use
+  cls_landcover_wood 5: {polygon-fill: clr_forest}
+  cls_landcover_wood_broadleaved 5: {polygon-fill: clr_forest_broadleaved}
+  cls_landcover_wood_needleleaved 5: {polygon-fill: clr_forest_needleleaved}
+  cls_landcover_scrub 5: {polygon-fill: clr_scrub}
+  cls_landcover_heath 5: {polygon-fill: clr_heath}
+  cls_landcover_grass 5: {polygon-fill: clr_grass}
+  cls_landcover_farmland 5: {polygon-fill: clr_farmland}
+  cls_landcover_wetland 5: {polygon-fill: clr_wetland}
+  cls_landcover_bog 5: {polygon-fill: clr_bog}
+  cls_landcover_orchard 5: {polygon-fill: clr_orchard}
+  cls_landcover_sand 5: {polygon-fill: clr_sand}
+  cls_landcover_rock 5: {polygon-fill: clr_rock}
+  cls_landcover_ice 5: {polygon-fill: clr_ice}
+  cls_landuse_residential 8: {polygon-fill: clr_residential}
+  cls_landuse_commercial 8: {polygon-fill: clr_retail}
+  cls_landuse_retail 8: {polygon-fill: clr_retail}
+  cls_landuse_industrial 8: {polygon-fill: clr_industrial}
+  cls_landuse_railway 8: {polygon-fill: clr_industrial}
+  cls_landuse_garages 13: {polygon-fill: clr_parking}
+  cls_landuse_military 8: {polygon-fill: clr_military}
+  cls_landuse_military 10: {line-color: clr_military_line, line-width: 1, line-dasharray: [4, 3]}
+  cls_landuse_quarry 8: {polygon-fill: clr_quarry}
+  cls_landuse_cemetery 8: {polygon-fill: clr_cemetery}
+  cls_landuse_hospital 8: {polygon-fill: clr_hospital}
+  cls_landuse_library 8: {polygon-fill: clr_school}
+  cls_landuse_university 10: {polygon-fill: clr_school}
+  cls_landuse_college 10: {polygon-fill: clr_school}
+  cls_landuse_school 12: {polygon-fill: clr_school}
+  cls_landuse_kindergarten 13: {polygon-fill: clr_school}
+  cls_landuse_bus_station 13: {polygon-fill: clr_parking}
+  cls_landuse_playground 13: {polygon-fill: clr_park}
+  cls_landuse_pitch 13: {polygon-fill: clr_pitch}
+  cls_landuse_stadium 8: {polygon-fill: clr_pitch}
+  cls_landuse_theme_park 8: {polygon-fill: clr_park}
+  cls_landuse_zoo 8: {polygon-fill: clr_park}
+  cls_landuse_parking 13: {polygon-fill: clr_parking}
+  cls_landuse_track 14: {polygon-fill: clr_pitch}
+  cls_aeroway_aerodrome 10: {polygon-fill: clr_aeroway}
+  cls_aeroway_apron 10: {polygon-fill: clr_aeroway}
+  cls_aeroway_helipad 10: {polygon-fill: clr_aeroway}
+  cls_protected_area 7: {polygon-fill: clr_protected, polygon-opacity: 0.4}
+  cls_protected_area 10: {line-color: clr_protected_line, line-width: 1.5, polygon-opacity: 0.2}
+  cls_building 13: {polygon-fill: clr_building}
+  cls_building 15: {line-color: clr_building_line, line-width: 0.5}
+
+  # --- water
+  cls_ocean 0: {polygon-fill: clr_water}
+  cls_water_lake 5: {polygon-fill: clr_water}
+  cls_water_dock 5: {polygon-fill: clr_water}
+  cls_water_swimming_pool 5: {polygon-fill: clr_water}
+
+  # --- roads: the inner stroke, plus _bridge and _tunnel variants
+  cls_road_motorway 5: {line-color: clr_motorway, line-width: 1.5}
+  cls_road_motorway 10: {line-width: 4}
+  cls_road_motorway 15: {line-width: 9}
+  cls_road_motorway_bridge 12: {line-color: clr_motorway, line-width: 4}
+  cls_road_motorway_bridge 15: {line-width: 9}
+  cls_road_motorway_tunnel 12: {line-color: clr_motorway, line-width: 4, line-opacity: 0.5}
+  cls_road_motorway_tunnel 15: {line-width: 9}
+  cls_road_trunk 6: {line-color: clr_trunk, line-width: 1.4}
+  cls_road_trunk 10: {line-width: 3.6}
+  cls_road_trunk 15: {line-width: 8}
+  cls_road_trunk_bridge 12: {line-color: clr_trunk, line-width: 3.6}
+  cls_road_trunk_bridge 15: {line-width: 8}
+  cls_road_trunk_tunnel 12: {line-color: clr_trunk, line-width: 3.6, line-opacity: 0.5}
+  cls_road_trunk_tunnel 15: {line-width: 8}
+  cls_road_primary 8: {line-color: clr_primary, line-width: 1.2}
+  cls_road_primary 10: {line-width: 3.2}
+  cls_road_primary 15: {line-width: 7.5}
+  cls_road_primary_bridge 12: {line-color: clr_primary, line-width: 3.2}
+  cls_road_primary_bridge 15: {line-width: 7.5}
+  cls_road_primary_tunnel 12: {line-color: clr_primary, line-width: 3.2, line-opacity: 0.5}
+  cls_road_primary_tunnel 15: {line-width: 7.5}
+  cls_road_secondary 9: {line-color: clr_secondary, line-width: 1}
+  cls_road_secondary 10: {line-width: 2.8}
+  cls_road_secondary 15: {line-width: 6.5}
+  cls_road_secondary_bridge 12: {line-color: clr_secondary, line-width: 2.8}
+  cls_road_secondary_bridge 15: {line-width: 6.5}
+  cls_road_secondary_tunnel 12: {line-color: clr_secondary, line-width: 2.8, line-opacity: 0.5}
+  cls_road_secondary_tunnel 15: {line-width: 6.5}
+  cls_road_tertiary 10: {line-color: clr_tertiary, line-width: 2.4}
+  cls_road_tertiary 15: {line-width: 6}
+  cls_road_tertiary_bridge 12: {line-color: clr_tertiary, line-width: 2.4}
+  cls_road_tertiary_bridge 15: {line-width: 6}
+  cls_road_tertiary_tunnel 12: {line-color: clr_tertiary, line-width: 2.4, line-opacity: 0.5}
+  cls_road_tertiary_tunnel 15: {line-width: 6}
+  cls_road_minor 12: {line-color: clr_road, line-width: 1.8}
+  cls_road_minor 15: {line-width: 5.5}
+  cls_road_minor_bridge 12: {line-color: clr_road, line-width: 1.8}
+  cls_road_minor_bridge 15: {line-width: 5.5}
+  cls_road_minor_tunnel 12: {line-color: clr_road, line-width: 1.8, line-opacity: 0.5}
+  cls_road_minor_tunnel 15: {line-width: 5.5}
+  cls_road_service 14: {line-color: clr_minor, line-width: 1.2}
+  cls_road_service 15: {line-width: 3}
+  cls_road_service_bridge 14: {line-color: clr_minor, line-width: 1.2}
+  cls_road_service_bridge 15: {line-width: 3}
+  cls_road_service_tunnel 14: {line-color: clr_minor, line-width: 1.2, line-opacity: 0.5}
+  cls_road_service_tunnel 15: {line-width: 3}
+  cls_road_track 13: {line-color: clr_track, line-width: 0.9, line-dasharray: [5, 2]}
+  cls_road_track 16: {line-width: 1.4}
+  cls_road_track_bridge 13: {line-color: clr_track, line-width: 1.2}
+  cls_road_track_tunnel 13: {line-color: clr_track, line-width: 0.9, line-dasharray: [1, 3]}
+  cls_road_path 13: {line-color: clr_path, line-width: 0.9, line-dasharray: [2, 2]}
+  cls_road_path 16: {line-width: 1.4}
+  cls_road_path_bridge 13: {line-color: clr_path, line-width: 1.2}
+  cls_road_path_tunnel 13: {line-color: clr_path, line-width: 0.9, line-dasharray: [1, 3]}
+  cls_road_raceway 13: {line-color: clr_track, line-width: 2}
+  cls_road_busway 12: {line-color: clr_minor, line-width: 1.8}
+  cls_road_bus_guideway 12: {line-color: clr_rail, line-width: 1.4}
+  cls_public_transport_path 15: {line-color: clr_minor, line-width: 1.2}
+
+  # --- rail and transit
+  cls_rail_rail 8: {line-color: clr_rail, line-width: 1}
+  cls_rail_rail 13: {line-width: 1.6}
+  cls_rail_rail 15: {line-width: 2}
+  cls_rail_rail_bridge 12: {line-color: clr_rail, line-width: 1.6}
+  cls_rail_rail_tunnel 12: {line-color: clr_rail, line-width: 1.4, line-dasharray: [4, 3], line-opacity: 0.6}
+  cls_rail_narrow_gauge 11: {line-color: clr_rail, line-width: 1}
+  cls_rail_funicular 11: {line-color: clr_rail, line-width: 1}
+  cls_transit_light_rail 12: {line-color: clr_rail, line-width: 1}
+  cls_transit_light_rail 15: {line-width: 1.6}
+  cls_transit_tram 12: {line-color: clr_rail, line-width: 1}
+  cls_transit_tram 15: {line-width: 1.6}
+  cls_transit_monorail 12: {line-color: clr_rail, line-width: 1}
+  cls_transit_monorail 15: {line-width: 1.6}
+  cls_transit_subway 12: {line-color: clr_rail, line-width: 1.2, line-opacity: 0.7, line-dasharray: [4, 3]}
+
+casing:
+  cls_road_motorway 10: {line-color: clr_motorway_case, line-width: 5.6}
+  cls_road_motorway 15: {line-width: 11}
+  cls_road_motorway_bridge 12: {line-color: clr_bridge_case, line-width: 7, line-cap: butt}
+  cls_road_motorway_bridge 15: {line-width: 12.5}
+  cls_road_motorway_tunnel 12: {line-color: clr_motorway_case, line-width: 5.6, line-dasharray: [4, 3]}
+  cls_road_trunk 10: {line-color: clr_trunk_case, line-width: 5.2}
+  cls_road_trunk 15: {line-width: 10}
+  cls_road_trunk_bridge 12: {line-color: clr_bridge_case, line-width: 6.6, line-cap: butt}
+  cls_road_trunk_bridge 15: {line-width: 11.5}
+  cls_road_trunk_tunnel 12: {line-color: clr_trunk_case, line-width: 5.2, line-dasharray: [4, 3]}
+  cls_road_primary 10: {line-color: clr_primary_case, line-width: 4.8}
+  cls_road_primary 15: {line-width: 9.5}
+  cls_road_primary_bridge 12: {line-color: clr_bridge_case, line-width: 6.2, line-cap: butt}
+  cls_road_primary_bridge 15: {line-width: 11.0}
+  cls_road_primary_tunnel 12: {line-color: clr_primary_case, line-width: 4.8, line-dasharray: [4, 3]}
+  cls_road_secondary 10: {line-color: clr_secondary_case, line-width: 4.4}
+  cls_road_secondary 15: {line-width: 8.5}
+  cls_road_secondary_bridge 12: {line-color: clr_bridge_case, line-width: 5.8, line-cap: butt}
+  cls_road_secondary_bridge 15: {line-width: 10.0}
+  cls_road_secondary_tunnel 12: {line-color: clr_secondary_case, line-width: 4.4, line-dasharray: [4, 3]}
+  cls_road_tertiary 10: {line-color: clr_road_case, line-width: 4.0}
+  cls_road_tertiary 15: {line-width: 8}
+  cls_road_tertiary_bridge 12: {line-color: clr_bridge_case, line-width: 5.4, line-cap: butt}
+  cls_road_tertiary_bridge 15: {line-width: 9.5}
+  cls_road_tertiary_tunnel 12: {line-color: clr_road_case, line-width: 4.0, line-dasharray: [4, 3]}
+  cls_road_minor 12: {line-color: clr_road_case, line-width: 3.4}
+  cls_road_minor 15: {line-width: 7.5}
+  cls_road_minor_bridge 12: {line-color: clr_bridge_case, line-width: 4.8, line-cap: butt}
+  cls_road_minor_bridge 15: {line-width: 9.0}
+  cls_road_minor_tunnel 12: {line-color: clr_road_case, line-width: 3.4, line-dasharray: [4, 3]}
+  cls_road_service 14: {line-color: clr_road_case, line-width: 2.8}
+  cls_road_service 15: {line-width: 5}
+  cls_road_service_bridge 14: {line-color: clr_bridge_case, line-width: 4.2, line-cap: butt}
+  cls_road_service_bridge 15: {line-width: 6.5}
+  cls_road_service_tunnel 14: {line-color: clr_road_case, line-width: 2.8, line-dasharray: [4, 3]}
+  cls_rail_rail_bridge 12: {line-color: clr_bridge_case, line-width: 4.5}
+
+line:
+  # --- water
+  cls_coastline 12: {line-color: clr_water_line, line-width: 0.8}
+  cls_waterway_river 8: {line-color: clr_water_line, line-width: 1.5}
+  cls_waterway_river 15: {line-width: 3}
+  cls_waterway_canal 12: {line-color: clr_water_line, line-width: 1.2}
+  cls_waterway_canal 15: {line-width: 2.5}
+  cls_waterway_stream 12: {line-color: clr_water_line, line-width: 0.8}
+  cls_waterway_stream 15: {line-width: 1.5}
+  cls_waterway_drain 12: {line-color: clr_water_line, line-width: 0.6}
+  cls_waterway_drain 15: {line-width: 1}
+  cls_waterway_ditch 12: {line-color: clr_water_line, line-width: 0.5}
+  cls_waterway_ditch 15: {line-width: 1}
+  cls_waterway_river_intermittent: {line-color: clr_water_line, line-dasharray: [4, 3]}
+  cls_waterway_river_intermittent 12: {line-width: 1.5}
+  cls_waterway_stream_intermittent: {line-color: clr_water_line, line-dasharray: [4, 3]}
+  cls_waterway_stream_intermittent 12: {line-width: 0.8}
+  cls_ferry 8: {line-color: clr_water_line, line-width: 0.8, line-dasharray: [6, 4]}
+
+  # --- relief: SK25 contours, one class per level of contours.levels_m (importer/elevation.py). A level
+  # starts where neighbouring lines stay at least 6 px apart on a 30 degree slope at 48 N -- spacing
+  # interval / tan 30, over the ground metres per pixel -- and stays: 1000 m from z9, then one level
+  # finer per zoom (100 m and 50 m: 6.8 px, the others 8.5). Coarser levels are drawn heavier.
+  cls_contour_1000 9: {line-color: clr_contour, line-width: 1.6}
+  cls_contour_500 10: {line-color: clr_contour, line-width: 1.3}
+  cls_contour_250 11: {line-color: clr_contour, line-width: 1.1}
+  cls_contour_100 12: {line-color: clr_contour, line-width: 0.9}
+  cls_contour_50 13: {line-color: clr_contour, line-width: 0.7}
+
+  # --- aeroways
+  cls_aeroway_runway 10: {line-color: clr_runway_line, line-width: 2}
+  cls_aeroway_runway 14: {line-width: 6}
+  cls_aeroway_taxiway 12: {line-color: clr_runway_line, line-width: 1}
+  cls_aeroway_taxiway 14: {line-width: 2}
+
+  # --- boundaries
+  cls_boundary_admin_2 2: {line-color: clr_admin_country, line-width: 1.2}
+  cls_boundary_admin_2 8: {line-width: 2.5}
+  cls_boundary_admin_4 4: {line-color: clr_admin_region, line-width: 0.8, line-dasharray: [6, 3]}
+  cls_boundary_admin_4 8: {line-width: 1.8}
+  cls_boundary_admin_6 8: {line-color: clr_admin_local, line-width: 0.8, line-dasharray: [4, 3]}
+  cls_boundary_admin_6 12: {line-width: 1.4}
+  cls_boundary_admin_8 11: {line-color: clr_admin_local, line-width: 0.6, line-dasharray: [2, 3]}
+  cls_boundary_admin_8 14: {line-width: 1}
+
+label:
+  # --- relief: the height along the line, two zooms after its level appears, when there is room
+  cls_contour_1000 11: {<<: [*regular, *halo, *line_label], text: label, size: 8, fill: clr_label_contour}
+  cls_contour_500 12: {<<: [*regular, *halo, *line_label], text: label, size: 8, fill: clr_label_contour}
+  cls_contour_250 13: {<<: [*regular, *halo, *line_label], text: label, size: 8, fill: clr_label_contour}
+  cls_contour_100 14: {<<: [*regular, *halo, *line_label], text: label, size: 8, fill: clr_label_contour}
+  cls_contour_50 15: {<<: [*regular, *halo, *line_label], text: label, size: 8, fill: clr_label_contour}
+
+  # --- water
+  cls_waterway_river 12: {<<: *water_line_label}
+  cls_waterway_canal 14: {<<: *water_line_label}
+  cls_waterway_stream 15: {<<: *water_line_label, size: 9}
+  cls_water_lake 12: {<<: *water_label}
+
+  # --- roads; on bridges and in tunnels the same as the plain road
+  cls_road_motorway 13: {<<: *road_label, size: 11}
+  cls_road_motorway 17: {size: 12}
+  cls_road_motorway_bridge 13: {<<: *road_label, size: 11}
+  cls_road_motorway_tunnel 13: {<<: *road_label, size: 11}
+  cls_road_trunk 13: {<<: *road_label, size: 11}
+  cls_road_trunk 17: {size: 12}
+  cls_road_trunk_bridge 13: {<<: *road_label, size: 11}
+  cls_road_trunk_tunnel 13: {<<: *road_label, size: 11}
+  cls_road_primary 13: {<<: *road_label, size: 10}
+  cls_road_primary 17: {size: 11}
+  cls_road_primary_bridge 13: {<<: *road_label, size: 10}
+  cls_road_primary_tunnel 13: {<<: *road_label, size: 10}
+  cls_road_secondary 14: {<<: *road_label, size: 10, halo-radius: halo_radius_road_secondary}
+  cls_road_secondary 17: {size: 11}
+  cls_road_secondary_bridge 14: {<<: *road_label, size: 10, halo-radius: halo_radius_road_secondary}
+  cls_road_secondary_tunnel 14: {<<: *road_label, size: 10, halo-radius: halo_radius_road_secondary}
+  cls_road_tertiary 14: {<<: *road_label, size: 10}
+  cls_road_tertiary 17: {size: 11}
+  cls_road_tertiary_bridge 14: {<<: *road_label, size: 10}
+  cls_road_tertiary_tunnel 14: {<<: *road_label, size: 10}
+  cls_road_minor 15: {<<: *road_label, size: 9}
+  cls_road_minor 17: {size: 10}
+  cls_road_minor_bridge 15: {<<: *road_label, size: 9}
+  cls_road_minor_tunnel 15: {<<: *road_label, size: 9}
+  cls_road_service 17: {<<: *road_label, size: 9}
+  cls_road_path 17: {<<: *road_label, size: 9}
+  cls_road_track 17: {<<: *road_label, size: 9}
+  cls_public_transport_path 17: {<<: *minor_label, size: 9, dy: 7}
+
+  # --- rail
+  cls_rail_rail 15: {<<: *rail_label, size: 9}
+
+  # --- places
+  cls_place_city 8: {<<: *place_1, size: 12}
+  cls_place_city 10: {size: 15}
+  cls_place_town 10: {<<: *place_1, size: 11}
+  cls_place_town 12: {size: 14}
+  cls_place_village 12: {<<: *place_2, size: 10}
+  cls_place_village 14: {size: 12}
+  cls_place_suburb 13: {<<: *place_3, size: 10}
+  cls_place_suburb 15: {size: 12}
+  cls_place_quarter 14: {<<: *place_3, size: 10}
+  cls_place_quarter 16: {size: 11}
+  cls_place_neighbourhood 15: {<<: *place_3, size: 9}
+  cls_place_neighbourhood 17: {size: 11}
+  cls_place_hamlet 15: {<<: *place_3, size: 9}
+  cls_place_hamlet 17: {size: 11}
+  cls_place_isolated_dwelling 15: {<<: *place_3, size: 9}
+  cls_place_isolated_dwelling 17: {size: 10}
+  cls_place_island 10: {<<: *place_4, size: 10}
+  cls_place_island 12: {size: 12}
+
+  # --- areas
+  cls_landcover_wood 13: {<<: *area_label, fill: clr_label_leisure}
+  cls_landcover_wood_broadleaved 13: {<<: *area_label, fill: clr_label_leisure}
+  cls_landcover_wood_needleleaved 13: {<<: *area_label, fill: clr_label_leisure}
+  cls_protected_area 10: {<<: *area_label, fill: clr_label_protected}
+  cls_landuse_cemetery 14: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_hospital 14: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_university 13: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_college 14: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_school 15: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_kindergarten 16: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_bus_station 15: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_parking 16: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_pitch 16: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_stadium 14: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_zoo 13: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_theme_park 13: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_playground 16: {<<: *area_label, fill: clr_label_leisure}
+  cls_landuse_military 12: {<<: *area_label, fill: clr_label_minor}
+  cls_landuse_quarry 13: {<<: *area_label, fill: clr_label_minor}
+  cls_aeroway_aerodrome 12: {<<: *area_label, fill: clr_label_minor}
+  cls_building 17: {<<: *area_label, fill: clr_label_address}
+
+# The `label` column as a second text: a building's house number, named or not.
+number:
+  cls_building 19: {<<: [*regular, *halo], text: label, size: 9, fill: clr_label_address}
+
+shield:
+  cls_road_motorway 10: {}
+  cls_road_trunk 10: {}
+  cls_road_primary 10: {}
+  cls_road_secondary 10: {}
+
+marker:
+  cls_aeroway_gate: {<<: *poi_label, fill: clr_label_poi_public}
+  # Areas with an icon: their label above is drawn only below the zoom the icon starts at.
+  cls_aeroway_aerodrome: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_landuse_hospital: {<<: *poi_label, fill: clr_label_poi_health}
+  cls_landuse_university: {<<: *poi_label, fill: clr_label_poi_education}
+  cls_landuse_college: {<<: *poi_label, fill: clr_label_poi_education}
+  cls_landuse_school: {<<: *poi_label, fill: clr_label_poi_education}
+  cls_landuse_kindergarten: {<<: *poi_label, fill: clr_label_poi_education}
+  cls_landuse_bus_station: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_landuse_zoo: {<<: *poi_label, fill: clr_label_poi_historic}
+  cls_landuse_theme_park: {<<: *poi_label, fill: clr_label_poi_historic}
+  cls_landuse_parking: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_landuse_stadium: {<<: *poi_label, fill: clr_label_poi_leisure}
+  cls_landuse_playground: {<<: *poi_label, fill: clr_label_poi_leisure}
+  cls_poi_accommodation: {<<: *poi_label, fill: clr_label_poi_tourism}
+  cls_poi_culture: {<<: *poi_label, fill: clr_label_poi_tourism}
+  cls_poi_education: {<<: *poi_label, fill: clr_label_poi_education}
+  cls_poi_food: {<<: *poi_label, fill: clr_label_poi_food}
+  cls_poi_health: {<<: *poi_label, fill: clr_label_poi_health}
+  cls_poi_infrastructure: {<<: *poi_label, fill: clr_label_poi_other}
+  cls_poi_landcover: {<<: *poi_label, fill: clr_label_poi_leisure}
+  cls_poi_leisure: {<<: *poi_label, fill: clr_label_poi_leisure}
+  cls_poi_public: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_poi_religion: {<<: *poi_label, fill: clr_label_poi_worship}
+  cls_poi_roads: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_poi_services: {<<: *poi_label, fill: clr_label_poi_shop}
+  cls_poi_shopping: {<<: *poi_label, fill: clr_label_poi_shop}
+  cls_poi_sights: {<<: *poi_label, fill: clr_label_poi_historic}
+  cls_poi_transport: {<<: *poi_label, fill: clr_label_poi_public}
+  cls_poi_other: {<<: *poi_label, fill: clr_label_poi_other}

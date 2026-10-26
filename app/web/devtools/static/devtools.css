@@ -1,0 +1,1155 @@
+/* Design tokens, colors lifted from gbd-websuite.de's compiled CSS
+   (primary/dark blue + olive-green accent pairing, warm neutral grays).
+   The landing page at / uses the same set -- keep them in step. */
+:root {
+  --font-sans: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-bg: #ffffff;
+  --color-panel-bg: #fbfbfa;
+  --color-panel-border: #e2e2df;
+  --color-text: #262626;
+  --color-text-muted: #63625d;
+  --color-text-faint: #8c8b86;
+
+  --color-primary: #0086c9;
+  --color-primary-dark: #006fb8;
+  --color-primary-darker: #00588f;
+  --color-primary-tint: #eef5fa;
+
+  --color-accent: #84ac2b;
+  --color-accent-dark: #5c7a1e;
+  --color-accent-tint: #f2f7e6;
+
+  --color-danger: #c0392b;
+  --color-danger-tint: #fbeceb;
+
+  --code-bg: #1e1e1e;
+  --code-fg: #d4d4d4;
+  --code-border: #33332f;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-panel: -12px 0 32px rgba(38, 38, 38, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.hidden { display: none !important; }
+
+#layout { display: flex; height: 100vh; }
+
+#mapArea { flex: 1 1 auto; display: flex; position: relative; min-width: 0; }
+
+#map { flex: 1 1 auto; background: #eef0ee; }
+
+/* Over the map, above Leaflet's panes and controls (z-index up to 1000).
+   Only the card takes clicks, so the map around it still pans. */
+.key-notice {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.key-notice-card {
+  pointer-events: auto;
+  max-width: 360px;
+  padding: 18px 20px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-panel-border);
+  border-top: 3px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(38, 38, 38, 0.18);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.key-notice-card strong { display: block; color: var(--color-danger); font-size: 15px; }
+.key-notice-card p { margin: 8px 0 14px; color: var(--color-text-muted); }
+
+/* ---- map controls ---- */
+
+/* The map toolbar (MapToolbar in mapview.js): one white column holding the
+   zoom buttons, the zoom slider and the draw tools. An opaque plate, since
+   the map under it is a different color per theme. */
+.map-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 30px;
+  padding: 2px 0;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  user-select: none;
+}
+
+.map-toolbar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.map-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #4a4a47;
+  cursor: pointer;
+}
+
+.map-toolbar-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-toolbar-button:hover { color: var(--color-text); background: #f0f0ee; }
+.map-toolbar-button.active { color: var(--color-bg); background: #4a4a47; }
+.map-toolbar-button:disabled { color: #c8c8c4; background: none; cursor: default; }
+
+.map-toolbar-zoom {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #4a4a47;
+}
+
+/* Positioning context for the rotated slider below. A CSS transform doesn't
+   shrink the element's *layout* box, so the slider is placed absolutely and
+   this wrap is sized to the rotated (visual) footprint: the slider's
+   track length plus room for the thumb. */
+.map-toolbar-slider-wrap {
+  position: relative;
+  height: 148px;
+}
+
+/* A horizontal range input rotated into the wrap's vertical footprint --
+   see MapToolbar in mapview.js for why not orient="vertical". width/height
+   are the *pre-rotation* box (track length/thickness); the translate
+   centers that box on the wrap's center before it rotates. */
+.map-toolbar-slider {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 12px;
+  margin: 0;
+  /* Set by mapview.js on every zoom change: where the thumb's center sits,
+     as a % of the track length. The track splits its gradient there, so
+     the fill always ends under the thumb. */
+  --zoom-fill: 0%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  /* Track and thumb are drawn from scratch below: Chrome ignores a
+     ::-webkit-slider-thumb rule unless this appearance reset is present,
+     and Firefox drops its own progress fill once the thumb is styled, so
+     leaving either part native made the control differ between engines. */
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Both vendor rules are needed -- an engine only honours its own. */
+.map-toolbar-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #4a4a47 var(--zoom-fill), #dcdcd8 var(--zoom-fill));
+}
+
+.map-toolbar-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #4a4a47 var(--zoom-fill), #dcdcd8 var(--zoom-fill));
+}
+
+/* Firefox paints its own filled portion on top of the track, which the
+   gradient above already draws. */
+.map-toolbar-slider::-moz-range-progress {
+  background: transparent;
+}
+
+/* Size pinned because sliderFraction in mapview.js has to know how far the
+   thumb is inset from the track's ends -- keep in step with
+   SLIDER_THUMB_SIZE there. */
+.map-toolbar-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4a4a47;
+  /* WebKit lays the thumb out against the track's top edge, so centering
+     it on a 4px track is this half-difference. Firefox centers
+     ::-moz-range-thumb itself. */
+  margin-top: -4px;
+  cursor: pointer;
+}
+
+.map-toolbar-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: #4a4a47;
+  cursor: pointer;
+}
+
+/* Leaflet's built-in scale control (bottom-left): the ground distance a
+   given screen length represents, re-labeled automatically per zoom level.
+   Styled like .map-toolbar. Leaflet sets the element's width to that screen
+   length, and with border-box sizing the plate's own edges mark its ends. */
+.leaflet-control-scale-line {
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  color: #4a4a47;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 2px 7px;
+}
+
+/* ---- sidebar shell ---- */
+
+#sidebar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-panel-bg);
+  position: relative;
+  width: 380px;
+  border-left: 1px solid var(--color-panel-border);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Brand signature: a thin two-color bar echoing the blue/green pairing
+   the palette is built from, rather than repeating it as a loud gradient
+   throughout the UI. */
+#sidebar::before {
+  content: "";
+  display: block;
+  height: 3px;
+  flex: 0 0 auto;
+  background: linear-gradient(90deg, var(--color-primary) 0 60%, var(--color-accent) 60% 100%);
+}
+
+.panel-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+}
+
+.brand { display: flex; align-items: center; gap: 9px; }
+
+.brand-mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background:
+    radial-gradient(circle at 35% 35%, var(--color-primary) 0 55%, transparent 56%),
+    radial-gradient(circle at 65% 65%, var(--color-accent) 0 55%, transparent 56%);
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.01em;
+}
+
+.brand-sub {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin-top: 1px;
+}
+
+.badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary-darker);
+  background: var(--color-primary-tint);
+  border: 1px solid #d3e8f3;
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.header-end { display: flex; align-items: center; gap: 10px; }
+
+/* Only the language to switch to, as a small square with its code; the
+   language's name is the link's title. */
+.lang-switch {
+  display: flex;
+  gap: 6px;
+  color: var(--color-text-muted);
+}
+.lang-switch a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  line-height: 1;
+  color: inherit;
+  text-decoration: none;
+}
+.lang-switch a:hover { color: var(--color-primary-dark); }
+
+/* ---- tab bar ---- */
+
+/* Same segmented-control idiom as the XYZ/WMTS switch below it -- the two
+   tabs are mutually exclusive in exactly the same way, and a second
+   interaction pattern for the same kind of choice would be noise. */
+.tabbar {
+  flex: 0 0 auto;
+  padding: 0 18px 14px;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.tabbar .segmented { display: flex; width: 100%; }
+.tabbar .segmented label { flex: 1; text-align: center; }
+
+/* ---- panels ---- */
+
+/* Scrolls rather than clips: nothing sits below the controls in this
+   column, so taking the leftover height changes no layout, but it means a
+   short window scrolls the last control into reach instead of hiding it. */
+.panel-controls {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.field-check input {
+  accent-color: var(--color-primary-dark);
+  margin: 0;
+}
+
+/* One checkbox per overlay layer, stacked -- populated by tiles.js's
+   populateOverlayLayers(), same .field-check label markup as the debug
+   grid checkbox above, just several instead of one. */
+#overlayLayers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+select, input[type="text"], input[type="number"], textarea {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+
+select:disabled {
+  color: var(--color-text-faint);
+  background: #f4f4f2;
+  cursor: not-allowed;
+}
+
+select:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ---- category picker (search.js, catpicker.js) ---- */
+
+.cat-picker { position: relative; }
+
+.cat-picker-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cat-picker-button:disabled {
+  color: var(--color-text-faint);
+  background: #f4f4f2;
+  cursor: not-allowed;
+}
+
+.cat-picker-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-picker-empty { color: var(--color-text-faint); }
+
+.cat-picker-caret {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin: 0 3px 3px 0;
+  border-right: 1.5px solid var(--color-text-muted);
+  border-bottom: 1.5px solid var(--color-text-muted);
+  transform: rotate(45deg);
+  transition: transform 0.1s;
+}
+
+.cat-picker-button[aria-expanded="true"] .cat-picker-caret {
+  margin: 3px 3px 0 0;
+  transform: rotate(-135deg);
+}
+
+.cat-picker-popup {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 18px rgba(38, 38, 38, 0.12);
+}
+
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px 3px 4px;
+  font-size: 13px;
+  line-height: 1.3;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cat-row:hover { background: var(--color-primary-tint); }
+
+.cat-row.selected {
+  color: var(--color-primary-darker);
+  background: var(--color-primary-tint);
+  font-weight: 700;
+}
+
+.cat-any .cat-name { color: var(--color-text-faint); }
+
+.cat-toggle {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.cat-toggle:not(.cat-toggle-leaf):hover { background: var(--color-panel-border); }
+
+.cat-toggle-leaf { cursor: default; }
+
+.cat-node[aria-expanded="true"] > .cat-row > .cat-toggle { transform: rotate(90deg); }
+
+.cat-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schema-pill {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-primary-darker);
+  background: var(--color-primary-tint);
+  border: 1px solid #d3e8f3;
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+
+.hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-faint);
+}
+
+/* Segmented toggle -- mutually exclusive choices, so a pill switch encodes
+   that better than loose radio buttons. */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--color-panel-border);
+  border-radius: 999px;
+  background: #fff;
+  padding: 2px;
+  width: fit-content;
+}
+
+.segmented label {
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.segmented label:has(input:checked) {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+.segmented label:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+#urlTemplate {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  background: #f4f4f2;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+  word-break: break-all;
+}
+
+button.primary {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: var(--color-primary-dark);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+button.primary:hover:not(:disabled) { background: var(--color-primary-darker); }
+
+button.primary:disabled {
+  background: #cfd3d6;
+  color: #8c8b86;
+  cursor: default;
+}
+
+/* Search + Clear sit side by side: the primary action takes the room it
+   needs, the secondary Clear only as much as its label. */
+.button-row { display: flex; gap: 8px; }
+.button-row .primary { flex: 1; }
+
+/* Secondary action (Clear): same shape as .primary, but an outlined,
+   low-emphasis face so it reads as the lesser of the two buttons. */
+button.secondary {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--color-primary-dark);
+  background: #fff;
+  border: 1px solid var(--color-primary-dark);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+button.secondary:disabled {
+  border-color: #cfd3d6;
+  color: #8c8b86;
+  cursor: default;
+}
+
+/* ---- debug grid overlay ---- */
+
+/* The container is what a drag or a scroll actually hits, so it -- not the
+   individual cells -- is where interaction has to be turned off, or the
+   overlay would swallow every map gesture. */
+.debug-grid { pointer-events: none; }
+
+/* The global `box-sizing: border-box` above is load-bearing here: Leaflet
+   sets each tile div's width/height to the tile size, so the border has to
+   be drawn inside those 256px. With content-box every cell would sit 1px
+   off the tile it is supposed to be tracing. */
+.debug-grid-tile {
+  border: 1px solid rgba(224, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* An opaque (not translucent) backing plate, for the same reason
+   .map-toolbar has one: the tiles underneath are a different color
+   per theme, and any transparency here lets a busy tile show through and
+   eat into the label's legibility. */
+.debug-grid-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #c0130a;
+  background: #ffffff;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---- CartoCSS editor (demo theme only) ---- */
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+#editorCss {
+  width: 100%;
+  /* Fixed rather than flexible: this now shares a scrolling column with
+     every other control instead of owning its own full-height panel, so it
+     takes a readable slice and lets the column scroll past it. */
+  height: 40vh;
+  min-height: 160px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--code-fg);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  resize: vertical;
+  tab-size: 2;
+}
+
+#editorCss:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 134, 201, 0.25);
+}
+
+/* ---- status messages ---- */
+
+#status, #editorStatus, #searchError {
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  max-height: 30vh;
+  overflow: auto;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+  padding: 8px 10px;
+  display: none;
+}
+
+#status:empty, #editorStatus:empty { display: none; }
+#status.ok, #status.err, #editorStatus.ok, #editorStatus.err { display: block; }
+
+#status.ok, #editorStatus.ok {
+  color: var(--color-accent-dark);
+  background: var(--color-accent-tint);
+  border-left-color: var(--color-accent);
+}
+
+#status.err, #editorStatus.err, #searchError {
+  color: var(--color-danger);
+  background: var(--color-danger-tint);
+  border-left-color: var(--color-danger);
+}
+
+/* flex: none -- in the flex column of .panel-controls the box, being
+   overflow: auto, otherwise shrinks to a sliver with a scrollbar. */
+#searchError { display: block; flex: none; }
+#searchError.hidden { display: none !important; }
+
+/* ---- status tab ---- */
+
+/* Status dots for the server and the style watcher: green when fine,
+   amber while compiling or with nothing imported, red when /status fails
+   or a recompile failed, gray when the watcher is off. */
+.watch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--color-text-faint);
+}
+
+.watch-dot.on { background: var(--color-accent); }
+.watch-dot.err { background: var(--color-danger); }
+
+/* ---- search results ---- */
+
+.search-summary {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  padding-bottom: 2px;
+}
+
+.geom-note {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--color-accent-dark);
+  background: var(--color-accent-tint);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+}
+
+.result-card {
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.result-card:hover { border-color: var(--color-primary); }
+
+.result-card.selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.result-table td {
+  padding: 2px 0;
+  vertical-align: top;
+}
+
+/* The key column stays narrow and the value wraps, so a long OSM tag value
+   doesn't push the property name off the card. */
+.result-table .result-key {
+  width: 38%;
+  padding-right: 8px;
+  color: var(--color-text-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  word-break: break-word;
+}
+
+.result-table .result-value {
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+/* The first two rows are the identity of the hit (name, category) -- worth
+   more weight than the address columns under them. */
+.result-table tr:first-child .result-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.search-busy {
+  flex: none;
+  align-self: center;
+  width: 28px;
+  height: 28px;
+  margin: 12px 0;
+  border: 3px solid var(--color-panel-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: search-spin 0.8s linear infinite;
+}
+
+.search-busy.hidden { display: none; }
+
+@keyframes search-spin { to { transform: rotate(360deg); } }
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pager button {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-primary-darker);
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.pager button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.pager button:disabled {
+  color: var(--color-text-faint);
+  cursor: default;
+  background: #f4f4f2;
+}
+
+.pager-label {
+  font-size: 11.5px;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  #layout { flex-direction: column; }
+  #mapArea, #sidebar { width: 100%; min-height: 0; }
+  #mapArea { flex: 1 1 50%; }
+  #sidebar {
+    flex: 1 1 50%;
+    border-left: none;
+    border-top: 1px solid var(--color-panel-border);
+    box-shadow: 0 -12px 32px rgba(38, 38, 38, 0.05);
+  }
+}
+
+
+/* ---- POI legend -----------------------------------------------------
+   One row per category, swatch + label + examples. The swatch colour is
+   set inline from the API response rather than by a class per category:
+   the palette is the only place a colour is written down, and a stylesheet
+   copy here would be a second one to keep in step. */
+#poiLegend {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  align-items: baseline;
+  margin: 6px 0 2px;
+}
+.poi-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  align-self: center;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.poi-legend-label { font-size: 12px; }
+.poi-legend-examples {
+  display: block;
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+/* A stage the selected colour has no theme for. Greyed rather than removed:
+   the set of stages is fixed, and a control that changes length as you
+   switch colour is harder to read than one with a disabled option. */
+.segmented label.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- results, interpretation, key, status ----
+   A title per result, the phrase interpretation, "what's here" as a
+   toggle, the key field, and a status dot with a third state for "served,
+   but nothing imported". */
+
+/* Zoom, reveal, then the text: title • category over the
+   address path. The property table under it is hidden until revealed. */
+.result-head {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 6px;
+  align-items: start;
+}
+
+.result-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--color-primary-darker);
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.result-icon:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.result-icon:disabled {
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.result-reveal svg { transition: transform 120ms ease; }
+.result-reveal.open svg { transform: rotate(90deg); }
+
+.result-text { min-width: 0; }
+
+.result-title {
+  font-size: 13.5px;
+  line-height: 1.35;
+}
+
+.result-name { font-weight: 700; }
+
+/* The address path under the name: Schleswig-Holstein • Kiel • Friedrichsort. */
+.result-places {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.result-table:not(.hidden) { margin-top: 8px; }
+
+.result-card.guessed:not(.selected) { background: #f2f2ef; }
+
+/* The title carries the name, so the first table row is an ordinary
+   row rather than a bold identity. */
+.result-table tr:first-child .result-value {
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.interp-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid #d3e8f3;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-tint);
+}
+
+.interp-row {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-primary-darker);
+}
+
+/* The search panel in "what's here" mode: the radius, and none of the
+   query controls; in address mode the address fields instead of the query
+   and the category. */
+#panel-search.mode-here .not-here,
+#panel-search:not(.mode-here) .only-here,
+#panel-search.mode-address .not-address,
+#panel-search:not(.mode-address) .only-address { display: none; }
+
+.field-row .field.address-number { flex: 0 0 6em; }
+
+#map.here-mode .leaflet-interactive { cursor: crosshair; }
+
+.field-row {
+  display: flex;
+  gap: 14px;
+}
+.field-row .field { flex: 1 1 0; min-width: 0; }
+
+#apiKey {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+input[type="range"] { accent-color: var(--color-primary-dark); }
+input[type="range"]:disabled { accent-color: var(--color-text-faint); opacity: 0.5; cursor: not-allowed; }
+
+.watch-dot.ok { background: var(--color-accent); }
+.watch-dot.warn { background: #d99a00; }
+
+/* A failed recompile's message is styles.check's list, one problem a line. */
+.watch-status { white-space: pre-wrap; }
+
+/* ---- legend panel (LegendPanel in mapview.js) ---- */
+
+/* An opaque plate like the toolbar's; the legend image brings its own
+   background, the theme's land colour. */
+.legend-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.legend-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 4px 4px 10px;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+.legend-panel-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a4a47;
+}
+
+.legend-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: #4a4a47;
+  cursor: pointer;
+}
+
+.legend-panel-close:hover { color: var(--color-text); background: #f0f0ee; }
+
+.legend-panel-close svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* A long legend scrolls inside the panel rather than running off the map:
+   LegendPanel._fit sets the max-height from the map's; this is the bound
+   until it has. The panel is as wide as the image, with the scrollbar's
+   room kept beside it, so it scrolls vertically only; sideways only on a
+   window narrower than the legend. */
+.legend-panel-body {
+  max-height: calc(100vh - 80px);
+  max-width: calc(100vw - 80px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+.legend-panel-body img { display: block; }
+
+.legend-panel-message {
+  margin: 0;
+  padding: 10px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

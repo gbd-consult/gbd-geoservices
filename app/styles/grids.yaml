@@ -1,0 +1,42 @@
+# Tile grids, by the identifier WMTS advertises and a request sends. Declared
+# rather than derived: a CRS's area of use is not reachable from this image (no
+# pyproj, no proj.db; spatial_ref_sys.srtext is WKT1 and carries no bounds), and
+# deriving the grid from the imported extent instead would move every tile address
+# whenever a larger area is imported, silently invalidating every cached tile and
+# every stored URL.
+#   crs         the CRS the grid is in
+#   origin      top-left corner, in the CRS's own units
+#   span        what one level-0 tile covers, in those units
+#   levels      how many quadtree levels; level L has 2^L x 2^L tiles
+#   centre_lat  latitude the CRS's units are compared with Web Mercator at.
+#               One ground metre is 1/cos(lat) Web Mercator units, and that
+#               factor is what maps a level's scale denominator onto the
+#               EPSG:3857 zoom the `minzoom` columns are written in. For
+#               EPSG:3857 it is 0, because its units already are those units.
+#   level_digits  optional: the TileMatrix identifiers are zero-padded to this
+#               many digits. A request may send the level either way.
+#
+# The DE_*_ADV grids are the AdV TileMatrixSets of the same names, as basemap.de
+# advertises them, so that our tiles align with theirs level for level. Level L
+# has the scale denominator of Web Mercator zoom L+5. basemap.de publishes levels
+# 00-13; the further ones continue the same quadtree.
+GoogleMapsCompatible:
+  crs: EPSG:3857
+  origin: [-20037508.342789244, 20037508.342789244]
+  span: 40075016.685578488
+  levels: 24                           # 0..23; past size.zoom_max (21) the z21 content at native size
+  centre_lat: 0
+DE_EPSG_25832_ADV:
+  crs: EPSG:25832
+  origin: [-46133.17, 6301219.54]
+  span: 1252344.2714243277             # 40075016.685578488 / 32; level 8 is 19 m/px, the pre-cache depth
+  levels: 21                           # 0..20; level 20 is 5 mm/px, about Web Mercator z24
+  centre_lat: 51.0
+  level_digits: 2
+DE_EPSG_25833_ADV:                     # the same levels, for the states whose CRS is EPSG:25833
+  crs: EPSG:25833
+  origin: [-464849.38, 6310160.14]     # Germany's west lies some 190 km west of this zone's false origin
+  span: 1252344.2714243277
+  levels: 21
+  centre_lat: 51.0
+  level_digits: 2

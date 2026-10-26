@@ -1,0 +1,452 @@
+# Icons per category, their colour, and whether the map draws them. Styling, not model: changing this file
+# needs `manage.py compile-styles`, never a re-import. The importer writes every point's own category
+# into osm_point.category; `manage.py compile-styles` resolves this file for every category of
+# model/generated/categories.yaml, writes one SVG per (icon, colour) pair and palette, and sets
+# osm_point.icon and osm_label.icon to that pair's key -- NULL where the category is not drawn. The marker layer
+# reads `<icons>/<palette>/[icon].svg` and skips NULL.
+#
+# Each file is styles/icons/template.svg filled in: a white disc, a disc in the category's
+# `color` (a palettes.yaml token, one file per palette) and the icon in white on top.
+# A category without an entry inherits its nearest listed ancestor's icon, colour and `draw`
+# flag, so every category has all three. `draw: no` gives the category's points no icon: they get
+# no marker, and search results still show the icon.
+# Paths are relative to styles/icons/: maki/ (Mapbox Maki, CC0) and generic/ (our own, for a
+# POI with no icon of its own -- a filled ring, as Google Maps draws one).
+# See DESIGN.md "Icons".
+
+- {category: cat_geography, icon: maki/natural.svg, color: clr_poi_leisure, draw: yes}
+
+- {category: cat_geography_places, icon: maki/town.svg, color: clr_poi_public}
+- {category: cat_geography_places_city, icon: maki/city.svg}
+- {category: cat_geography_places_village, icon: maki/village.svg}
+- {category: cat_geography_places_hamlet, icon: maki/home.svg}
+- {category: cat_geography_places_district, icon: maki/residential-community.svg}
+- {category: cat_geography_places_locality, icon: maki/marker-stroked.svg}
+- {category: cat_geography_places_island, icon: maki/natural.svg}
+- {category: cat_geography_places_square, icon: maki/marker-stroked.svg}
+- {category: cat_geography_places_address, icon: maki/home.svg}
+
+- {category: cat_geography_admin, icon: maki/town-hall.svg, color: clr_poi_other}
+- {category: cat_geography_boundaries, icon: maki/triangle-stroked.svg, color: clr_poi_other}
+- {category: cat_geography_boundaries_military, icon: maki/roadblock.svg}
+- {category: cat_geography_boundaries_military_dangerarea, icon: maki/danger.svg}
+- {category: cat_geography_boundaries_hazard, icon: maki/danger.svg}
+
+- {category: cat_geography_terrain, icon: maki/mountain.svg}
+- {category: cat_geography_terrain_volcano, icon: maki/volcano.svg}
+- {category: cat_geography_terrain_valley, icon: maki/natural.svg}
+- {category: cat_geography_terrain_cave, icon: maki/natural.svg}
+- {category: cat_geography_terrain_coast, icon: maki/beach.svg}
+- {category: cat_geography_terrain_spring, icon: maki/water.svg}
+- {category: cat_geography_terrain_spring_hotspring, icon: maki/hot-spring.svg}
+- {category: cat_geography_terrain_other, icon: maki/natural.svg}
+
+- {category: cat_geography_water, icon: maki/water.svg, color: clr_poi_tourism}
+- {category: cat_geography_water_waterfall, icon: maki/waterfall.svg}
+
+- {category: cat_geography_landcover, icon: maki/park-alt1.svg}
+- {category: cat_geography_landcover_grass, icon: maki/park.svg}
+- {category: cat_geography_landcover_grass_landusemeadow, icon: maki/garden.svg}
+- {category: cat_geography_landcover_heath, icon: maki/natural.svg}
+- {category: cat_geography_landcover_scrub, icon: maki/natural.svg}
+- {category: cat_geography_landcover_wetland, icon: maki/wetland.svg}
+- {category: cat_geography_landcover_sand, icon: maki/beach.svg}
+- {category: cat_geography_landcover_beach, icon: maki/beach.svg}
+- {category: cat_geography_landcover_rock, icon: maki/mountain.svg}
+- {category: cat_geography_landcover_glacier, icon: maki/natural.svg}
+- {category: cat_geography_landcover_tree, icon: maki/park.svg}
+- {category: cat_geography_landcover_park, icon: maki/park.svg}
+- {category: cat_geography_landcover_park_flowerbed, icon: maki/garden.svg}
+- {category: cat_geography_landcover_park_garden, icon: maki/garden.svg}
+- {category: cat_geography_landcover_naturereserve, icon: maki/park.svg}
+
+- {category: cat_geography_landuse, icon: maki/landuse.svg, color: clr_poi_other}
+- {category: cat_geography_landuse_residential, icon: maki/residential-community.svg}
+- {category: cat_geography_landuse_commercial, icon: maki/commercial.svg}
+- {category: cat_geography_landuse_retail, icon: maki/shop.svg}
+- {category: cat_geography_landuse_industrial, icon: maki/industry.svg}
+- {category: cat_geography_landuse_industrial_slaughterhouse, icon: maki/slaughterhouse.svg}
+- {category: cat_geography_landuse_farmland, icon: maki/farm.svg}
+- {category: cat_geography_landuse_farmland_aquaculture, icon: maki/aquarium.svg}
+- {category: cat_geography_landuse_orchard, icon: maki/farm.svg}
+- {category: cat_geography_landuse_orchard_olivegrove, icon: maki/park.svg}
+- {category: cat_geography_landuse_orchard_orchard, icon: maki/park.svg}
+- {category: cat_geography_landuse_allotments, icon: maki/garden.svg}
+- {category: cat_geography_landuse_quarry, icon: maki/industry.svg}
+- {category: cat_geography_landuse_landfill, icon: maki/waste-basket.svg}
+- {category: cat_geography_landuse_construction, icon: maki/construction.svg}
+- {category: cat_geography_landuse_railway, icon: maki/rail.svg}
+- {category: cat_geography_landuse_harbour, icon: maki/harbor.svg}
+- {category: cat_geography_landuse_garages, icon: maki/car.svg}
+- {category: cat_geography_landuse_education, icon: maki/school.svg}
+- {category: cat_geography_landuse_religious, icon: maki/place-of-worship.svg}
+- {category: cat_geography_landuse_recreation, icon: maki/pitch.svg}
+
+- {category: cat_built, icon: maki/building.svg, color: clr_poi_public, draw: yes}
+- {category: cat_built_buildings_residential, icon: maki/home.svg}
+- {category: cat_built_buildings_residential_apartments, icon: maki/building.svg}
+- {category: cat_built_buildings_residential_dormitory, icon: maki/building.svg}
+- {category: cat_built_buildings_residential_farm, icon: maki/farm.svg}
+- {category: cat_built_buildings_commercial, icon: maki/commercial.svg}
+- {category: cat_built_buildings_commercial_office, icon: maki/suitcase.svg}
+- {category: cat_built_buildings_industrial, icon: maki/warehouse.svg}
+- {category: cat_built_buildings_agricultural, icon: maki/farm.svg}
+- {category: cat_built_buildings_agricultural_greenhouse, icon: maki/garden-centre.svg}
+- {category: cat_built_buildings_public, icon: maki/town-hall.svg}
+- {category: cat_built_buildings_public_civic, icon: maki/building.svg}
+- {category: cat_built_buildings_public_trainstation, icon: maki/building.svg}
+- {category: cat_built_buildings_public_transportation, icon: maki/building.svg}
+- {category: cat_built_buildings_religious, icon: maki/place-of-worship.svg}
+- {category: cat_built_buildings_sports, icon: maki/stadium.svg}
+- {category: cat_built_buildings_sports_grandstand, icon: maki/building.svg}
+- {category: cat_built_buildings_sports_ridinghall, icon: maki/horse-riding.svg}
+- {category: cat_built_buildings_outbuilding, icon: maki/home.svg}
+- {category: cat_built_buildings_outbuilding_boathouse, icon: maki/harbor.svg}
+- {category: cat_built_buildings_outbuilding_pavilion, icon: maki/building.svg}
+- {category: cat_built_buildings_outbuilding_roof, icon: maki/shelter.svg}
+- {category: cat_built_buildings_entrance, icon: maki/entrance-alt1.svg}
+- {category: cat_built_buildings_entrance_emergencywardentrance, icon: maki/hospital.svg}
+- {category: cat_built_buildings_indoor_door, icon: maki/entrance-alt1.svg}
+
+- {category: cat_built_roads, icon: maki/car.svg}
+- {category: cat_built_roads_busway, icon: maki/bus.svg}
+- {category: cat_built_roads_pedestrian, icon: maki/marker-stroked.svg}
+- {category: cat_built_roads_footway, icon: maki/marker-stroked.svg}
+- {category: cat_built_roads_footway_steps_conveying, icon: maki/entrance.svg}
+- {category: cat_built_roads_cycleway, icon: maki/bicycle.svg}
+- {category: cat_built_roads_path, icon: maki/marker-stroked.svg}
+- {category: cat_built_roads_path_bridleway, icon: maki/horse-riding.svg}
+- {category: cat_built_roads_construction, icon: maki/construction.svg}
+- {category: cat_built_roads_crossing, icon: maki/marker-stroked.svg}
+- {category: cat_built_roads_traffic, icon: maki/caution.svg}
+- {category: cat_built_roads_traffic_emergencybay, icon: maki/car.svg}
+- {category: cat_built_roads_traffic_yes, icon: maki/barrier.svg}
+- {category: cat_built_roads_restarea, icon: maki/highway-rest-area.svg}
+- {category: cat_built_roads_restarea_services, icon: maki/car.svg}
+- {category: cat_built_roads_parking, icon: maki/parking.svg}
+- {category: cat_built_roads_parking_parkingentrance, icon: maki/entrance-alt1.svg, draw: no}
+- {category: cat_built_roads_parking_parkingspace, draw: no}
+- {category: cat_built_roads_fuel, icon: maki/fuel.svg}
+- {category: cat_built_roads_charging, icon: maki/charging-station.svg}
+- {category: cat_built_roads_carrental, icon: maki/car-rental.svg}
+- {category: cat_built_roads_bikerental, icon: maki/bicycle-share.svg}
+
+- {category: cat_built_transport, icon: maki/rail.svg}
+- {category: cat_built_transport_railinfra_levelcrossing, icon: maki/cross.svg}
+- {category: cat_built_transport_station_subwayentrance, icon: maki/entrance.svg}
+- {category: cat_built_transport_busstation, icon: maki/bus.svg}
+- {category: cat_built_transport_stop, icon: maki/bus.svg}
+- {category: cat_built_transport_stop_publictransport, draw: no}
+- {category: cat_built_transport_stop_platform_train, icon: maki/rail.svg}
+- {category: cat_built_transport_stop_platform_subway, icon: maki/rail-metro.svg}
+- {category: cat_built_transport_stop_platform_lightrail, icon: maki/rail-light.svg}
+- {category: cat_built_transport_stop_platform_monorail, icon: maki/rail-light.svg}
+- {category: cat_built_transport_stop_platform_tram, icon: maki/rail-light.svg}
+- {category: cat_built_transport_stop_platform_trampoint, icon: maki/rail-light.svg}
+- {category: cat_built_transport_airport, icon: maki/airport.svg}
+- {category: cat_built_transport_airinfra, icon: maki/airfield.svg}
+- {category: cat_built_transport_airinfra_helipad, icon: maki/heliport.svg}
+- {category: cat_built_transport_ferry, icon: maki/ferry.svg}
+- {category: cat_built_transport_port, icon: maki/harbor.svg}
+- {category: cat_built_transport_port_fuel, icon: maki/fuel.svg}
+- {category: cat_built_transport_port_waterpoint, icon: maki/drinking-water.svg}
+- {category: cat_built_transport_cablecar, icon: maki/aerialway.svg}
+- {category: cat_built_transport_taxi, icon: maki/taxi.svg}
+- {category: cat_built_transport_other_aeroway, icon: maki/airport.svg}
+
+- {category: cat_built_infrastructure, icon: maki/industry.svg}
+- {category: cat_built_infrastructure_power, icon: maki/charging-station.svg}
+- {category: cat_built_infrastructure_power_plant, icon: maki/industry.svg}
+- {category: cat_built_infrastructure_power_plant_hydro, icon: maki/dam.svg}
+- {category: cat_built_infrastructure_water, icon: maki/water.svg}
+- {category: cat_built_infrastructure_wastewater, icon: maki/water.svg}
+- {category: cat_built_infrastructure_telecom, icon: maki/communications-tower.svg}
+- {category: cat_built_infrastructure_telecom_streetcabinet_waste, icon: maki/recycling.svg}
+- {category: cat_built_infrastructure_waste, icon: maki/waste-basket.svg}
+- {category: cat_built_infrastructure_pole, icon: maki/communications-tower.svg}
+
+- {category: cat_built_structures, icon: maki/building-alt1.svg}
+- {category: cat_built_structures_wall, icon: maki/fence.svg}
+- {category: cat_built_structures_fence, icon: maki/fence.svg}
+- {category: cat_built_structures_fence_barrier, icon: maki/roadblock.svg}
+- {category: cat_built_structures_gate, icon: maki/gate.svg}
+- {category: cat_built_structures_gate_bumpgate, icon: maki/roadblock.svg}
+- {category: cat_built_structures_gate_tollbooth, icon: maki/toll.svg}
+- {category: cat_built_structures_bollard, icon: maki/barrier.svg}
+- {category: cat_built_structures_bollard_motorcyclebarrier, icon: maki/roadblock.svg}
+- {category: cat_built_structures_tower, icon: maki/observation-tower.svg}
+- {category: cat_built_structures_tower_flagpole, icon: maki/embassy.svg}
+- {category: cat_built_structures_tower_defensive, icon: maki/castle.svg}
+- {category: cat_built_structures_lighthouse, icon: maki/lighthouse.svg}
+- {category: cat_built_structures_lighthouse_beacon, icon: maki/communications-tower.svg}
+- {category: cat_built_structures_bridge, icon: maki/bridge.svg}
+- {category: cat_built_structures_tunnel, icon: maki/tunnel.svg}
+- {category: cat_built_structures_pier, icon: maki/harbor.svg}
+- {category: cat_built_structures_dyke, icon: maki/dam.svg}
+- {category: cat_built_structures_dam, icon: maki/dam.svg}
+- {category: cat_built_structures_observatory, icon: maki/observation-tower.svg}
+- {category: cat_built_structures_streetfurniture, icon: maki/square-stroked.svg}
+- {category: cat_built_structures_streetfurniture_wastebasket, icon: maki/waste-basket.svg}
+- {category: cat_built_structures_streetfurniture_carpethanger, icon: maki/picnic-site.svg}
+- {category: cat_built_structures_streetfurniture_clearcut, icon: maki/logging.svg}
+- {category: cat_built_structures_streetfurniture_cutline, icon: maki/logging.svg}
+- {category: cat_built_structures_streetfurniture_planter, icon: maki/garden.svg}
+- {category: cat_built_structures_streetfurniture_dogexcrement, icon: maki/waste-basket.svg}
+
+- {category: cat_poi, icon: generic/poi.svg, color: clr_poi_other, draw: yes}
+
+- {category: cat_poi_food, icon: maki/restaurant.svg, color: clr_poi_food}
+- {category: cat_poi_food_restaurant_asian, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_barbecue, icon: maki/restaurant-bbq.svg}
+- {category: cat_poi_food_restaurant_chinese, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_japanese, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_korean, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_noodle, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_pizza, icon: maki/restaurant-pizza.svg}
+- {category: cat_poi_food_restaurant_ramen, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_restaurant_seafood, icon: maki/restaurant-seafood.svg}
+- {category: cat_poi_food_restaurant_vietnamese, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_fastfood, icon: maki/fast-food.svg}
+- {category: cat_poi_food_fastfood_cafeteria, icon: maki/restaurant.svg}
+- {category: cat_poi_food_fastfood_chinese, icon: maki/restaurant-noodle.svg}
+- {category: cat_poi_food_fastfood_indian, icon: maki/restaurant.svg}
+- {category: cat_poi_food_fastfood_pizza, icon: maki/restaurant-pizza.svg}
+- {category: cat_poi_food_cafe, icon: maki/cafe.svg}
+- {category: cat_poi_food_bar, icon: maki/bar.svg}
+- {category: cat_poi_food_pub, icon: maki/beer.svg}
+- {category: cat_poi_food_biergarten, icon: maki/beer.svg}
+- {category: cat_poi_food_icecream, icon: maki/ice-cream.svg}
+- {category: cat_poi_food_bakery, icon: maki/bakery.svg}
+
+- {category: cat_poi_shopping, icon: maki/shop.svg, color: clr_poi_shop}
+- {category: cat_poi_shopping_supermarket, icon: maki/grocery.svg}
+- {category: cat_poi_shopping_convenience, icon: maki/convenience.svg}
+- {category: cat_poi_shopping_convenience_general, icon: maki/shop.svg}
+- {category: cat_poi_shopping_convenience_varietystore, icon: maki/shop.svg}
+- {category: cat_poi_shopping_groceries, icon: maki/grocery.svg}
+- {category: cat_poi_shopping_groceries_chocolate, icon: maki/confectionery.svg}
+- {category: cat_poi_shopping_groceries_confectionery, icon: maki/confectionery.svg}
+- {category: cat_poi_shopping_groceries_healthfood, icon: maki/shop.svg}
+- {category: cat_poi_shopping_groceries_tea, icon: maki/teahouse.svg}
+- {category: cat_poi_shopping_beverages, icon: maki/alcohol-shop.svg}
+- {category: cat_poi_shopping_clothes, icon: maki/clothing-store.svg}
+- {category: cat_poi_shopping_clothes_shoes, icon: maki/shoe.svg}
+- {category: cat_poi_shopping_jewelry, icon: maki/jewelry-store.svg}
+- {category: cat_poi_shopping_jewelry_watches, icon: maki/watch.svg}
+- {category: cat_poi_shopping_drugstore, icon: maki/pharmacy.svg}
+- {category: cat_poi_shopping_home, icon: maki/furniture.svg}
+- {category: cat_poi_shopping_home_bed, icon: maki/lodging.svg}
+- {category: cat_poi_shopping_home_interiordecoration, icon: maki/shop.svg}
+- {category: cat_poi_shopping_diy, icon: maki/hardware.svg}
+- {category: cat_poi_shopping_diy_gardencentre, icon: maki/garden-centre.svg}
+- {category: cat_poi_shopping_florist, icon: maki/florist.svg}
+- {category: cat_poi_shopping_electronics, icon: maki/mobile-phone.svg}
+- {category: cat_poi_shopping_electronics_telecommunication, icon: maki/telephone.svg}
+- {category: cat_poi_shopping_electronics_videogames, icon: maki/gaming.svg}
+- {category: cat_poi_shopping_books, icon: maki/library.svg}
+- {category: cat_poi_shopping_hobby, icon: maki/gaming.svg}
+- {category: cat_poi_shopping_hobby_art, icon: maki/art-gallery.svg}
+- {category: cat_poi_shopping_hobby_model, icon: maki/shop.svg}
+- {category: cat_poi_shopping_sports, icon: maki/basketball.svg}
+- {category: cat_poi_shopping_sports_bicycle, icon: maki/bicycle.svg}
+- {category: cat_poi_shopping_vehicles, icon: maki/car.svg}
+- {category: cat_poi_shopping_mall_wholesale, icon: maki/warehouse.svg}
+- {category: cat_poi_shopping_pet, icon: maki/veterinary.svg}
+- {category: cat_poi_shopping_gift, icon: maki/gift.svg}
+- {category: cat_poi_shopping_gift_erotic, icon: maki/shop.svg}
+- {category: cat_poi_shopping_gift_religion, icon: maki/shop.svg}
+- {category: cat_poi_shopping_vending, draw: no}
+- {category: cat_poi_shopping_vending_fuel, icon: maki/fuel.svg}
+- {category: cat_poi_shopping_bbq, icon: maki/bbq.svg}
+- {category: cat_poi_shopping_vacant, draw: no}
+
+- {category: cat_poi_accommodation, icon: maki/lodging.svg, color: clr_poi_tourism}
+- {category: cat_poi_accommodation_hotel_lovehotel, icon: maki/heart.svg}
+- {category: cat_poi_accommodation_hut, icon: maki/shelter.svg}
+
+- {category: cat_poi_health, icon: maki/hospital.svg, color: clr_poi_health}
+- {category: cat_poi_health_clinic, icon: maki/doctor.svg}
+- {category: cat_poi_health_clinic_blooddonation, icon: maki/blood-bank.svg}
+- {category: cat_poi_health_clinic_rehabilitation, icon: maki/hospital.svg}
+- {category: cat_poi_health_clinic_abortion, icon: maki/hospital.svg}
+- {category: cat_poi_health_clinic_fertility, icon: maki/hospital.svg}
+- {category: cat_poi_health_doctor, icon: maki/doctor.svg}
+- {category: cat_poi_health_doctor_haematology, icon: maki/blood-bank.svg}
+- {category: cat_poi_health_dentist, icon: maki/dentist.svg}
+- {category: cat_poi_health_pharmacy, icon: maki/pharmacy.svg}
+- {category: cat_poi_health_therapy, icon: maki/doctor.svg}
+- {category: cat_poi_health_therapy_occupationaltherapist, icon: maki/hospital.svg}
+- {category: cat_poi_health_therapy_psychotherapist, icon: maki/hospital.svg}
+- {category: cat_poi_health_medicalsupply, icon: maki/pharmacy.svg}
+- {category: cat_poi_health_medicalsupply_optician, icon: maki/optician.svg}
+- {category: cat_poi_health_care, icon: maki/wheelchair.svg}
+- {category: cat_poi_health_veterinary, icon: maki/veterinary.svg}
+
+- {category: cat_poi_education, icon: maki/school.svg, color: clr_poi_education}
+- {category: cat_poi_education_university, icon: maki/college.svg}
+- {category: cat_poi_education_otherschool_drivertraining, icon: maki/car.svg}
+- {category: cat_poi_education_research, icon: maki/college.svg}
+
+- {category: cat_poi_services, icon: maki/suitcase.svg, color: clr_poi_shop}
+- {category: cat_poi_services_bank, icon: maki/bank.svg}
+- {category: cat_poi_services_post, icon: maki/post.svg}
+- {category: cat_poi_services_beauty, icon: maki/hairdresser.svg}
+- {category: cat_poi_services_laundry, icon: maki/laundry.svg}
+- {category: cat_poi_services_repair, icon: maki/car-repair.svg}
+- {category: cat_poi_services_repair_vehicleinspection, icon: maki/car.svg}
+- {category: cat_poi_services_craft, icon: maki/hardware.svg}
+- {category: cat_poi_services_craft_bookbinder, icon: maki/library.svg}
+- {category: cat_poi_services_craft_confectionery, icon: maki/confectionery.svg}
+- {category: cat_poi_services_craft_gardener, icon: maki/garden-centre.svg}
+- {category: cat_poi_services_craft_photographer, icon: maki/attraction.svg}
+- {category: cat_poi_services_craft_sawmill, icon: maki/logging.svg}
+- {category: cat_poi_services_craft_watchmaker, icon: maki/watch.svg}
+- {category: cat_poi_services_craft_winery, icon: maki/alcohol-shop.svg}
+- {category: cat_poi_services_office_educationalinstitution, icon: maki/school.svg}
+- {category: cat_poi_services_office_politicalparty, icon: maki/town-hall.svg}
+- {category: cat_poi_services_office_telecommunication, icon: maki/telephone.svg}
+- {category: cat_poi_services_funeral, icon: maki/cemetery.svg}
+- {category: cat_poi_services_pet, icon: maki/veterinary.svg}
+- {category: cat_poi_services_studio, icon: maki/music.svg}
+- {category: cat_poi_services_lottery, icon: maki/casino.svg}
+
+- {category: cat_poi_public, icon: maki/town-hall.svg, color: clr_poi_public}
+- {category: cat_poi_public_townhall_government_prosecutor, icon: maki/suitcase.svg}
+- {category: cat_poi_public_embassy, icon: maki/embassy.svg}
+- {category: cat_poi_public_police, icon: maki/police.svg}
+- {category: cat_poi_public_firestation, icon: maki/fire-station.svg}
+- {category: cat_poi_public_emergency, icon: maki/emergency-phone.svg}
+- {category: cat_poi_public_emergency_defibrillator, icon: maki/defibrillator.svg}
+- {category: cat_poi_public_emergency_fireserviceinlet, icon: maki/water.svg}
+- {category: cat_poi_public_emergency_landingsite, icon: maki/heliport.svg}
+- {category: cat_poi_public_emergency_waterreservoir, icon: maki/water.svg}
+- {category: cat_poi_public_prison, icon: maki/prison.svg}
+- {category: cat_poi_public_toilets, icon: maki/toilet.svg}
+- {category: cat_poi_public_toilets_dogtoilet, icon: maki/dog-park.svg}
+- {category: cat_poi_public_toilets_dressingroom, icon: maki/clothing-store.svg}
+- {category: cat_poi_public_drinkingwater, icon: maki/drinking-water.svg}
+- {category: cat_poi_public_recycling, icon: maki/recycling.svg, draw: no}
+- {category: cat_poi_public_recycling_recyclingcentre, draw: yes}
+- {category: cat_poi_public_recycling_recyclingcontainer, draw: no}
+- {category: cat_poi_public_shelter, icon: maki/shelter.svg}
+- {category: cat_poi_public_social, icon: maki/heart.svg}
+- {category: cat_poi_public_telephone, icon: maki/telephone.svg, draw: no}
+
+- {category: cat_poi_culture, icon: maki/theatre.svg, color: clr_poi_tourism}
+- {category: cat_poi_culture_museum, icon: maki/museum.svg}
+- {category: cat_poi_culture_gallery, icon: maki/art-gallery.svg}
+- {category: cat_poi_culture_gallery_artscentre, icon: maki/theatre.svg}
+- {category: cat_poi_culture_cinema, icon: maki/cinema.svg}
+- {category: cat_poi_culture_library, icon: maki/library.svg}
+- {category: cat_poi_culture_nightclub, icon: maki/nightclub.svg}
+- {category: cat_poi_culture_nightclub_karaokebox, icon: maki/karaoke.svg}
+- {category: cat_poi_culture_nightclub_swingerclub, icon: maki/heart.svg}
+- {category: cat_poi_culture_casino, icon: maki/casino.svg}
+- {category: cat_poi_culture_casino_amusementarcade, icon: maki/gaming.svg}
+- {category: cat_poi_culture_community, icon: maki/town-hall.svg}
+- {category: cat_poi_culture_community_club_sport, icon: maki/pitch.svg}
+- {category: cat_poi_culture_planetarium, icon: maki/globe.svg}
+- {category: cat_poi_culture_internetcafe, icon: maki/cafe.svg}
+
+- {category: cat_poi_sights, icon: maki/attraction.svg, color: clr_poi_historic}
+- {category: cat_poi_sights_monument, icon: maki/monument.svg}
+- {category: cat_poi_sights_monument_memorial_plaque, draw: no}
+- {category: cat_poi_sights_monument_memorial_stolpersteineu, draw: no}
+- {category: cat_poi_sights_monument_cross, icon: maki/religious-christian.svg}
+- {category: cat_poi_sights_castle, icon: maki/castle.svg}
+- {category: cat_poi_sights_ruins, icon: maki/historic.svg}
+- {category: cat_poi_sights_ruins_tomb, icon: maki/cemetery.svg}
+- {category: cat_poi_sights_historic, icon: maki/historic.svg}
+- {category: cat_poi_sights_historic_building, icon: maki/home.svg}
+- {category: cat_poi_sights_historic_pillory, icon: maki/monument.svg}
+- {category: cat_poi_sights_historic_waysidecross, icon: maki/religious-christian.svg}
+- {category: cat_poi_sights_historic_waysideshrine, icon: maki/landmark.svg}
+- {category: cat_poi_sights_artwork, icon: maki/art-gallery.svg}
+- {category: cat_poi_sights_viewpoint, icon: maki/viewpoint.svg}
+- {category: cat_poi_sights_viewpoint_observation, icon: maki/observation-tower.svg}
+- {category: cat_poi_sights_information, icon: maki/information.svg}
+- {category: cat_poi_sights_information_rangerstation, icon: maki/ranger-station.svg}
+- {category: cat_poi_sights_information_board, draw: no}
+- {category: cat_poi_sights_information_board_welcomesign, icon: maki/embassy.svg}
+- {category: cat_poi_sights_information_guidepost, draw: no}
+- {category: cat_poi_sights_zoo, icon: maki/zoo.svg}
+- {category: cat_poi_sights_zoo_aquarium, icon: maki/aquarium.svg}
+- {category: cat_poi_sights_themepark, icon: maki/amusement-park.svg}
+- {category: cat_poi_sights_themepark_attraction_animal, icon: maki/zoo.svg}
+- {category: cat_poi_sights_themepark_attraction_darkride, icon: maki/rail-metro.svg}
+- {category: cat_poi_sights_themepark_attraction_logflume, icon: maki/ferry.svg}
+- {category: cat_poi_sights_themepark_attraction_pirateship, icon: maki/danger.svg}
+- {category: cat_poi_sights_themepark_attraction_riverrafting, icon: maki/ferry.svg}
+- {category: cat_poi_sights_fountain, icon: maki/water.svg}
+- {category: cat_poi_sights_mill, icon: maki/windmill.svg}
+- {category: cat_poi_sights_mill_watermill, icon: maki/watermill.svg}
+- {category: cat_poi_sights_ceremonialgate, icon: maki/place-of-worship.svg}
+
+- {category: cat_poi_leisure, icon: maki/pitch.svg, color: clr_poi_leisure}
+- {category: cat_poi_leisure_playground, icon: maki/playground.svg}
+- {category: cat_poi_leisure_playground_playground_roundabout, icon: maki/stadium.svg}
+- {category: cat_poi_leisure_playground_playground_teenshelter, icon: maki/shelter.svg}
+- {category: cat_poi_leisure_playground_playground_tunneltube, icon: maki/tunnel.svg}
+- {category: cat_poi_leisure_sportscentre, icon: maki/fitness-centre.svg}
+- {category: cat_poi_leisure_sportscentre_fitnesscentre_yoga, icon: maki/pitch.svg}
+- {category: cat_poi_leisure_sportscentre_fitnessstation, draw: no}
+- {category: cat_poi_leisure_sportscentre_fitnessstation_box, icon: maki/pitch.svg}
+- {category: cat_poi_leisure_sportscentre_fitnessstation_hyperextension, icon: maki/pitch.svg}
+- {category: cat_poi_leisure_sportscentre_fitnessstation_stairs, icon: maki/pitch.svg}
+- {category: cat_poi_leisure_sportscentre_sportshall, icon: maki/pitch.svg}
+- {category: cat_poi_leisure_sportscentre_horseracing, icon: maki/racetrack-horse.svg}
+- {category: cat_poi_leisure_pitch_bleachers, draw: no}
+- {category: cat_poi_leisure_pitch_track_cycling, icon: maki/racetrack-cycling.svg}
+- {category: cat_poi_leisure_pitch_track_horseracing, icon: maki/racetrack-horse.svg}
+- {category: cat_poi_leisure_pitch_americanfootball, icon: maki/american-football.svg}
+- {category: cat_poi_leisure_pitch_australianfootball, icon: maki/american-football.svg}
+- {category: cat_poi_leisure_pitch_badminton, icon: maki/tennis.svg}
+- {category: cat_poi_leisure_pitch_baseball, icon: maki/baseball.svg}
+- {category: cat_poi_leisure_pitch_basketball, icon: maki/basketball.svg}
+- {category: cat_poi_leisure_pitch_beachvolleyball, icon: maki/volleyball.svg}
+- {category: cat_poi_leisure_pitch_cricket, icon: maki/cricket.svg}
+- {category: cat_poi_leisure_pitch_equestrian, icon: maki/horse-riding.svg}
+- {category: cat_poi_leisure_pitch_futsal, icon: maki/soccer.svg}
+- {category: cat_poi_leisure_pitch_netball, icon: maki/volleyball.svg}
+- {category: cat_poi_leisure_pitch_padel, icon: maki/tennis.svg}
+- {category: cat_poi_leisure_pitch_rugbyleague, icon: maki/american-football.svg}
+- {category: cat_poi_leisure_pitch_rugbyunion, icon: maki/american-football.svg}
+- {category: cat_poi_leisure_pitch_skateboard, icon: maki/skateboard.svg}
+- {category: cat_poi_leisure_pitch_soccer, icon: maki/soccer.svg}
+- {category: cat_poi_leisure_pitch_softball, icon: maki/baseball.svg}
+- {category: cat_poi_leisure_pitch_tennis, icon: maki/tennis.svg}
+- {category: cat_poi_leisure_pitch_volleyball, icon: maki/volleyball.svg}
+- {category: cat_poi_leisure_swimming, icon: maki/swimming.svg}
+- {category: cat_poi_leisure_swimming_kneippwatercure, icon: maki/hospital.svg}
+- {category: cat_poi_leisure_swimming_bathingplace, icon: maki/water.svg}
+- {category: cat_poi_leisure_golf, icon: maki/golf.svg}
+- {category: cat_poi_leisure_marina, icon: maki/harbor.svg}
+- {category: cat_poi_leisure_marina_slipway, icon: maki/slipway.svg}
+- {category: cat_poi_leisure_marina_slipwaydrivable, icon: maki/slipway.svg}
+- {category: cat_poi_leisure_camping, icon: maki/campsite.svg}
+- {category: cat_poi_leisure_picnic, icon: maki/picnic-site.svg}
+- {category: cat_poi_leisure_picnic_bbq, icon: maki/bbq.svg}
+- {category: cat_poi_leisure_picnic_firepit, draw: no}
+- {category: cat_poi_leisure_picnic_outdoorseating, draw: no}
+- {category: cat_poi_leisure_picnic_picnictable, draw: no}
+- {category: cat_poi_leisure_wintersports, icon: maki/skiing.svg}
+- {category: cat_poi_leisure_motorsport, icon: maki/racetrack.svg}
+- {category: cat_poi_leisure_equestrian, icon: maki/horse-riding.svg}
+- {category: cat_poi_leisure_dogpark, icon: maki/dog-park.svg}
+- {category: cat_poi_leisure_hunting, icon: maki/viewpoint.svg}
+- {category: cat_poi_leisure_wildlife, icon: maki/viewpoint.svg}
+- {category: cat_poi_leisure_indoor, icon: maki/bowling-alley.svg}
+- {category: cat_poi_leisure_climbing, icon: maki/mountain.svg}
+- {category: cat_poi_leisure_trafficpark, icon: maki/bicycle.svg}
+- {category: cat_poi_leisure_trailhead, icon: maki/marker-stroked.svg}
+
+- {category: cat_poi_religion, icon: maki/place-of-worship.svg, color: clr_poi_worship}
+- {category: cat_poi_religion_worship_buddhist, icon: maki/religious-buddhist.svg}
+- {category: cat_poi_religion_worship_christian, icon: maki/religious-christian.svg}
+- {category: cat_poi_religion_worship_christian_jehovahswitness, icon: maki/place-of-worship.svg}
+- {category: cat_poi_religion_worship_christian_laluzdelmundo, icon: maki/place-of-worship.svg}
+- {category: cat_poi_religion_worship_jewish, icon: maki/religious-jewish.svg}
+- {category: cat_poi_religion_worship_muslim, icon: maki/religious-muslim.svg}
+- {category: cat_poi_religion_cemetery, icon: maki/cemetery.svg}
+
+- {category: cat_poi_other, color: clr_poi_other}

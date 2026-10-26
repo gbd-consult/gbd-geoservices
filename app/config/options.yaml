@@ -1,0 +1,57 @@
+# Every option with its default. Overridden by /config/options.yaml (the deployment:
+# config.local/ in development, config/ in production) and by environment variables
+# GEOSERVICES_<OPTION> (compose, CI); secrets only ever in those two or postgres.env, never here.
+
+serve_area: sh              # the area served: its newest complete import, its compiled styles and its tile cache
+force_schema: null          # serve this schema (e.g. de_sh_20260920_030000) instead of the area's newest: a rollback
+languages: [de, en]         # names and terms carried by categories and served by the API
+
+db:
+  host: pgbouncer           # the compose service in front of postgres
+  port: 6432                # database, user and password are postgres.env's, not options
+  pool_size: 20
+  pool_overflow: 20
+  pool_timeout: 10
+  mapnik_pool_size: 40      # Mapnik's PostGIS connections, one pool for every theme: at least the concurrent renders, which Starlette's 40 worker threads cap; a render that finds it full fails
+
+precache:                       # highest level pre-cached per grid
+  GoogleMapsCompatible: 12
+  DE_EPSG_25832_ADV: 8
+  DE_EPSG_25833_ADV: 8
+pre_cache_fast_max: 1000    # `manage.py pre-cache --fast`: the levels with at most this many tiles per grid
+ondemand_cache_max_mb: 10240
+nocache_from:                   # per grid, the first level that is rendered on every request and never cached
+  GoogleMapsCompatible: 20
+  DE_EPSG_25832_ADV: 16         # about the ground resolution of z20
+  DE_EPSG_25833_ADV: 16         # about the ground resolution of z20
+nocache: false              # no tile cache: neither tier is read or written, every tile is rendered, and tiles and icons are sent no-store
+map_pool_size: 4            # Mapnik Map objects per theme = concurrent renders per theme
+serve_grids: [GoogleMapsCompatible, DE_EPSG_25832_ADV, DE_EPSG_25833_ADV]  # the grids of styles/grids.yaml to advertise, render, pre-cache; others 404
+serve_palettes: [default, light, dark, hico]  # the palettes of palettes.yaml to compile and serve
+serve_details: [min, nav, std, max]             # the details of details.yaml to compile and serve
+buffer_px: 64               # Mapnik Layer buffer: how far beyond a tile features are fetched
+wms_max_px: 4096            # WMS GetMap: the largest WIDTH and HEIGHT; a map is rendered on every request, never cached
+
+search:
+  cache_ttl_s: 60           # a stale entry can never be worse than this: the tables change
+  cache_size: 512           # only on a full re-import, so nothing has to notice one happened
+
+keys: []                    # deployment: [{key, scopes: [search, tiles], referrers: [...], rate: n/min}]
+cors_origins: ['*']
+
+host: null                  # public host name Caddy serves; deploy.sh checks the Caddyfile names it
+devtools: false             # viewer only, never on a public deployment
+devtools_watch: false       # with devtools: recompile when styles/ changes, and the page polls for it every 1.5 s
+log_level: info
+slow_log_ms: 1000            # a tile or search slower than this logs its steps as a warning; at log_level debug every one does
+
+data_dir: /data             # downloads/, styles/<schema>/, cache/<area>/, import.log, import.status
+geofabrik_base: https://download.geofabrik.de/
+areas:                      # what `manage.py import <area>` imports: area name -> path under geofabrik_base
+  li: europe/liechtenstein-latest.osm.pbf
+  de_sh: europe/germany/schleswig-holstein-latest.osm.pbf
+  de_nrw: europe/germany/nordrhein-westfalen-latest.osm.pbf
+  de_nb: europe/germany/bayern/niederbayern-latest.osm.pbf   # Bayerischer Wald to 1456 m: the contour test area
+  de: europe/germany-latest.osm.pbf
+water_polygons_base: https://osmdata.openstreetmap.de/download/
+elevation_sources: [downloads/rasters_COP30*/*.tif]   # `manage.py init-elevation`: GeoTIFF globs under data_dir
