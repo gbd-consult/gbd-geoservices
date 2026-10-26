@@ -23,10 +23,9 @@
 # `reload` recreates the app and nothing else: postgres, pgbouncer and Caddy
 # keep running with the configuration they have. A change to postgresql.conf,
 # pg_hba.conf, pgbouncer.ini, the Caddyfile or postgres.env takes `restart`,
-# which stops everything and starts it again -- `down` removes the old
-# containers and their logs with them. Both return once the containers are
-# started, not healthy: the app compiles the styles and loads its Map pool
-# for minutes after that, which `docker compose logs -f app` shows.
+# which stops everything and starts it again. Both return once the
+# containers are started, not healthy: the app compiles the styles and loads
+# its Map pool for minutes after that, which data/log/app.log shows.
 #
 # Everything but `import` runs in the foreground and writes to stdout.
 # `import` runs for minutes to hours, so it runs detached in the app
@@ -82,7 +81,7 @@ reload() {
     # options.yaml once, when it starts; `up` alone recreates it only for a
     # new image or environment.
     docker compose up -d --no-deps --force-recreate app
-    echo "app recreated, docker compose logs -f app to monitor"
+    echo "app recreated, tail -f $PWD/data/log/app.log to monitor"
 }
 
 # The app answers /health only once it has compiled the styles for the
@@ -122,7 +121,7 @@ key_add() {
 restart() {
     docker compose down --remove-orphans
     docker compose up -d
-    echo "stack started, docker compose logs -f to monitor"
+    echo "stack started, tail -f $PWD/data/log/*.log to monitor"
 }
 
 case "$1" in

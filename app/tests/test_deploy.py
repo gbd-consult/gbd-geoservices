@@ -59,6 +59,30 @@ def test_the_four_services_and_the_keys_tool(compose):
     assert set(compose['services']) == {'postgres', 'pgbouncer', 'app', 'caddy', 'keys'}
 
 
+def test_docker_keeps_no_copy_of_the_logs(compose):
+    """The logs hold client IPs and search texts for at most 7 days. Docker's
+    own copy is bounded by size, so a quiet service's lines would stay in it
+    for weeks, past the period the privacy policy states."""
+    for name, svc in compose['services'].items():
+        logging = svc['logging']
+        if logging['driver'] == 'none':                    # no log at all (keys)
+            continue
+        assert logging['options'].get('cache-disabled') == 'true', name
+
+
+def test_setup_keeps_the_logs_seven_days_at_most():
+    """A day in the current file plus six rotated ones; journald, which
+    /dev/log feeds, keeps its own copy and is limited alike. Without
+    `notifempty` removed, an empty day stops the rotation and the older
+    files age past the period."""
+    setup = (ROOT / 'app' / 'scripts' / 'setup.sh').read_text()
+    assert re.search(r'^\s+daily$', setup, re.M)
+    assert re.search(r'^\s+rotate 6$', setup, re.M)
+    assert not re.search(r'^\s+notifempty$', setup, re.M)
+    assert 'MaxFileSec=1day' in setup
+    assert 'MaxRetentionSec=6day' in setup
+
+
 def test_no_credential_is_in_any_compose_file(compose, local_compose, test_compose):
     """A compose file is tracked, so it must not carry the password.
 
@@ -181,7 +205,7 @@ def test_reload_recreates_the_app_and_nothing_else():
 
 def test_reload_and_restart_return_without_waiting():
     """The app takes minutes to compile the styles and load its Map pool;
-    `docker compose logs -f` is how to watch it."""
+    data/log/app.log is how to watch it."""
     assert '--wait' not in MANAGE.read_text()
 
 

@@ -16,18 +16,24 @@
 #       postgres.log, pgbouncer.log, caddy.log) as `date | message`, and
 #       not into /var/log/syslog as well: it sorts before 50-default.conf.
 #   /etc/logrotate.d/gbd-geoservices-v03
-#       rotates them daily and keeps a week.
+#       rotates them daily and keeps six old files, so no line is older
+#       than 7 days: the logs hold client IPs and search texts, and 7 days
+#       is the period the privacy policy states (DESIGN.md "Deployment").
+#   /etc/systemd/journald.conf.d/gbd-geoservices-v03.conf
+#       the same 7 days for journald, which /dev/log feeds and which keeps a
+#       copy of every line. Host-wide: it limits every unit's journal.
 #   /etc/cron.d/gbd-geoservices-v03
 #       `manage.sh update` on Monday, Wednesday and Friday at 02:00 (UTC on
 #       the server): imports serve_area, reloads and renews the tile
 #       cache, as the owner of this directory, appending to data/cron.log.
-#       A job running this manage.sh in that
-#       user's own crontab is removed first. Docker makes data/ root's, so
-#       the log is created here: cron's shell could not create it, and with
-#       no MTA on the host cron discards that error.
+#       A job running this manage.sh in that user's own crontab is removed
+#       first. Docker makes data/ root's, so the log is created here: cron's
+#       shell could not create it, and with no MTA on the host cron discards
+#       that error.
 #
 # Without it the stack runs all the same, and its lines go to
-# /var/log/syslog.
+# /var/log/syslog, which Ubuntu keeps for four weeks: a deployment that
+# serves anyone needs it.
 #
 # rsyslog runs as syslog, so data/log is syslog's; the files are readable by
 # everyone, so the operator can follow them without sudo. No key reaches
@@ -52,6 +58,7 @@ CRON_CONF=/etc/cron.d/$NAME
 CRON_LOG=$BASE/data/cron.log
 OPERATOR=$(stat -c %U "$BASE")
 AREA=$(sed -n 's/^serve_area: *//p' "$BASE/config/options.yaml")
+JOURNALD_CONF=/etc/systemd/journald.conf.d/$NAME.conf
 # Where the service name starts in the tag `$NAME-<service>`, 1-based.
 SERVICE_FROM=$((${#NAME} + 2))
 
@@ -87,12 +94,14 @@ EOF
 cat > "$LOGROTATE_CONF" <<EOF
 # Written by $BASE/setup.sh.
 
+# rotate 6, not 7: the current file holds up to a day as well. No
+# notifempty: an empty file left in place would leave the older ones
+# unrotated, and older than 7 days.
 $LOG_DIR/*.log {
     su syslog adm
     daily
-    rotate 7
+    rotate 6
     missingok
-    notifempty
     compress
     delaycompress
     sharedscripts
@@ -100,6 +109,17 @@ $LOG_DIR/*.log {
         /usr/lib/rsyslog/rsyslog-rotate
     endscript
 }
+EOF
+
+mkdir -p "$(dirname "$JOURNALD_CONF")"
+cat > "$JOURNALD_CONF" <<EOF
+# Written by $BASE/setup.sh.
+# journald deletes whole files only: one file a day, and a 6-day limit, so
+# no entry outlives 7 days.
+
+[Journal]
+MaxFileSec=1day
+MaxRetentionSec=6day
 EOF
 
 touch "$CRON_LOG"
@@ -121,5 +141,6 @@ EOF
 
 rsyslogd -N1 >/dev/null
 systemctl restart rsyslog
+systemctl restart systemd-journald
 
-echo "wrote $RSYSLOG_CONF, $LOGROTATE_CONF and $CRON_CONF; the services log to $LOG_DIR/"
+echo "wrote $RSYSLOG_CONF, $LOGROTATE_CONF, $JOURNALD_CONF and $CRON_CONF; the services log to $LOG_DIR/"

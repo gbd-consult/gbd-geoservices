@@ -54,7 +54,7 @@ The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik)
 
    This checks `config/`, builds the image on the server, and copies `docker-compose.yml`, `manage.sh`, `setup.sh` and `config/` to `/opt/gbd-geoservices/v0.3/`. It does not start or restart anything.
 
-4. On the server, in `/opt/gbd-geoservices/v0.3`, once: `sudo ./setup.sh`. It has the host's rsyslog write the services' logs to `data/log/` and rotate them, and adds the cron job that updates the data. Without it the stack runs all the same, logs to `/var/log/syslog` and is not updated. Run it again when a deploy brings a changed `setup.sh`.
+4. On the server, in `/opt/gbd-geoservices/v0.3`, once: `sudo ./setup.sh`. It has the host's rsyslog write the services' logs to `data/log/`, keeps them for 7 days, limits journald to the same, and adds the cron job that updates the data. Without it the stack runs all the same, but logs to `/var/log/syslog`, kept for four weeks -- too long for a public deployment (see **Logs**) -- and is not updated. Run it again when a deploy brings a changed `setup.sh`.
 
 5. On the server, in `/opt/gbd-geoservices/v0.3`, start the stack and import the area:
 
@@ -88,9 +88,9 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 
 **Rolling back.** Set `force_schema` in `config/options.yaml` to the previous import's schema (its name is `<area>_<date>_<time>`; `GET /status` shows the current one), deploy, and `./manage.sh reload`. Remove the option again to return to the newest import.
 
-**Updating the software.** `app/scripts/deploy.sh <ssh-host>` from the new checkout, then `./manage.sh reload` on the server. The app takes a few minutes to start: it compiles the styles and loads its renderers (`docker compose logs -f app`).
+**Updating the software.** `app/scripts/deploy.sh <ssh-host>` from the new checkout, then `./manage.sh reload` on the server. The app takes a few minutes to start: it compiles the styles and loads its renderers (`tail -f data/log/app.log`).
 
-**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and kept for a week. `docker compose logs` shows only the last megabyte of each service.
+**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and deleted after 7 days. They are the only copy: `docker compose logs` shows nothing. Personal data in them, for the privacy policy: Caddy's access log has the client's IP address, the URL (without the key), the referrer and the user agent; the app's log has a search's text when the search is slow, Postgres's a slow statement with its parameters. Apart from these and the request log below, nothing is kept about a request: no cookies, no tracking, no analytics.
 
 **Request log and load figures.** Every API request (tiles, WMS, search) is written to the table `service.request_log` with its time, key, status, duration, tile cache hit or miss, client IP and, for a search, its search terms. Once a minute the host's CPU, RAM and disk are sampled. The app itself, at start and every night shortly after midnight UTC, counts the finished days into `service.daily_stats` and `service.daily_host` (no IPs, no search terms; kept), creates the coming days' partitions and drops the request log older than `request_log_days` (1-7, default 7, today included), IP addresses and search terms with it; `./manage.sh stats-daily` does the same by hand. `./manage.sh stats-export 2026-10 > load-2026-10.csv` writes one line per day: requests by kind, errors, cache hit rate, 95th percentile durations, distinct IPs, CPU, RAM and disk; the totals with the cost per 1000 requests (option `monthly_cost_eur`) go to the terminal. `request_log: false` turns the log off.
 

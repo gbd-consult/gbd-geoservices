@@ -34,14 +34,14 @@ networks:
 
 # Every service logs to the host's syslog, tagged with its container name;
 # app/scripts/setup.sh has rsyslog write data/log/<service>.log from it.
-# Docker keeps a local copy for `docker compose logs`, capped here at 1 MB
-# per container: the files in data/log are the record.
+# Docker keeps no copy of its own, so `docker compose logs` shows nothing: a
+# copy bounded by size would keep a quiet service's lines -- client IPs,
+# search texts -- past the 7 days data/log keeps them.
 x-logging: &logging
   driver: syslog
   options:
     tag: "{{.Name}}"
-    cache-max-size: 1m
-    cache-max-file: "1"
+    cache-disabled: "true"
 
 services:
   postgres:
