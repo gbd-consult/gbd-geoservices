@@ -101,7 +101,7 @@ def start_watcher() -> watcher.Watcher | None:
 #: controls carry them; the first of each is what a URL without one gets.
 TABS = ('tiles', 'search', 'status')
 DETAILS = ('std', 'min', 'nav', 'max', 'topographic', 'vegetation')
-REQUEST_MODES = ('xyz', 'wmts-rest', 'wmts-kvp')
+REQUEST_MODES = ('xyz', 'wmts-rest', 'wmts-kvp', 'wms')
 SEARCH_MODES = ('name', 'address', 'phrase', 'here')
 SORTS = ('score', 'distance', 'name', 'address')
 

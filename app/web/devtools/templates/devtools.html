@@ -104,7 +104,7 @@
         </div>
       </div>
 
-      <!-- Three ways to fetch the same tile. They must draw the identical
+      <!-- Four ways to fetch the same tile. They must draw the identical
            map; one that differs is a bug in that protocol's addressing. -->
       <div class="field">
         <label class="field-label">{{ t('devtools.request_mode') }}</label>
@@ -112,6 +112,7 @@
           <label><input type="radio" name="mode" value="xyz"{{ ' checked' if ui.mode == 'xyz' }}>XYZ</label>
           <label><input type="radio" name="mode" value="wmts-rest"{{ ' checked' if ui.mode == 'wmts-rest' }}>WMTS REST</label>
           <label><input type="radio" name="mode" value="wmts-kvp"{{ ' checked' if ui.mode == 'wmts-kvp' }}>WMTS KVP</label>
+          <label><input type="radio" name="mode" value="wms"{{ ' checked' if ui.mode == 'wms' }}>WMS</label>
         </div>
       </div>
 

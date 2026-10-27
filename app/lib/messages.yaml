@@ -89,8 +89,8 @@ devtools.request_mode:
   de: Abfrageart
   en: Request mode
 devtools.wmts_only:
-  de: (nur WMTS)
-  en: (WMTS only)
+  de: (nicht für XYZ)
+  en: (not for XYZ)
 devtools.debug_grid:
   de: Debug-Raster
   en: Debug grid

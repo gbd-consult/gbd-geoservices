@@ -3,7 +3,7 @@
 //
 // The server compiles one XML per theme *per grid* and serves WMTS in both
 // bindings -- so the tab reads the public `/metadata`, builds a
-// CRS per grid from `/devtools/api/grids`, and offers three request modes
+// CRS per grid from `/devtools/api/grids`, and offers four request modes
 // that must all draw the identical map. A mode that differs is a bug in
 // that protocol's addressing, which is what the switch is for.
 //
@@ -62,8 +62,8 @@ function currentFormat() {
   return formatSelect.value in formats ? formatSelect.value : 'png';
 }
 
-// XYZ is Web Mercator by definition, so the grid picker applies to the two
-// WMTS modes only -- and not while searching (see webMercatorLock).
+// XYZ is Web Mercator by definition, so the grid picker applies to WMTS
+// and WMS only -- and not while searching (see webMercatorLock).
 function currentGridId() {
   if (webMercatorLock || currentMode() === 'xyz') {
     return WEB_MERCATOR;
@@ -71,11 +71,18 @@ function currentGridId() {
   return gridSelect.value in grids ? gridSelect.value : WEB_MERCATOR;
 }
 
-// All three address the same tile. In every configured grid level N *is*
+// All four address the same tile. In every configured grid level N *is*
 // the quadtree level N, so XYZ z/x/y and WMTS TILEMATRIX/TILECOL/TILEROW
-// are the same three numbers in a different spelling.
+// are the same three numbers in a different spelling. WMS has no tile
+// address: each tile is a GetMap of its own bbox in the grid's CRS, which
+// the server renders with that grid's XML and never caches.
 function urlTemplateFor(mode, theme, gridId, format, version) {
   const bust = `v=${version}`;
+  if (mode === 'wms') {
+    return `/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=${theme}&STYLES=`
+      + `&CRS=${grids[gridId]?.crs ?? 'EPSG:3857'}&BBOX={bbox}&WIDTH=256&HEIGHT=256`
+      + `&FORMAT=${encodeURIComponent(formats[format])}&${bust}${api.keyParam('&')}`;
+  }
   if (mode === 'wmts-kvp') {
     return `/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${theme}`
       + `&TILEMATRIXSET=${gridId}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`

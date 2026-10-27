@@ -188,6 +188,13 @@ def test_every_control_is_rendered_as_the_url_sets_it(monkeypatch):
     assert '<span id="searchSimilarityValue">7</span>' in text
 
 
+def test_wms_is_a_request_mode_with_the_grid_picker(monkeypatch):
+    """WMS renders in the grid's CRS, so unlike XYZ it keeps the grid picker."""
+    text = TestClient(app_with(monkeypatch, True)).get('/devtools', params={'mode': 'wms'}).text
+    assert _checked(text, 'mode') == ['wms']
+    assert re.search(r'<select id="grid">', text)
+
+
 def test_the_defaults_without_a_url_state(monkeypatch):
     from search.request import DEFAULT_SIMILARITY
 

@@ -621,6 +621,21 @@ export function ensureMap(spec) {
   return map;
 }
 
+// A WMS template's `{bbox}`: the tile's extent in the map's CRS, as
+// Leaflet's own WMS layer computes it. Unbuffered: every GetMap is a render,
+// so a prefetch ring would multiply them.
+const BboxTileLayer = L.TileLayer.extend({
+  _isValidTile: clampedIsValidTile,
+
+  getTileUrl: function (coords) {
+    const [nw, se] = this._tileCoordsToNwSe(coords);
+    const crs = this._map.options.crs;
+    const bounds = L.bounds(crs.project(nw), crs.project(se));
+    const bbox = [bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y].join(',');
+    return L.Util.template(this._url, { bbox });
+  },
+});
+
 export function setTileLayer(template, options) {
   // The same layer again is kept, not rebuilt: a rebuild drops every loaded
   // tile, and a tab switch asks for the layer it already has.
@@ -637,7 +652,9 @@ export function setTileLayer(template, options) {
   // since 1.0 and the version is pinned in the page's <script> tag, but a
   // future bump renaming one would otherwise break the page outright -- so
   // fall back to an unbuffered layer, which is how this behaved before.
-  if (typeof L.TileLayer.prototype._getTiledPixelBounds === 'function') {
+  if (template.includes('{bbox}')) {
+    tileLayer = new BboxTileLayer(template, options);
+  } else if (typeof L.TileLayer.prototype._getTiledPixelBounds === 'function') {
     tileLayer = new BufferedTileLayer(template, options);
   } else {
     console.warn(
