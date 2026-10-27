@@ -51,6 +51,14 @@ def test_classes_bumps_and_pieces(db, temp_schema):
     assert count == len(rows)
 
 
+def test_tile_names_are_the_sources_naming():
+    """The source's own naming: a wrong digit count is a 404, which download() takes for sea."""
+    names = elevation.tile_names([5, 47, 15, 55])
+    assert len(names) == 11 * 9
+    assert names[0] == 'Copernicus_DSM_COG_10_N47_00_E005_00_DEM'
+    assert names[-1] == 'Copernicus_DSM_COG_10_N55_00_E015_00_DEM'
+
+
 def test_the_classes_follow_the_levels():
     assert elevation.classes() == ('cls_contour_1000', 'cls_contour_500', 'cls_contour_250',
                                    'cls_contour_100', 'cls_contour_50')

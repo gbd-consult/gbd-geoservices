@@ -55,3 +55,5 @@ areas:                      # what `manage.py import <area>` imports: area name 
   de: europe/germany-latest.osm.pbf
 water_polygons_base: https://osmdata.openstreetmap.de/download/
 elevation_sources: [downloads/rasters_COP30*/*.tif]   # `manage.py init-elevation`: GeoTIFF globs under data_dir
+elevation_base: https://copernicus-dem-30m.s3.amazonaws.com/   # `init-elevation --download`: Copernicus GLO-30
+elevation_tiles: [5, 47, 15, 55]   # its tiles, by south-west corner: west, south, east, north (Germany)

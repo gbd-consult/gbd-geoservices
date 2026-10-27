@@ -1,6 +1,6 @@
 """Management commands.
 
-    python tools/manage.py init-elevation
+    python tools/manage.py init-elevation [--download]
     python tools/manage.py import <area> [--no-water] [--pass-workers 1|2|3]
     python tools/manage.py compile-styles [<area>]
     python tools/manage.py pre-cache [<area>] [--fast] [--force]
@@ -78,8 +78,13 @@ def cmd_init_elevation(args: argparse.Namespace) -> int:
 
     logging.getLogger('importer').setLevel(logging.INFO)
     started = time.monotonic()
+    data_dir = Path(config.opt('data_dir', '/data'))
     try:
-        lines = elevation.init(Path(config.opt('data_dir', '/data')),
+        if args.download:
+            fetched, absent = elevation.download(data_dir, config.opt('elevation_base'),
+                                                 config.opt('elevation_tiles'))
+            print(f'{fetched} tiles downloaded, {absent} absent at the source (sea)')
+        lines = elevation.init(data_dir,
                                config.opt('elevation_sources') or [],
                                params.load(run.MODEL, run.STYLES))
     except elevation.ElevationError as exc:
@@ -184,6 +189,9 @@ def parser() -> argparse.ArgumentParser:
                     'contour and filter them into the schema `elevation`, replacing what '
                     'is there. Run once, and again only when the rasters or the contours '
                     'parameters change; every import after it copies its area\'s lines.')
+    init_elevation.add_argument('--download', action='store_true',
+                                help='first fetch the elevation_tiles not yet on disk '
+                                     'from elevation_base')
     init_elevation.set_defaults(func=cmd_init_elevation)
 
     compile_styles = commands.add_parser(

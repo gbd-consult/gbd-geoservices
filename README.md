@@ -74,7 +74,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh pre-cache [--fast]` | render the low zoom levels of every theme ahead of time |
 | `./manage.sh drop-cache` | empty the tile cache |
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
-| `./manage.sh init-elevation` | draw the contour lines once from the elevation rasters (`elevation_sources`); the next import of an area takes its share |
+| `./manage.sh init-elevation` | download the missing elevation tiles (`elevation_tiles`) and draw the contour lines once; the next import of an area takes its share |
 
 **Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. A weekly cron job:
 
@@ -84,7 +84,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 
 The two newest complete imports of an area are kept. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. The tile cache is kept across imports; run `drop-cache` (and `pre-cache`) after an import if the map should change at once.
 
-**Contour lines.** The `topographic` and `max` levels of detail draw contour lines from the Copernicus GLO-30 elevation model. Put its GeoTIFFs under `data/downloads/rasters_COP30*/` (or set `elevation_sources`), run `./manage.sh init-elevation` once -- for all of Germany it runs for a long while and needs several GB of disk for the intermediate raster -- and import the areas again. An area imported before has no contour lines.
+**Contour lines.** The `topographic` and `max` levels of detail draw contour lines from the Copernicus GLO-30 elevation model. Run `./manage.sh init-elevation` once: it fetches the tiles of `elevation_tiles` (Germany) that are not yet under `data/downloads/rasters_COP30/` and draws the lines (own GeoTIFFs: put them there, or set `elevation_sources`, and run `manage.py init-elevation` without `--download`) -- for all of Germany it runs for a long while and needs several GB of disk for the intermediate raster -- and import the areas again. An area imported before has no contour lines.
 
 **Rolling back.** Set `force_schema` in `config/options.yaml` to the previous import's schema (its name is `<area>_<date>_<time>`; `GET /status` shows the current one), deploy, and `./manage.sh reload`. Remove the option again to return to the newest import.
 

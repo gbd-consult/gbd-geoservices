@@ -7,6 +7,7 @@
 #   ./manage.sh restart         the whole stack: docker compose down, then up
 #   ./manage.sh import de_sh    in the background, logging to data/import.log
 #   ./manage.sh update de_sh    import in the foreground, then reload: for cron
+#   ./manage.sh init-elevation  download the missing elevation tiles, then draw the contours
 #   ./manage.sh drop-cache      any other argument: a manage.py subcommand
 #
 # deploy.sh copies it next to docker-compose.yml on the server. deploy.sh
@@ -30,6 +31,9 @@
 # itself, under a line naming the run, and holds data/import.status while
 # it runs; a second import refuses to start. `update` waits for the import
 # and reloads only if it succeeded, so a cron job needs nothing else.
+#
+# In the checkout (app/scripts/manage.sh) it drives the dev stack,
+# docker-compose.local.yml, the same way.
 
 set -eu
 
@@ -39,10 +43,23 @@ if [ $# -eq 0 ]; then
 fi
 
 cd "$(dirname "$0")"
+if [ -f ../../docker-compose.local.yml ]; then
+    cd ../..
+    export COMPOSE_FILE=docker-compose.local.yml
+fi
+
+# Docker creates a missing bind-mount source as root, and the dev app runs
+# as the invoking user: without this it cannot write a download. Not -R:
+# the tile cache under data/ can be millions of files.
+data_writable() {
+    owner=$(docker compose exec -T app sh -c 'echo "$(id -u):$(id -g)"')
+    docker compose exec -T -u 0 app sh -c 'mkdir -p /data/downloads && chown "$1" /data /data/downloads' sh "$owner"
+}
 
 # -T: no terminal is attached under cron, and `exec` without it
 # fails with "the input device is not a TTY".
 manage_py() {
+    data_writable
     docker compose exec -T app python tools/manage.py "$@"
 }
 
@@ -50,6 +67,7 @@ import_background() {
     if [ -e data/import.status ]; then
         echo "warning: data/import.status exists: $(cat data/import.status)" >&2
     fi
+    data_writable
     docker compose exec -d app python tools/manage.py "$@"
     echo "import started, tail -f $PWD/data/import.log to monitor"
 }
@@ -73,5 +91,6 @@ case "$1" in
     restart)      restart ;;
     import)       import_background "$@" ;;
     update)       shift; manage_py import "$@"; reload ;;
+    init-elevation) shift; manage_py init-elevation --download "$@" ;;
     *)            manage_py "$@" ;;
 esac

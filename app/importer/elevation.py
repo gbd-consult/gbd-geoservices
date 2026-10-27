@@ -3,6 +3,8 @@
 Two halves, because the heights do not change between imports and the
 lines take far longer to draw than an area takes to import:
 
+* `download()` -- `manage.py init-elevation --download`: the GLO-30 tiles of
+  the `elevation_tiles` option from `elevation_base`, before `init()`.
 * `init()` -- `manage.py init-elevation`, run once: the GeoTIFFs named by the
   `elevation_sources` option are mosaicked, resampled to `contours.cell_m`
   in EPSG:3857, contoured, filtered and cut into pieces, into the schema
@@ -32,6 +34,8 @@ import logging
 import subprocess
 import time
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import urlretrieve
 
 import yaml
 from psycopg import sql
@@ -71,6 +75,51 @@ def _run(*command: str) -> None:
         subprocess.run(command, check=True)
     except (OSError, subprocess.CalledProcessError) as error:
         raise ElevationError(f'{command[0]} failed: {error}') from error
+
+
+#: Where `download()` puts the tiles; matched by the default `elevation_sources`.
+TILES_DIR = 'downloads/rasters_COP30'
+
+
+def tile_names(tiles: list[int]) -> list[str]:
+    """The GLO-30 tiles whose south-west corners lie in [west, south, east, north],
+    whole degrees, both ends included; northern and eastern hemisphere only."""
+    west, south, east, north = tiles
+    return [f'Copernicus_DSM_COG_10_N{lat:02d}_00_E{lon:03d}_00_DEM'
+            for lat in range(south, north + 1) for lon in range(west, east + 1)]
+
+
+def download(data_dir: Path, base: str, tiles: list[int]) -> tuple[int, int]:
+    """Fetch the tiles not already under data_dir/TILES_DIR; (fetched, absent).
+
+    A tile the source answers 404 for is open sea: GLO-30 has none there.
+    A tile on disk is kept, so a repeated run fetches only what is missing;
+    delete the directory to fetch a newer release.
+    """
+    target = data_dir / TILES_DIR
+    target.mkdir(parents=True, exist_ok=True)
+    fetched = absent = 0
+    for name in tile_names(tiles):
+        path = target / f'{name}.tif'
+        if path.exists():
+            continue
+        part = path.with_suffix('.part')
+        try:
+            # Through .part, so an interrupted run leaves no half tile that the next one keeps.
+            urlretrieve(f'{base.rstrip("/")}/{name}/{name}.tif', part)  # noqa: S310 - from the options
+        except HTTPError as error:
+            part.unlink(missing_ok=True)
+            if error.code != 404:
+                raise ElevationError(f'{name}: {error}') from error
+            absent += 1
+            continue
+        except URLError as error:
+            part.unlink(missing_ok=True)
+            raise ElevationError(f'{name}: {error.reason}') from error
+        part.rename(path)
+        fetched += 1
+        log.info('%s', path)
+    return fetched, absent
 
 
 def sources(data_dir: Path, patterns: list[str]) -> list[Path]:
