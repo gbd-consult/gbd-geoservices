@@ -16,7 +16,14 @@
 #       postgres.log, pgbouncer.log, caddy.log) as `date | message`, and
 #       not into /var/log/syslog as well: it sorts before 50-default.conf.
 #   /etc/logrotate.d/gbd-geoservices-v03
-#       rotates them daily and keeps two weeks.
+#       rotates them daily and keeps a week.
+#   /etc/cron.d/gbd-geoservices-v03
+#       `manage.sh update` on Monday, Wednesday and Friday at 02:00 (UTC on
+#       the server): imports serve_area and reloads, as the owner of this
+#       directory, appending to data/cron.log. A job running this
+#       manage.sh in that user's own crontab is removed first. Docker makes
+#       data/ root's, so the log is created here: cron's shell could not
+#       create it, and with no MTA on the host cron discards that error.
 #
 # Without it the stack runs all the same, and its lines go to
 # /var/log/syslog.
@@ -40,8 +47,17 @@ BASE=$(cd "$(dirname "$0")" && pwd)
 LOG_DIR=$BASE/data/log
 RSYSLOG_CONF=/etc/rsyslog.d/30-$NAME.conf
 LOGROTATE_CONF=/etc/logrotate.d/$NAME
+CRON_CONF=/etc/cron.d/$NAME
+CRON_LOG=$BASE/data/cron.log
+OPERATOR=$(stat -c %U "$BASE")
+AREA=$(sed -n 's/^serve_area: *//p' "$BASE/config/options.yaml")
 # Where the service name starts in the tag `$NAME-<service>`, 1-based.
 SERVICE_FROM=$((${#NAME} + 2))
+
+if [ -z "$AREA" ]; then
+    echo "no serve_area in $BASE/config/options.yaml" >&2
+    exit 2
+fi
 
 if [ -e /etc/apparmor.d/usr.sbin.rsyslogd ] && [ ! -e /etc/apparmor.d/disable/usr.sbin.rsyslogd ]; then
     echo "warning: the rsyslogd AppArmor profile is enabled; rsyslog cannot write to $LOG_DIR" >&2
@@ -73,7 +89,7 @@ cat > "$LOGROTATE_CONF" <<EOF
 $LOG_DIR/*.log {
     su syslog adm
     daily
-    rotate 14
+    rotate 7
     missingok
     notifempty
     compress
@@ -85,7 +101,24 @@ $LOG_DIR/*.log {
 }
 EOF
 
+touch "$CRON_LOG"
+chown "$OPERATOR:" "$CRON_LOG"
+
+# A job for this stack in the operator's own crontab would run beside the
+# one below, and its import would fail because the first one is running.
+if crontab -u "$OPERATOR" -l 2>/dev/null | grep -qF "$BASE/manage.sh"; then
+    crontab -u "$OPERATOR" -l | grep -vF "$BASE/manage.sh" | crontab -u "$OPERATOR" -
+    echo "removed the $BASE/manage.sh job from $OPERATOR's crontab"
+fi
+rm -f "$CRON_CONF"
+
+cat > "$CRON_CONF" <<EOF
+# Written by $BASE/setup.sh.
+
+0 2 * * 1,3,5  $OPERATOR  $BASE/manage.sh update $AREA >> $CRON_LOG 2>&1
+EOF
+
 rsyslogd -N1 >/dev/null
 systemctl restart rsyslog
 
-echo "wrote $RSYSLOG_CONF and $LOGROTATE_CONF; the services log to $LOG_DIR/"
+echo "wrote $RSYSLOG_CONF, $LOGROTATE_CONF and $CRON_CONF; the services log to $LOG_DIR/"

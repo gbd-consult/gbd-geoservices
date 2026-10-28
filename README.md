@@ -50,7 +50,7 @@ The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik)
 
    This checks `config/`, builds the image on the server, and copies `docker-compose.yml`, `manage.sh`, `setup.sh` and `config/` to `/opt/gbd-geoservices/v0.3/`. It does not start or restart anything.
 
-4. On the server, in `/opt/gbd-geoservices/v0.3`, once: `sudo ./setup.sh`. It has the host's rsyslog write the services' logs to `data/log/` and rotate them. Without it the stack runs all the same and logs to `/var/log/syslog`. Run it again when a deploy brings a changed `setup.sh`.
+4. On the server, in `/opt/gbd-geoservices/v0.3`, once: `sudo ./setup.sh`. It has the host's rsyslog write the services' logs to `data/log/` and rotate them, and adds the cron job that updates the data. Without it the stack runs all the same, logs to `/var/log/syslog` and is not updated. Run it again when a deploy brings a changed `setup.sh`.
 
 5. On the server, in `/opt/gbd-geoservices/v0.3`, start the stack and import the area:
 
@@ -76,11 +76,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
 | `./manage.sh init-elevation` | download the missing elevation tiles (`elevation_tiles`) and draw the contour lines once; the next import of an area takes its share |
 
-**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. A weekly cron job:
-
-```
-0 3 * * 0  /opt/gbd-geoservices/v0.3/manage.sh update de >> /opt/gbd-geoservices/v0.3/data/cron.log 2>&1
-```
+**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Monday, Wednesday and Friday at 02:00 and appends to `data/cron.log`.
 
 The two newest complete imports of an area are kept. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. The tile cache is kept across imports; run `drop-cache` (and `pre-cache`) after an import if the map should change at once.
 
