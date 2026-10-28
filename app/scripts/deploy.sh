@@ -19,13 +19,13 @@
 # app/) to src/, and docker-compose.yml and config/, the deployment's
 # configuration, from this checkout:
 #
-#   config/options.yaml              options, API keys
+#   config/options.yaml              options
 #   config/postgres.env              database credentials
 #   config/postgresql.conf           config/pg_hba.conf        config/Caddyfile
 #   config/pgbouncer.ini
 #
-# config/ is git-ignored -- it holds the production password and the API
-# keys -- so it exists only here and on the server.
+# config/ is git-ignored -- it holds the production password -- so it
+# exists only here and on the server.
 # Create it from config.example/ (see its README.md); this script checks it
 # before building anything and never writes to it. The code is in the image.
 #
@@ -110,7 +110,11 @@ check_config() {
             problems+=("config/options.yaml is not valid YAML")
         else
             if grep -q CHANGEME "$CONFIG_OPTIONS"; then
-                problems+=("config/options.yaml: replace every CHANGEME (keys)")
+                problems+=("config/options.yaml: replace every CHANGEME")
+            fi
+            # The app refuses an option it does not know and would not start.
+            if [ -n "$(config_value keys)" ]; then
+                problems+=("config/options.yaml: remove keys; API keys are added with manage.sh key-add")
             fi
             [ -n "$(config_value serve_area)" ] || problems+=("config/options.yaml: set serve_area")
             host=$(config_value host)
@@ -214,13 +218,14 @@ CHANGED=
 # that renamed a new file into place would leave a running container on the
 # old one.
 # Permissions: postgres reads its two files as its own user, so those are
-# world-readable; options.yaml with the keys is read by root only (the app), and
+# world-readable; options.yaml is read by root only (the app), and
 # postgres.env with the password by compose, as the user running it.
 # Set by chmod on the server, not rsync --chmod: macOS's rsync (openrsync)
 # refuses GNU's `D755,F644` and ignores the option altogether.
 ship() {
     step "Copying docker-compose.yml and config/ to $SSH_HOST:$BASE"
-    scp -q "$REPO/docker-compose.yml" "$REPO/app/scripts/manage.sh" "$REPO/app/scripts/setup.sh" "$SSH_HOST:$BASE/"
+    scp -q "$REPO/docker-compose.yml" "$REPO/app/scripts/manage.sh" "$REPO/app/scripts/setup.sh" \
+        "$REPO/app/scripts/vaultwarden-send.sh" "$SSH_HOST:$BASE/"
     CHANGED=$( {
         rsync -rt --inplace --itemize-changes \
             --exclude options.yaml --exclude postgres.env \

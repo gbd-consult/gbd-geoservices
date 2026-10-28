@@ -3,7 +3,6 @@
 # git-ignored (config.example/README.md).
 host: localhost
 serve_area: de_nb
-keys: []
 devtools: true
 devtools_watch: true
 # Compile and serve fewer themes: every one is loaded at each restart, ~0.06 s per Map.

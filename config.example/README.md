@@ -26,8 +26,7 @@ cp -r config.example config
 chmod 600 config/options.yaml config/postgres.env
 ```
 
-Then, in `config/options.yaml`: `host`, `serve_area`, and real `keys` (a random string
-each; `scopes` from `search`, `tiles`). In `config/postgres.env`: a new strong
+Then, in `config/options.yaml`: `host` and `serve_area`. In `config/postgres.env`: a new strong
 `POSTGRES_PASSWORD`. Every `CHANGEME` must go.
 In `config/Caddyfile`: the same host as the site address, and the ACME `email`. Size
 `shared_buffers` and friends in `config/postgresql.conf` for the host.
@@ -41,7 +40,7 @@ In `config/Caddyfile`: the same host as the site address, and the ACME `email`. 
   the role as well:
   `docker compose exec postgres psql -U geoservices -c "ALTER ROLE geoservices PASSWORD '...'"`.
 - **Caddy cannot read `options.yaml`**, and is not given it — it is the container facing the
-  internet, and `options.yaml` holds the API keys. So the host name is in both files, and
+  internet, and has no business with the app's options. So the host name is in both files, and
   `deploy.sh` checks they agree.
 
 `deploy.sh` only copies these files. The server reads `options.yaml` on `manage.sh

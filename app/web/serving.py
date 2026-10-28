@@ -171,6 +171,7 @@ def serve(request: Request, *, theme: str, tms, level: int, col: int, row: int,
     cache = _cache(schema)
     with steps.step('cache'):
         data = cache.get(theme, tms.identifier, fmt, level, col, row)
+    request.state.cache = 'miss' if data is None else 'hit'      # the request log's
 
     if data is None:
         try:

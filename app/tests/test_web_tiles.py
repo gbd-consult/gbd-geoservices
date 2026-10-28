@@ -8,6 +8,8 @@ and whether the on-demand tier actually stays within its bound.
 
 from __future__ import annotations
 
+import types
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -445,6 +447,7 @@ def test_serve_names_the_set_it_was_asked_for(monkeypatch, tmp_path, crs, identi
     class Req:
         query_params = {}
         headers = {}
+        state = types.SimpleNamespace()
 
     serving.serve(Req(), theme='default_std', tms=tms, level=4, col=1, row=1,
                   fmt='png', schema='probe')

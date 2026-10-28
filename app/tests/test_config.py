@@ -123,4 +123,5 @@ def test_the_tracked_postgres_env_files_set_the_credentials(directory):
 def test_the_example_holds_no_real_secret():
     example = yaml.safe_load((ROOT / 'config.example' / 'options.yaml').read_text())
     assert postgres_env('config.example')['POSTGRES_PASSWORD'] == 'CHANGEME'
-    assert all(record['key'] == 'CHANGEME' for record in example['keys'])
+    # API keys are in the database, never in a file; and `keys` is no option.
+    assert 'keys' not in example

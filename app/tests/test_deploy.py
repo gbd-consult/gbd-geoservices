@@ -7,6 +7,7 @@ a key in a log line, an image tag another version's deploys overwrite.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -312,10 +313,82 @@ def test_the_script_builds_on_the_server_and_pushes_nothing():
 
 
 def test_the_script_ships_manage_sh_and_setup_sh_next_to_the_compose_file():
-    scp = next(line for line in DEPLOY.read_text().splitlines() if line.strip().startswith('scp '))
-    assert scp.rstrip().endswith('"$SSH_HOST:$BASE/"')
+    """And vaultwarden-send.sh, which `manage.sh key-add` runs from beside itself."""
+    scp = re.search(r'^\s*scp .*?"\$SSH_HOST:\$BASE/"', DEPLOY.read_text(), re.M | re.S).group(0)
     assert '"$REPO/app/scripts/manage.sh"' in scp
     assert '"$REPO/app/scripts/setup.sh"' in scp
+    assert '"$REPO/app/scripts/vaultwarden-send.sh"' in scp
+
+
+#: Stands in for the Bitwarden CLI: logs every call's arguments, answers
+#: `send template`, `encode` and `send create` the way bw does, and keeps the
+#: decoded Send it was given.
+BW_STUB = """#!/bin/sh
+here=$(dirname "$0")
+echo "$@" >> "$here/argv"
+case "$1 $2" in
+  "status "*) echo '{"status":"unlocked"}' ;;
+  "send template") cat "$here/template.json" ;;
+  "encode "*) base64 -w0 ;;
+  "send create") base64 -d > "$here/send.json"; echo '{"accessUrl":"https://vault.test/#/send/x/y"}' ;;
+esac
+"""
+
+
+#: What `bw send template send.text` prints, in the fields the script sets.
+SEND_TEMPLATE = {'name': 'Send name', 'type': 0, 'text': {'text': '', 'hidden': False},
+                 'deletionDate': None, 'maxAccessCount': None, 'password': None,
+                 'disabled': False}
+
+
+def run_send(tmp_path, *args):
+    (tmp_path / 'template.json').write_text(json.dumps(SEND_TEMPLATE))
+    bw = tmp_path / 'bw'
+    bw.write_text(BW_STUB)
+    bw.chmod(0o755)
+    env = {'PATH': f'{tmp_path}:/usr/local/bin:/usr/bin:/bin', 'VAULTWARDEN_SERVER': 'https://vault.test'}
+    return subprocess.run(['bash', str(MANAGE.parent / 'vaultwarden-send.sh'), *args],
+                          capture_output=True, text=True, env=env, check=True).stdout
+
+
+def test_vaultwarden_send_generates_a_key_and_prints_key_then_link(tmp_path):
+    """`manage.sh key-add` reads line 1 as the key and line 2 as the link; a
+    third line, or the two swapped, registers the link as the key."""
+    key, link = run_send(tmp_path, '--generate-key', '-n', 'API-Key t').splitlines()
+    assert re.fullmatch(r'[A-Za-z0-9_-]{43}', key)          # 256 bits, URL-safe
+    assert link == 'https://vault.test/#/send/x/y'
+    sent = json.loads((tmp_path / 'send.json').read_text())
+    assert sent['text']['text'] == key
+    assert sent['name'] == 'API-Key t'
+    assert run_send(tmp_path, '--generate-key').splitlines()[0] != key
+
+
+def test_vaultwarden_send_never_puts_the_secret_in_an_argument(tmp_path):
+    """An argument is in every user's process list while bw runs; the text
+    and the Send password reach bw only on stdin."""
+    run_send(tmp_path, '-n', 'n', '-a', '1', '--password', 'pw-geheim', 'text-geheim')
+    argv = (tmp_path / 'argv').read_text()
+    assert 'text-geheim' not in argv and 'pw-geheim' not in argv
+    sent = json.loads((tmp_path / 'send.json').read_text())
+    assert sent['text']['text'] == 'text-geheim'
+    assert sent['password'] == 'pw-geheim'
+    assert sent['maxAccessCount'] == 1
+
+
+def test_keys_are_generated_only_by_vaultwarden_send():
+    """One place makes keys, and it hands them over as a Send: a key printed
+    to a terminal ends up in scrollback, a ticket or a chat. manage.sh takes
+    the key from it and passes it on stdin, printing only the link."""
+    import inspect
+
+    from lib import keys
+    from tools import manage
+    assert 'secrets' not in inspect.getsource(keys)
+    assert 'token_' not in inspect.getsource(manage)
+    body = re.search(r'^key_add\(\) \{.*?^\}', MANAGE.read_text(), re.M | re.S).group(0)
+    assert 'vaultwarden-send.sh" --generate-key' in body
+    assert body.index('--generate-key') < body.index('manage_py key-register')
+    assert 'echo "$key"' not in body and 'echo "$sent"' not in body
 
 
 # --- manage.sh -----------------------------------------------------------
@@ -355,8 +428,20 @@ def test_update_reloads_only_after_the_import_succeeded():
     """A cron job runs `update`: reloading while the import still runs, or
     after it failed, would serve the old schema or nothing new."""
     text = MANAGE.read_text()
-    assert re.search(r'^\s*update\)\s+shift; manage_py import "\$@"; reload ;;$', text, re.M)
+    assert re.search(r'^\s*update\)\s+shift; update "\$@" ;;$', text, re.M)
+    body = re.search(r'^update\(\) \{.*?^\}', text, re.M | re.S).group(0)
+    assert body.index('manage_py import "$@"') < body.index('reload')
     assert text.index('set -eu') < text.index('update)')
+
+
+def test_update_renews_the_tile_cache_after_the_reload():
+    """The cache is not keyed by import, so without this the new data shows
+    only where nothing was cached. Dropped before the reload, the old server
+    caches old tiles again; pre-cached before the app is ready, there are no
+    styles compiled for the new import yet."""
+    body = re.search(r'^update\(\) \{.*?^\}', MANAGE.read_text(), re.M | re.S).group(0)
+    order = ['reload', 'manage_py drop-cache', 'ready', 'manage_py pre-cache']
+    assert [body.index(step) for step in order] == sorted(body.index(step) for step in order)
 
 
 def test_manage_leaves_the_styles_to_the_app():

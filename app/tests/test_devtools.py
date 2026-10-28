@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from web import devtools
 
 
-def app_with(monkeypatch, enabled: bool, keys=None, watch: bool = False) -> FastAPI:
+def app_with(monkeypatch, enabled: bool, watch: bool = False) -> FastAPI:
     """A bare app with only the devtools mounted, under a given option."""
     from lib import config
 
@@ -29,8 +29,6 @@ def app_with(monkeypatch, enabled: bool, keys=None, watch: bool = False) -> Fast
             return enabled
         if path == 'devtools_watch':
             return watch
-        if path == 'keys':
-            return keys or []
         return real(path, default)
 
     monkeypatch.setattr(config, 'opt', opt)
@@ -76,11 +74,12 @@ def test_mounted_when_on(monkeypatch):
         assert client.get(f'/devtools/static/{asset}').status_code == 200, asset
 
 
-def test_the_page_never_carries_a_key(monkeypatch):
+def test_the_page_never_carries_a_key(monkeypatch, keys):
     """A key rendered into the HTML puts a real key in the source of any
     page that serves it."""
     secret = 'k-production-do-not-leak-0123'
-    client = TestClient(app_with(monkeypatch, True, keys=[secret]))
+    keys([secret])
+    client = TestClient(app_with(monkeypatch, True))
     assert secret not in client.get('/devtools').text
 
 

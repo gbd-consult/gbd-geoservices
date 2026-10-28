@@ -46,30 +46,14 @@ def client():
 
 
 @pytest.fixture
-def configured_keys(monkeypatch):
-    """Override only `keys`, leaving every other option real.
-
-    `/metadata` and `/status` read `serve_area`, the grids and the theme
-    list through the same `config.opt`, so a stub that answers every path breaks the route
-    it is supposed to be testing.
-    """
+def configured_keys(keys):
+    """Install key records and drop `/metadata`'s and `/status`'s held answers."""
     from web import meta
 
-    # The original, captured before patching: `auth.config` *is*
-    # `lib.config`, so setattr replaces the module's own function and a
-    # stub that then calls `config.opt` calls itself.
-    real_opt = auth.config.opt
-
     def install(records):
-        def opt(path, default=None):
-            if path == 'keys':
-                return records
-            return real_opt(path, default)
-        monkeypatch.setattr(auth.config, 'opt', opt)
-        auth.reset()
+        keys(records)
         meta._cache.clear()
     yield install
-    auth.reset()
     meta._cache.clear()
 
 
@@ -175,6 +159,33 @@ def test_status_reports_whether_anything_is_protected(client, configured_keys):
 def test_status_reports_keys_when_configured(client, configured_keys):
     configured_keys(['k-something'])
     assert client.get('/status', params={'key': 'k-something'}).json()['auth'] == 'keys'
+
+
+def test_a_request_is_counted_for_its_key_with_its_response_status(client, configured_keys,
+                                                                   monkeypatch):
+    """The middleware sees the status the route produced, so a key's request
+    for a theme that does not exist is its error, not a tile to invoice."""
+    from lib import keys as store
+    configured_keys(['k-something'])
+    assert client.get('/xyz/no_such_theme/0/0/0.png', params={'key': 'k-something'}).status_code == 404
+    written = {}
+    monkeypatch.setattr(auth.store, 'add_usage', written.update)
+    auth.flush_usage()
+    assert written == {(1, store.month_of(store.today())): {'errors': 1}}
+
+
+def test_an_api_request_is_logged_with_its_status_and_search_terms(client, configured_keys):
+    """The request log's row is written after the response, so it has the
+    route's status, and the search route's terms -- also for a body the
+    route refused."""
+    from web import stats
+    configured_keys(['k-something'])
+    stats._rows.clear()
+    client.post('/search', params={'key': 'k-something'}, json={'mode': 'nope', 'text': 'Kiel'})
+    client.get('/health')
+    rows = list(stats._rows)
+    stats._rows.clear()
+    assert [(r[1], r[2], r[3], r[7]) for r in rows] == [('search', 1, 422, 'Kiel')]
 
 
 def test_status_is_not_served_stale_across_a_key_change(client, configured_keys):

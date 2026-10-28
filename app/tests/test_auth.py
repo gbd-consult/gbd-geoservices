@@ -1,42 +1,34 @@
-"""The key check.
+"""The key check and the usage count.
 
 One test per cell of the auth matrix. The failures pinned here are silent:
-keys compared with `in` rather than `compare_digest`, and -- because the
-value can arrive from the environment as a *string* -- that `in` turned
-into a substring test, so the key "a" authenticated against a configured
-key of "abc123".
+a prefix of a key accepted as the key, a disabled or expired key still
+let through, a request counted under the wrong scope or not at all -- the
+invoice is the only place that shows it.
 """
 
 from __future__ import annotations
 
+import datetime
+import types
+
 import pytest
+from conftest import key_rows
 from fastapi import HTTPException
 
+from lib import keys as store
 from web import auth
 
 KEY = 'k-production-0123456789'
 OTHER = 'k-demo-9876543210'
 
 
-@pytest.fixture
-def keys(monkeypatch):
-    """Install a set of key records and clear the caches around the test."""
-    def install(records):
-        monkeypatch.setattr(auth.config, 'opt',
-                            lambda path, default=None: records
-                            if path == 'keys' else default)
-        auth.reset()
-        return records
-    yield install
-    auth.reset()
-
-
 class FakeRequest:
-    """Only what `auth` reads: headers, query params, client."""
+    """Only what `auth` reads and writes: headers, query params, state."""
 
     def __init__(self, headers=None, query=None):
         self.headers = {k.lower(): v for k, v in (headers or {}).items()}
         self.query_params = query or {}
+        self.state = types.SimpleNamespace()
 
 
 def request(**kw):
@@ -47,13 +39,13 @@ def request(**kw):
 
 def test_a_bearer_header_is_accepted(keys):
     keys([KEY])
-    assert auth.check(request(headers={'Authorization': f'Bearer {KEY}'}), 'tiles').key == KEY
+    assert auth.check(request(headers={'Authorization': f'Bearer {KEY}'}), 'tiles').name == KEY
 
 
 def test_a_query_parameter_is_accepted(keys):
     """The only carrier an <img> tag, a tile template or QGIS can send."""
     keys([KEY])
-    assert auth.check(request(query={'key': KEY}), 'tiles').key == KEY
+    assert auth.check(request(query={'key': KEY}), 'tiles').name == KEY
 
 
 def test_the_query_parameter_is_only_lowercase_key(keys):
@@ -124,34 +116,176 @@ def test_a_key_with_no_scopes_carries_every_scope(keys):
 # --- the substring bug ---------------------------------------------------
 
 def test_a_prefix_of_a_key_is_not_a_key(keys):
-    """The reason `_records` coerces to a list.
-
-    `GEOSERVICES_KEYS=abc123` reaches config as the *string* `abc123`, and
-    `"a" in "abc123"` is True. Every one-character key authenticated.
-    """
-    keys(KEY)                                  # a bare string, as from the environment
-    assert auth.check(request(query={'key': KEY}), 'tiles').key == KEY
+    """Keys from the environment were once a string, and `"a" in "abc123"`
+    is True: every one-character key authenticated."""
+    keys([KEY])
+    assert auth.check(request(query={'key': KEY}), 'tiles').name == KEY
     for wrong in ('k', 'k-p', KEY[:-1], KEY + 'x'):
         with pytest.raises(HTTPException) as excinfo:
             auth.check(request(query={'key': wrong}), 'tiles')
         assert excinfo.value.status_code == 401
 
 
-def test_a_single_mapping_is_also_coerced(keys):
-    keys({'key': KEY, 'scopes': ['tiles']})
-    assert auth.check(request(query={'key': KEY}), 'tiles').key == KEY
-
-
-def test_the_comparison_is_constant_time():
-    """Checked by reading the code.
-
-    A dict lookup would compare with `==`, which returns as soon as two
-    bytes differ and so leaks the length of the shared prefix.
-    """
+def test_the_lookup_is_by_digest_and_no_record_holds_a_key(keys):
+    """A dict lookup compares with `==`, which leaks how much of the
+    compared value matched -- harmless only because the value is the
+    SHA-256 of the presented key, not the key."""
+    import dataclasses
     import inspect
-    source = inspect.getsource(auth.match)
-    assert 'compare_digest' in source
-    assert 'return' not in source.split('for record')[1].split('found = record')[0]
+    keys([KEY])
+    assert 'digest(' in inspect.getsource(auth.match)
+    assert list(auth.configured()) == [store.digest(KEY)]
+    assert 'key' not in {f.name for f in dataclasses.fields(auth.Key)}
+
+
+# --- disabled and expired ------------------------------------------------
+
+def test_a_disabled_key_is_403(keys):
+    keys([{'key': KEY, 'disabled': True}])
+    with pytest.raises(HTTPException) as excinfo:
+        auth.check(request(query={'key': KEY}), 'tiles')
+    assert excinfo.value.status_code == 403
+    assert 'disabled' in excinfo.value.detail
+
+
+def test_an_expired_key_is_403(keys):
+    yesterday = store.today() - datetime.timedelta(days=1)
+    keys([{'key': KEY, 'expires': yesterday}])
+    with pytest.raises(HTTPException) as excinfo:
+        auth.check(request(query={'key': KEY}), 'tiles')
+    assert excinfo.value.status_code == 403
+    assert 'expired' in excinfo.value.detail
+
+
+def test_a_key_is_valid_through_its_last_day(keys):
+    """`expires` is the last valid day: a trial key added for 30 days works
+    on the 30th."""
+    keys([{'key': KEY, 'expires': store.today()}])
+    assert auth.check(request(query={'key': KEY}), 'tiles')
+
+
+# --- reading the records -------------------------------------------------
+
+def test_the_records_are_reread_after_the_ttl(keys, monkeypatch):
+    """A key disabled with `manage.py` is refused without a reload."""
+    now = [1000.0]
+    monkeypatch.setattr(auth.time, 'monotonic', lambda: now[0])
+    keys([KEY])
+    assert auth.check(request(query={'key': KEY}), 'tiles')
+    monkeypatch.setattr(auth, '_records',
+                        lambda: auth.records_of(key_rows([{'key': KEY, 'disabled': True}])))
+    assert auth.check(request(query={'key': KEY}), 'tiles')       # still cached
+    now[0] += auth.KEYS_TTL_S + 1
+    with pytest.raises(HTTPException) as excinfo:
+        auth.check(request(query={'key': KEY}), 'tiles')
+    assert excinfo.value.status_code == 403
+
+
+def test_a_failed_read_keeps_the_records_there_are(keys, monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(auth.time, 'monotonic', lambda: now[0])
+    keys([KEY])
+    assert auth.check(request(query={'key': KEY}), 'tiles')
+
+    def down():
+        raise OSError('database down')
+    monkeypatch.setattr(auth, '_records', down)
+    now[0] += auth.KEYS_TTL_S + 1
+    assert auth.check(request(query={'key': KEY}), 'tiles')
+
+
+def test_no_records_read_yet_is_503_not_open(keys, monkeypatch):
+    """No records would be "no keys registered", which is open access: a
+    database that is down must not open the server."""
+    keys([KEY])
+
+    def down():
+        raise OSError('database down')
+    monkeypatch.setattr(auth, '_records', down)
+    auth.reset()
+    with pytest.raises(HTTPException) as excinfo:
+        auth.check(request(), 'tiles')
+    assert excinfo.value.status_code == 503
+
+
+# --- usage ---------------------------------------------------------------
+
+def counted(monkeypatch):
+    written = {}
+    monkeypatch.setattr(auth.store, 'add_usage', lambda counts: written.update(
+        {slot: dict(scopes) for slot, scopes in counts.items()}))
+    auth.flush_usage()
+    return written
+
+
+def served(scope, status=200, **kw):
+    """A request through the route's key check, counted with its status."""
+    req = request(**kw)
+    try:
+        auth.requires(scope)(req)
+    except HTTPException as exc:
+        status = exc.status_code
+    auth.count(req, status)
+    return status
+
+
+def test_a_key_with_both_scopes_counts_tiles_and_search_apart(keys, monkeypatch):
+    keys([{'key': KEY, 'scopes': ['tiles', 'search']}])
+    for scope, n in (('tiles', 3), ('search', 2)):
+        for _ in range(n):
+            served(scope, query={'key': KEY})
+    month = store.month_of(store.today())
+    assert counted(monkeypatch) == {(1, month): {'tiles': 3, 'search': 2}}
+
+
+def test_a_failed_request_is_an_error_not_a_tile_or_search(keys, monkeypatch):
+    """A malformed search (422) or a tile outside the pyramid (404) is the
+    key's error, not a request to invoice."""
+    keys([KEY])
+    served('search', 422, query={'key': KEY})
+    served('tiles', 404, query={'key': KEY})
+    served('tiles', query={'key': KEY})
+    month = store.month_of(store.today())
+    assert counted(monkeypatch) == {(1, month): {'errors': 2, 'tiles': 1}}
+
+
+def test_a_key_s_refusal_is_its_error(keys, monkeypatch):
+    """A registered key refused for its scope, referrer, rate, expiry or
+    because it is disabled: the request is the key's, so is the error."""
+    keys([{'key': KEY, 'scopes': ['tiles']}, {'key': OTHER, 'disabled': True}])
+    assert served('search', query={'key': KEY}) == 403
+    assert served('tiles', query={'key': OTHER}) == 403
+    month = store.month_of(store.today())
+    assert counted(monkeypatch) == {(1, month): {'errors': 1}, (2, month): {'errors': 1}}
+
+
+def test_no_key_or_an_unknown_one_is_counted_for_nobody(keys, monkeypatch):
+    keys([KEY])
+    assert served('tiles') == 401
+    assert served('tiles', query={'key': 'nope'}) == 401
+    assert counted(monkeypatch) == {}
+
+
+def test_status_is_not_counted(keys, monkeypatch):
+    keys([KEY])
+    req = request(query={'key': KEY})
+    auth.requires_key(req)
+    auth.count(req, 200)
+    assert counted(monkeypatch) == {}
+
+
+def test_a_failed_flush_keeps_its_counts(keys, monkeypatch):
+    """The counts are the invoice: a database blip must not lose them."""
+    keys([KEY])
+    served('tiles', query={'key': KEY})
+
+    def down(counts):
+        raise OSError('database down')
+    monkeypatch.setattr(auth.store, 'add_usage', down)
+    auth.flush_usage()
+    served('tiles', query={'key': KEY})
+    month = store.month_of(store.today())
+    assert counted(monkeypatch) == {(1, month): {'tiles': 2}}
 
 
 # --- referrers -----------------------------------------------------------
@@ -160,7 +294,7 @@ def test_a_referrer_allowlist_admits_a_match(keys):
     keys([{'key': KEY, 'referrers': ['https://maps.example.de/*']}])
     got = auth.check(request(query={'key': KEY},
                              headers={'Referer': 'https://maps.example.de/karte'}), 'tiles')
-    assert got.key == KEY
+    assert got.name == KEY
 
 
 def test_a_referrer_not_on_the_list_is_403(keys):
@@ -256,13 +390,6 @@ def test_a_configured_server_does_not_warn(keys, caplog):
     assert not caplog.records
 
 
-def test_a_record_without_a_key_is_ignored_not_fatal(keys, caplog):
-    with caplog.at_level('WARNING'):
-        keys([{'scopes': ['tiles']}, KEY])
-        assert [record.key for record in auth.configured()] == [KEY]
-    assert caplog.records
-
-
 # --- the dependency ------------------------------------------------------
 
 def test_requires_refuses_an_unknown_scope():
@@ -278,13 +405,10 @@ def test_requires_builds_a_dependency_for_each_scope():
 # --- a presented key that is not ASCII -----------------------------------
 
 def test_a_non_ascii_key_is_refused_not_a_500(keys):
-    """`secrets.compare_digest` on `str` raises TypeError the moment either
-    side is not ASCII.
-
-    The presented key is whatever a client sent, so `?key=Ünicode` was an
-    unhandled exception -- a 500, from an unauthenticated request, on the
-    one code path whose whole job is to refuse them. Both sides are encoded
-    to UTF-8 now, which makes it an ordinary mismatch.
+    """The presented key is whatever a client sent, so a comparison that
+    raised on non-ASCII made `?key=Ünicode` an unhandled exception -- a 500,
+    from an unauthenticated request, on the one code path whose whole job
+    is to refuse them. The digest is over UTF-8, an ordinary mismatch.
     """
     keys([KEY])
     assert auth.match('Ünicode') is None
@@ -325,7 +449,7 @@ def test_the_documented_pattern_matches_an_origin_header(keys):
 ])
 def test_every_spelling_of_the_allowed_site_passes(keys, referrer):
     keys([{'key': KEY, 'referrers': ['https://maps.example.de/*']}])
-    assert auth.Key(key=KEY, referrers=('https://maps.example.de/*',)) \
+    assert auth.Key(id=1, name=KEY, referrers=('https://maps.example.de/*',)) \
         .allows_referrer(referrer)
 
 
@@ -338,5 +462,5 @@ def test_every_spelling_of_the_allowed_site_passes(keys, referrer):
 def test_a_lookalike_origin_is_still_refused(referrer):
     """The trailing-slash candidate must not widen the pattern: appending
     `/` to `https://maps.example.de.evil.com` must not make it match."""
-    assert not auth.Key(key=KEY, referrers=('https://maps.example.de/*',)) \
+    assert not auth.Key(id=1, name=KEY, referrers=('https://maps.example.de/*',)) \
         .allows_referrer(referrer)

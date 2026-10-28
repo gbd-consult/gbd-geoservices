@@ -30,14 +30,15 @@ serve_grids: [GoogleMapsCompatible, DE_EPSG_25832_ADV, DE_EPSG_25833_ADV]  # the
 serve_palettes: [default, light, dark, hico]  # the palettes of palettes.yaml to compile and serve
 serve_details: [min, nav, std, max]             # the details of details.yaml to compile and serve
 buffer_px: 64               # Mapnik Layer buffer: how far beyond a tile features are fetched
-wms_max_px: 4096            # WMS GetMap: the largest WIDTH and HEIGHT; a map is rendered on every request, never cached
+wms_max_px: 2048            # WMS GetMap: the largest WIDTH and HEIGHT; a map is rendered on every request, never cached, and counted as one request whatever its size
 
 search:
   cache_ttl_s: 60           # a stale entry can never be worse than this: the tables change
   cache_size: 512           # only on a full re-import, so nothing has to notice one happened
 
-keys: []                    # deployment: [{key, scopes: [search, tiles], referrers: [...], rate: n/min}]
 cors_origins: ['*']
+request_log: true           # write service.request_log (IPs and search terms, kept 7 days) and host samples
+monthly_cost_eur: null      # the server's monthly cost from the hosting invoice; `stats-export` divides it by the requests
 
 host: null                  # public host name Caddy serves; deploy.sh checks the Caddyfile names it
 devtools: false             # viewer only, never on a public deployment

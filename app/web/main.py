@@ -18,8 +18,12 @@ that are each a first-request cost otherwise, and one warning:
   a fresh process paid ~800 ms for all of them and every one after it paid
   nothing. That belongs at startup, not on whoever arrives first.
 - the tile matrix sets, for the same reason.
-- and a warning when no keys are configured, so an unprotected deployment
+- and a warning when no keys are registered, so an unprotected deployment
   is not silent.
+
+It also runs the threads that write the keys' usage counts (`count_usage`
+below counts them) and the request log with the host samples
+(`record_request`, `web/stats.py`), and flushes both once more at shutdown.
 
 None of it is fatal. A server that cannot preload still answers `/health`
 and `/metadata`, and `/status` is where the reason shows up -- a container
@@ -43,7 +47,7 @@ from fastapi.templating import Jinja2Templates
 
 from lib import config, db
 from lib.version import __version__
-from web import auth, devtools, icons, legend, meta, tiles, wms, wmts
+from web import auth, devtools, icons, legend, meta, stats, tiles, wms, wmts
 from web import search as search_routes
 
 _log = logging.getLogger(__name__)
@@ -61,7 +65,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     auth.warn_if_open()
     _preload()
     style_watcher = devtools.start_watcher()
+    stop_usage_flush = auth.start_usage_flush()
+    stop_stats = stats.start()
     yield
+    stop_stats()
+    stop_usage_flush()
     if style_watcher:
         style_watcher.stop()
 
@@ -147,6 +155,8 @@ def create_app() -> FastAPI:
     )
 
     app.middleware('http')(access_log)
+    app.middleware('http')(count_usage)
+    app.middleware('http')(record_request)
     app.add_exception_handler(db.NoImportError, no_import)
 
     app.include_router(meta.router)
@@ -186,6 +196,34 @@ async def access_log(request: Request, call_next):
     _log.info('%s %s %s %.1fms',
               request.method, safe_path(request), response.status_code,
               (time.perf_counter() - started) * 1000)
+    return response
+
+
+async def count_usage(request: Request, call_next):
+    """Count the request for its key once its status is known (`auth.count`).
+
+    After the response, not in the key check: whether a request was a
+    tile, a search or an error is decided by everything after the check.
+    An exception that escapes is a 500, and counted as one.
+    """
+    try:
+        response = await call_next(request)
+    except Exception:
+        auth.count(request, 500)
+        raise
+    auth.count(request, response.status_code)
+    return response
+
+
+async def record_request(request: Request, call_next):
+    """One row of the request log per API request (`web/stats.py`)."""
+    started = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        stats.record(request, 500, (time.perf_counter() - started) * 1000)
+        raise
+    stats.record(request, response.status_code, (time.perf_counter() - started) * 1000)
     return response
 
 

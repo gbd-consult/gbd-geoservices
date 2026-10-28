@@ -8,6 +8,10 @@ A self-hosted map service built from OpenStreetMap data: raster map tiles and pl
 - **Configurable OSM mapping**: which OSM tags become which map class and which search category, which categories get an icon, and from which zoom they appear. The category tree and its search terms are derived from the iD editor's tagging schema.
 - **API keys** with scopes (`tiles`, `search`), referrer allowlists and rate limits.
 
+The map styles are this project's own, built on open sources: the palettes started from the colours of OpenStreetMap Carto (CC0), the grouping of OSM tags into render classes follows the OpenMapTiles schema (CC-BY 4.0), and the POI icons are Maki (CC0).
+
+Operation within your own network, for example on an intranet, is available on request.
+
 How it works inside is in `DESIGN.md`; open issues are in `TODO.md`; data sources and licences are in `NOTICE.md`.
 
 ## Requirements
@@ -31,9 +35,9 @@ The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik)
    chmod 600 config/options.yaml config/postgres.env
    ```
 
-   `config/` is git-ignored: it holds the database password and the API keys. Fill in:
+   `config/` is git-ignored: it holds the database password. Fill in:
 
-   - `config/options.yaml` -- `host` (the public host name), `serve_area` (which area this server serves), and `keys`.
+   - `config/options.yaml` -- `host` (the public host name), and `serve_area` (which area this server serves).
    - `config/postgres.env` -- a strong `POSTGRES_PASSWORD`.
    - `config/Caddyfile` -- the same host name, and an e-mail address for the TLS certificate.
    - `config/postgresql.conf` -- memory settings (`shared_buffers` and the like) for the host.
@@ -70,7 +74,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh reload` | recreate the app: takes up a new image, a changed `options.yaml`, and the newest import |
 | `./manage.sh restart` | stop and start the whole stack: for changes to `postgres.env`, `postgresql.conf`, `pg_hba.conf`, `pgbouncer.ini` or the `Caddyfile` |
 | `./manage.sh import <area>` | import an area in the background; follow it with `tail -f data/import.log` |
-| `./manage.sh update <area>` | import in the foreground, then reload if it succeeded -- the form for cron |
+| `./manage.sh update <area>` | import in the foreground; if it succeeded, reload, empty the tile cache and pre-cache again -- the form for cron |
 | `./manage.sh pre-cache [--fast]` | render the low zoom levels of every theme ahead of time |
 | `./manage.sh drop-cache` | empty the tile cache |
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
@@ -78,7 +82,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 
 **Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Monday, Wednesday and Friday at 02:00 and appends to `data/cron.log`.
 
-The two newest complete imports of an area are kept. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. The tile cache is kept across imports; run `drop-cache` (and `pre-cache`) after an import if the map should change at once.
+The two newest complete imports of an area are kept. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. `update` empties the tile cache and pre-caches again; after an `import` and `reload` by hand the cache is kept until `drop-cache` (and `pre-cache`).
 
 **Contour lines.** The `topographic` and `max` levels of detail draw contour lines from the Copernicus GLO-30 elevation model. Run `./manage.sh init-elevation` once: it fetches the tiles of `elevation_tiles` (Germany) that are not yet under `data/downloads/rasters_COP30/` and draws the lines (own GeoTIFFs: put them there, or set `elevation_sources`, and run `manage.py init-elevation` without `--download`) -- for all of Germany it runs for a long while and needs several GB of disk for the intermediate raster -- and import the areas again. An area imported before has no contour lines.
 
@@ -86,9 +90,11 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 
 **Updating the software.** `app/scripts/deploy.sh <ssh-host>` from the new checkout, then `./manage.sh reload` on the server. The app takes a few minutes to start: it compiles the styles and loads its renderers (`docker compose logs -f app`).
 
-**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and kept for two weeks. `docker compose logs` shows only the last megabyte of each service.
+**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and kept for a week. `docker compose logs` shows only the last megabyte of each service.
 
-**Status.** `GET /health` answers when the app is up; `GET /status` (with any valid key) shows the version, the build, the served import, and whether keys are configured (`"auth": "open"` means no keys and no protection).
+**Request log and load figures.** Every API request (tiles, WMS, search) is written to the table `service.request_log` with its time, key, status, duration, tile cache hit or miss, client IP and, for a search, its search terms. Once a minute the host's CPU, RAM and disk are sampled. The cron job from `setup.sh` runs `./manage.sh stats-daily` every night: it counts the finished days into `service.daily_stats` (no IPs, no search terms; kept) and drops the request log older than 7 days, IP addresses and search terms with it. `./manage.sh stats-export 2026-10 > load-2026-10.csv` writes one line per day: requests by kind, errors, cache hit rate, 95th percentile durations, distinct IPs, CPU, RAM and disk; the totals with the cost per 1000 requests (option `monthly_cost_eur`) go to the terminal. `request_log: false` turns the log off.
+
+**Status.** `GET /health` answers when the app is up; `GET /status` (with any valid key) shows the version, the build, the served import, and whether keys are registered (`"auth": "open"` means no keys and no protection).
 
 **Database shell.** `docker compose exec postgres psql -U geoservices geoservices`.
 
@@ -102,30 +108,36 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 |---|---|
 | `serve_area` | the area this server serves |
 | `force_schema` | serve this import instead of the newest (rollback) |
-| `keys` | API keys, see below |
 | `serve_palettes`, `serve_details` | which color schemes and levels of detail are served |
 | `serve_grids` | which tile grids are served (`GoogleMapsCompatible`, `DE_EPSG_25832_ADV`, `DE_EPSG_25833_ADV`) |
 | `precache` | per grid, the deepest level `pre-cache` renders |
 | `ondemand_cache_max_mb` | size limit of the cache for tiles rendered on request |
 | `map_pool_size` | concurrent renders per theme |
 | `wms_max_px` | the largest WMS map, per side |
+| `monthly_cost_eur` | the server's monthly cost, for `stats-export` |
+| `request_log` | write the request log and host samples (default on) |
 | `areas` | the importable areas: name -> Geofabrik path |
 
 Any option can also be set with an environment variable `GEOSERVICES_<OPTION>`.
 
 ### API keys
 
-```yaml
-keys:
-  - key: <a long random string>
-    scopes: [tiles, search]
-  - key: <another>
-    scopes: [tiles]
-    referrers: ['https://maps.example.org/*']   # only from these pages
-    rate: 600                                   # requests per minute
+API keys are in the database, stored only as their SHA-256; a key cannot be read back. Keys are generated only by `vaultwarden-send.sh`, which hands each one to its customer as a Vaultwarden Send: `key-add` runs it, registers the key and prints the Send link -- never the key. It needs the Bitwarden CLI `bw` on the server and `VAULTWARDEN_SERVER` (for a run without prompts also `BW_CLIENTID`, `BW_CLIENTSECRET`, `BW_PASSWORD`; see `./vaultwarden-send.sh --help`). On the server:
+
+```sh
+./manage.sh key-add stadt-kiel --customer "Stadt Kiel" --scopes tiles search
+./manage.sh key-add demo --scopes tiles --referrers 'https://maps.example.org/*' --rate 600 --trial
+echo "$KEY" | ./manage.sh key-register old-client   # a key a client already has
+./manage.sh key-list
+./manage.sh key-disable demo                               # and key-enable
+./manage.sh usage-export 2026-10 > usage-2026-10.csv
 ```
 
-A client sends the key as `Authorization: Bearer <key>` or as `?key=<key>` (the only form tile URLs in map libraries, QGIS and other WMTS clients can use). Keys never appear in the logs. With no keys configured the server is open to everyone.
+- `--scopes`: `tiles` and/or `search`; none means both. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
+- `--trial` makes a key valid for 30 days, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
+- Every request with a key is counted per month: successful tile requests (XYZ, WMTS, WMS) and search requests apart, and every request answered with an error (status 400 or above, the key's own refusals included) as `errors`. A WMS map counts as one request, whatever its size up to `wms_max_px`. `usage-export` writes `key;customer;month;tiles;search;errors` for every key.
+
+A client sends the key as `Authorization: Bearer <key>` or as `?key=<key>` (the only form tile URLs in map libraries, QGIS and other WMTS clients can use). Keys never appear in the logs. With no keys registered the server is open to everyone.
 
 ## Raster API
 
@@ -231,7 +243,7 @@ Every feature has the same properties, `null` where one does not apply. Its `id`
 | `GET /metadata` | what a client needs to start: version, area, data date and bounds, themes, grids, the category tree with names and icons, and every service URL as a template. No key |
 | `GET /icons/{category}.svg` | a category's icon. No key |
 | `GET /legend/{theme}.png?lang=de` | a theme's legend as an image; WMTS clients such as QGIS find it in the capabilities on their own. No key |
-| `GET /status` | for operators: build, the served import, whether keys are configured. Any valid key |
+| `GET /status` | for operators: build, the served import, whether keys are registered. Any valid key |
 | `GET /health` | answers when the app is up. No key |
 | `GET /` | the landing page, in German, or in English with `?lang=en`. No key |
 
@@ -243,3 +255,7 @@ docker compose -f docker-compose.local.yml exec app python tools/manage.py impor
 ```
 
 The dev server is on http://localhost:8003, with a viewer for tiles and search at http://localhost:8003/devtools. It is configured from `config.local/`. `sh app/scripts/test.sh` runs the tests. `DESIGN.md` is the developer documentation.
+
+## License
+
+GBD GeoServices is licensed under the GNU Affero General Public License, version 3 or (at your option) any later version (AGPL-3.0-or-later); the text is in `LICENSE`. Whoever runs a modified version as a network service must offer its users that version's source. The data, styles and software it builds on keep their own licences, listed in `NOTICE.md`.
