@@ -174,6 +174,42 @@ services:
       # first request: measured at 111 s for twelve themes and two grids.
       start_period: 300s
 
+  keys:
+    # `manage.sh key-add`, and nothing else: the app image plus the Bitwarden
+    # CLI (the Dockerfile's `keys` target, built by deploy.sh), run once per
+    # key with `docker compose run --rm` and never started by `up` (the
+    # profile). `manage.py key-add` generates the key, puts it into a
+    # Vaultwarden Send and registers its hash, so the key never leaves this
+    # container. Not the app container: that one serves the internet and
+    # keeps running, and bw would leave its login and vault cache in it.
+    image: gbd-geoservices-keys:${GBD_TAG:-0.3}
+    pull_policy: never
+    profiles: [keys]
+    # No log: its output is the Send link, which opens the key until the
+    # customer has fetched it. `run` still shows it on the terminal.
+    logging:
+      driver: none
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    # default to reach Vaultwarden, db for pgbouncer.
+    networks: [default, db]
+    env_file: ./config/postgres.env
+    # By name only: taken from the environment of the shell that runs
+    # manage.sh, never written down here. Unset, bw asks on the terminal.
+    # bw keeps its state under BITWARDENCLI_APPDATA_DIR, in the tmpfs.
+    environment:
+      - VAULTWARDEN_SERVER
+      - BW_CLIENTID
+      - BW_CLIENTSECRET
+      - BW_PASSWORD
+      - BITWARDENCLI_APPDATA_DIR=/tmp/bw
+    volumes:
+      - ./config:/config:ro
+    tmpfs:
+      - /tmp
+    entrypoint: ["python", "tools/manage.py", "key-add"]
+
   caddy:
     # TLS in front. The only service published to the outside world. It
     # obtains and renews its own certificate, so there is nothing to
