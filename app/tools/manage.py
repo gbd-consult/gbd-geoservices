@@ -134,9 +134,17 @@ def cmd_key_add(args: argparse.Namespace) -> int:
     The Send is made first, so a refused registration -- a name taken, an
     unknown scope -- leaves a link to a key that opens nothing.
     """
+    import subprocess
+
     from lib import keys
 
-    key, link = keys.generate(args.name)
+    try:
+        key, link = keys.generate(args.name)
+    except subprocess.CalledProcessError:
+        return 1                                  # the script has said why, on stderr
+    except RuntimeError as exc:
+        print(exc, file=sys.stderr)
+        return 1
     status = register(args, key)
     if status == 0:
         print(link)

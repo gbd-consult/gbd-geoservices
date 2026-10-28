@@ -463,6 +463,16 @@ def test_key_add_registers_the_key_and_prints_only_the_link(monkeypatch, capsys)
     assert 'k-secret-0123' not in out + err
 
 
+def test_a_failed_send_ends_with_the_scripts_message_not_a_traceback(tmp_path, monkeypatch, capsys):
+    """Without VAULTWARDEN_SERVER the script says so; key-add must stop there."""
+    from tools import manage
+    install_bw(tmp_path)
+    monkeypatch.setenv('PATH', f'{tmp_path}:/usr/local/bin:/usr/bin:/bin')
+    monkeypatch.delenv('VAULTWARDEN_SERVER', raising=False)
+    assert manage.main(['key-add', 'kiel']) == 1
+    assert capsys.readouterr().out == ''
+
+
 def test_a_refused_registration_prints_no_link(monkeypatch, capsys):
     from lib import keys
     from tools import manage
