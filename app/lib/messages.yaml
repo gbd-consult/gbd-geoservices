@@ -61,8 +61,8 @@ landing.self_hosting:
   de: Betrieb im eigenen Netz
   en: Operation in your own network
 landing.self_hosting_text:
-  de: Der Dienst wird gehostet angeboten. Der Betrieb im eigenen Netz, auf dem eigenen Server, folgt.
-  en: The service is offered hosted. Operation in your own network, on your own server, is to follow.
+  de: Der Dienst wird gehostet angeboten. Der Betrieb im eigenen Netz, auf dem eigenen Server, ist auf Anfrage möglich.
+  en: The service is offered hosted. Operation in your own network, on your own server, is available on request.
 landing.operator:
   de: Betrieben von
   en: Operated by
