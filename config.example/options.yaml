@@ -4,3 +4,6 @@
 # `./manage.sh key-add <name>`.
 host: geoservices.example.org
 serve_area: de_nrw
+operator:                       # named on the landing page; the legal texts go in config/legal/
+  name: CHANGEME
+  url: https://www.example.org/

@@ -117,8 +117,15 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 | `monthly_cost_eur` | the server's monthly cost, for `stats-export` |
 | `request_log` | write the request log and host samples (default on) |
 | `areas` | the importable areas: name -> Geofabrik path |
+| `operator` | `name` and `url` of who runs the service, named on the landing page |
+| `source_url` | the source code the landing page links to (AGPL-3.0); a modified version sets its own |
+| `devtools` | the viewer at `/devtools/`; its data needs a key with the `devtools` scope |
 
 Any option can also be set with an environment variable `GEOSERVICES_<OPTION>`.
+
+### Legal texts
+
+The landing page links the imprint, the privacy policy and the terms of use, from HTML files in `config/legal/`: `impressum.html`, `datenschutz.html`, `nutzungsbedingungen.html`, served at `/impressum`, `/datenschutz` and `/nutzungsbedingungen`. Each file is the page's body (headings, paragraphs, no `<html>` or `<head>`). A missing file has no link and its page is a 404. `deploy.sh` copies them; they take effect without a reload.
 
 ### API keys
 
@@ -133,7 +140,7 @@ echo "$KEY" | ./manage.sh key-register old-client   # a key a client already has
 ./manage.sh usage-export 2026-10 > usage-2026-10.csv
 ```
 
-- `--scopes`: `tiles` and/or `search`; none means both. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
+- `--scopes`: `tiles`, `search` and/or `devtools`; none means `tiles` and `search`. `devtools` opens the viewer's data and is given only by name, to our own keys. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
 - `--trial` makes a key valid for 30 days, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
 - Every request with a key is counted per month: successful tile requests (XYZ, WMTS, WMS) and search requests apart, and every request answered with an error (status 400 or above, the key's own refusals included) as `errors`. A WMS map counts as one request, whatever its size up to `wms_max_px`. `usage-export` writes `key;customer;month;tiles;search;errors` for every key.
 
@@ -254,7 +261,7 @@ docker compose -f docker-compose.local.yml up -d
 docker compose -f docker-compose.local.yml exec app python tools/manage.py import li
 ```
 
-The dev server is on http://localhost:8003, with a viewer for tiles and search at http://localhost:8003/devtools. It is configured from `config.local/`. `sh app/scripts/test.sh` runs the tests. `DESIGN.md` is the developer documentation.
+The dev server is on http://localhost:8003, with a viewer for tiles and search at http://localhost:8003/devtools (open on the dev stack, which has no keys; with keys it needs one with the `devtools` scope). It is configured from `config.local/`. `sh app/scripts/test.sh` runs the tests. `DESIGN.md` is the developer documentation.
 
 ## License
 

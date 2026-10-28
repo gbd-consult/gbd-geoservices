@@ -1,6 +1,8 @@
 """What this server serves, how it is doing, and the reload hook.
 
     GET  /            the landing page
+    GET  /impressum, /datenschutz, /nutzungsbedingungen
+                      the deployment's legal texts, where it has them
     GET  /health      liveness, no key
     GET  /metadata    what a client needs to use the server, no key
     GET  /status      what an operator needs, any valid key
@@ -22,6 +24,13 @@ but it is not a client's business.
 
 `/health` takes no key because the container healthcheck polls it before
 any key exists.
+
+The legal texts -- imprint, privacy policy, terms of use -- come from the
+operator's management and lawyer, not from this repository: they are HTML
+files in `config/legal/` beside `options.yaml`, one per page, put into the
+landing page's frame as they are. A page whose file is missing is a 404 and
+has no link. They are read on every request, so a corrected text needs
+only a deploy, no reload.
 """
 
 from __future__ import annotations
@@ -29,6 +38,7 @@ from __future__ import annotations
 import ipaddress
 import logging
 import time
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -56,6 +66,10 @@ ATTRIBUTION = '© OpenStreetMap contributors'
 #: Copernicus GLO-30 is free on the condition that it is credited so.
 ELEVATION_ATTRIBUTION = ('© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 '
                          'provided under COPERNICUS by the European Union and ESA')
+
+#: The legal pages, by their path and their file's name in `config/legal/`.
+#: German paths: the texts are German law's, and so are the names people look for.
+LEGAL_PAGES = ('impressum', 'datenschutz', 'nutzungsbedingungen')
 
 _cache: dict[str, Any] = {}
 
@@ -315,22 +329,49 @@ def require_loopback(request: Request) -> None:
 @router.get('/', response_class=HTMLResponse)
 def landing(request: Request, lang: str | None = None) -> HTMLResponse:
     """What this server is, and a URL of each kind that works, in `?lang=`."""
-    from web.main import templates
-
     try:
         schema = db.active_schema()
     except db.NoImportError:
         schema = None
     from renderer import core, matrix
 
-    lang = i18n.pick(lang)
-    return templates.TemplateResponse(request, 'landing.html', {
-        'lang': lang,
-        'languages': i18n.switch_to(lang),
-        't': lambda message_id, **values: i18n.t(message_id, lang, **values),
+    return _page(request, lang, 'landing.html', {
         'version': __version__,
         'area': config.opt('serve_area'),
         'themes': [serving.url_name(name) for name in core.available_themes(schema)] if schema else [],
         'grids': matrix.load(),
-        'devtools': bool(config.opt('devtools')),
+        'source_url': config.opt('source_url'),
+    })
+
+
+def legal_file(page: str) -> Path:
+    return config.deployment_path().parent / 'legal' / f'{page}.html'
+
+
+def _legal_route(page: str):
+    def route(request: Request, lang: str | None = None) -> HTMLResponse:
+        path = legal_file(page)
+        if not path.is_file():
+            raise HTTPException(status_code=404, detail=f'no {page} configured')
+        return _page(request, lang, 'legal.html', {'page': page, 'text': path.read_text()})
+    return route
+
+
+for _page_name in LEGAL_PAGES:
+    router.add_api_route(f'/{_page_name}', _legal_route(_page_name), methods=['GET'],
+                         response_class=HTMLResponse, include_in_schema=False)
+
+
+def _page(request: Request, lang: str | None, template: str, context: dict) -> HTMLResponse:
+    """A page in the landing page's frame: language, operator, legal links."""
+    from web.main import templates
+
+    lang = i18n.pick(lang)
+    return templates.TemplateResponse(request, template, {
+        'lang': lang,
+        'languages': i18n.switch_to(lang),
+        't': lambda message_id, **values: i18n.t(message_id, lang, **values),
+        'operator': config.opt('operator') or {},
+        'legal': [page for page in LEGAL_PAGES if legal_file(page).is_file()],
+        **context,
     })

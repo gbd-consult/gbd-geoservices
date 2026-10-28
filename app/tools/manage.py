@@ -5,7 +5,7 @@
     python tools/manage.py compile-styles [<area>]
     python tools/manage.py pre-cache [<area>] [--fast] [--force]
     python tools/manage.py drop-cache [<area>]
-    python tools/manage.py key-register <name> [--customer C] [--scopes tiles search]
+    python tools/manage.py key-register <name> [--customer C] [--scopes tiles search devtools]
                                        [--referrers P ...] [--rate N] [--trial | --expires DATE]
                                        < key
     python tools/manage.py key-list
@@ -150,7 +150,7 @@ def cmd_key_list(args: argparse.Namespace) -> int:
     print('name\tcustomer\tscopes\treferrers\trate\texpires\tdisabled\tcreated')
     for name, customer, scopes, referrers, rate, expires, disabled, created in keys.listing():
         print('\t'.join(str(v) for v in (
-            name, customer or '', ','.join(scopes) or 'all', ','.join(referrers) or 'any',
+            name, customer or '', ','.join(scopes or keys.DEFAULT_SCOPES), ','.join(referrers) or 'any',
             rate or '', expires or '', 'yes' if disabled else 'no', f'{created:%Y-%m-%d}')))
     return 0
 
@@ -320,7 +320,7 @@ def parser() -> argparse.ArgumentParser:
     key_add.add_argument('name', help='unique name, the key\'s id in the usage export')
     key_add.add_argument('--customer', help='who is invoiced for it')
     key_add.add_argument('--scopes', nargs='+', default=[], metavar='SCOPE',
-                         help='tiles and/or search; none means every scope')
+                         help='tiles, search and/or devtools; none means tiles and search')
     key_add.add_argument('--referrers', nargs='+', default=[], metavar='PATTERN',
                          help='glob patterns for Origin/Referer, e.g. https://maps.example.de/*')
     key_add.add_argument('--rate', type=int, help='requests per minute')

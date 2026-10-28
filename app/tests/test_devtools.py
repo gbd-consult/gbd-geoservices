@@ -38,8 +38,8 @@ def app_with(monkeypatch, enabled: bool, watch: bool = False) -> FastAPI:
 
 
 def test_off_by_default():
-    """"Viewer only, never on a public deployment" -- so the versioned
-    default must be off, and a deployment has to ask for it."""
+    """A deployment has to ask for the viewer, so the versioned default
+    must be off."""
     import yaml
 
     from lib.config import DEFAULTS_PATH
@@ -72,6 +72,29 @@ def test_mounted_when_on(monkeypatch):
     for asset in ('main.js', 'tiles.js', 'search.js', 'catpicker.js', 'mapview.js', 'api.js',
                   'urlstate.js', 'wkt.js', 'i18n.js', 'devtools.css'):
         assert client.get(f'/devtools/static/{asset}').status_code == 200, asset
+
+
+@pytest.mark.parametrize('route', ['/devtools/api/grids', '/devtools/api/extent',
+                                   '/devtools/api/watch'])
+def test_the_viewers_data_needs_a_devtools_key(monkeypatch, keys, route):
+    """With the option on in production, the key is all that keeps the
+    viewer ours: a customer's key -- even one with no scopes, which opens
+    tiles and search -- is refused."""
+    keys(['k-customer-0123456789', {'key': 'k-ours-0123456789', 'scopes': ['devtools']}])
+    # What a route answers past the key -- the database may be down -- is not this test's.
+    client = TestClient(app_with(monkeypatch, True), raise_server_exceptions=False)
+    assert client.get(route).status_code == 401
+    assert client.get(route, params={'key': 'k-customer-0123456789'}).status_code == 403
+    assert client.get(route, params={'key': 'k-ours-0123456789'}).status_code not in (401, 403)
+
+
+def test_the_page_opens_without_a_key(monkeypatch, keys):
+    """A browser opening the URL sends no Authorization header; the page
+    asks for the key in its own field."""
+    keys([{'key': 'k-ours-0123456789', 'scopes': ['devtools']}])
+    client = TestClient(app_with(monkeypatch, True))
+    assert client.get('/devtools').status_code == 200
+    assert client.get('/devtools/static/main.js').status_code == 200
 
 
 def test_the_page_never_carries_a_key(monkeypatch, keys):

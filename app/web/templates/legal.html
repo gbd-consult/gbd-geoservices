@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}{{ t('legal.' + page) }} &ndash; gbd-geoservices{% endblock %}
+{% block content %}
+<p class="sub"><a href="/?lang={{ lang }}">gbd-geoservices</a></p>
+{# The deployment's own file (`config/legal/`), not a visitor's input. #}
+{{ text | safe }}
+{% endblock %}
