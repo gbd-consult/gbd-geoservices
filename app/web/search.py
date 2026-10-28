@@ -28,7 +28,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Request
 
 from search import api as search_api
 from search.request import RequestError, parse
-from web import auth
+from web import auth, stats
 from web import icons as icon_routes
 
 router = APIRouter(prefix='/search', tags=['search'],
@@ -52,12 +52,14 @@ EXAMPLES = {
 }
 
 
-def request_from(body: dict, *, fuzzy: bool = False):
+def request_from(body: dict, request: Request, *, fuzzy: bool = False):
     """A validated `Request`, or 422 naming the field.
 
     422 rather than 400: the body parsed as JSON and was the wrong
-    *content*, which is the distinction a client acts on.
+    *content*, which is the distinction a client acts on. The terms go to
+    the request log first, so a refused body is logged with what it asked.
     """
+    request.state.search_terms = stats.terms_of(body)
     try:
         req = parse(body)
         if fuzzy:
@@ -112,11 +114,11 @@ def find(body: Annotated[dict, Body(openapi_examples=EXAMPLES)], request: Reques
     nearest address first, then what is near the point by distance, then
     the containing areas smallest first, unpaged and unscored.
     """
-    return with_icons(search_api.find(request_from(body)), str(request.base_url))
+    return with_icons(search_api.find(request_from(body, request)), str(request.base_url))
 
 
 @router.post('/count')
-def count(body: Annotated[dict, Body(openapi_examples=EXAMPLES)]) -> dict:
+def count(body: Annotated[dict, Body(openapi_examples=EXAMPLES)], request: Request) -> dict:
     """The total for the same body, without the rows.
 
     A separate call because it is the uncapped one: `/search` stops at a
@@ -124,7 +126,7 @@ def count(body: Annotated[dict, Body(openapi_examples=EXAMPLES)]) -> dict:
     `/search` reports, because capped rules have no window to count
     over.
     """
-    return {'total': search_api.count(request_from(body))}
+    return {'total': search_api.count(request_from(body, request))}
 
 
 @router.post('/fuzzy')
@@ -137,11 +139,12 @@ def find_fuzzy(body: Annotated[dict, Body(openapi_examples={'name': EXAMPLES['na
     Every result is at `ranking.relevance.name_fuzzy`; the response is
     `/search`'s.
     """
-    return with_icons(search_api.find(request_from(body, fuzzy=True), fuzzy=True),
+    return with_icons(search_api.find(request_from(body, request, fuzzy=True), fuzzy=True),
                       str(request.base_url))
 
 
 @router.post('/fuzzy/count')
-def count_fuzzy(body: Annotated[dict, Body(openapi_examples={'name': EXAMPLES['name']})]) -> dict:
+def count_fuzzy(body: Annotated[dict, Body(openapi_examples={'name': EXAMPLES['name']})],
+                request: Request) -> dict:
     """The total for the same body as `/search/fuzzy`."""
-    return {'total': search_api.count(request_from(body, fuzzy=True), fuzzy=True)}
+    return {'total': search_api.count(request_from(body, request, fuzzy=True), fuzzy=True)}

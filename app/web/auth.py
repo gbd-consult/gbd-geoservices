@@ -1,19 +1,31 @@
-"""The one key check: carriers, scopes, referrers, rate.
+"""The one key check: carriers, scopes, referrers, expiry, rate, usage.
 
 Each decision here closes a way keys leak or a check fails open:
 
-- the keys live in the deployment's `config/options.yaml`, which is
-  git-ignored and outside the image -- only the dev password in
-  `config.local/` is tracked -- and this module never sees a database
-  credential at all (`lib/db.py`).
-- a key list that arrives from the environment is a **string**, and `in` on
-  a string is a substring test -- the key `"a"` would authenticate against a
-  configured key of `"abc123"`. `_records()` below coerces to a list for
-  exactly this.
-- keys are compared with `secrets.compare_digest`, not `in`.
+- the keys live in the database (`lib/keys.py`), as SHA-256 digests only: a
+  presented key is hashed and looked up, so no key is held in clear here,
+  in the database or in a backup of it.
 - a key is accepted in the query as well as in a header, so tiles can be
   protected too.
 - keys have scopes: a key opens only what it names.
+- a key can be disabled and can expire; either is a 403, at once for every
+  request after the next reload of the records (`KEYS_TTL_S`).
+
+The records are re-read every `KEYS_TTL_S`, so a key added, disabled or
+re-enabled with `manage.py` takes effect without a reload. If the database
+cannot be read the last records stay in use; a process that never read
+them refuses every keyed request with 503, never opens.
+
+USAGE
+
+Every request to a `requires(scope)` route that carries a registered key is
+counted per key and month once its response status is known (`count`, from
+the `count_usage` middleware in `web/main.py`): a status below 400 under the
+route's scope -- tiles and search apart, whatever scopes the key carries --
+and 400 or above, the key's own refusals (403, 429) included, as `errors`.
+A request with no key or an unknown one has no key to count it for. The
+counts are kept in this process and added to `service.key_usage` every
+`USAGE_FLUSH_S` and at shutdown; a flush that fails keeps them for the next.
 
 TWO CARRIERS, IN ONE ORDER
 
@@ -35,10 +47,10 @@ STATUS CODES
 identified and not allowed", which is a different thing for a client to
 retry.
 
-NO KEYS CONFIGURED
+NO KEYS REGISTERED
 
-The versioned default is `keys: []`, which is what a developer runs with. An
-empty list means **open**, because refusing every request would make the dev
+A database with no key in `service.api_key` is what a developer runs with,
+and it means **open**, because refusing every request would make the dev
 stack unusable and the first thing anyone did would be to invent a key and
 commit it. It is not silent: startup logs a warning, and `/status` reports
 `"auth": "open"`, so a deployment that forgot its keys says so in the one
@@ -47,22 +59,23 @@ place an operator looks.
 
 from __future__ import annotations
 
+import datetime
 import fnmatch
 import logging
-import secrets
 import threading
 import time
+from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from fastapi import HTTPException, Request
 
-from lib import config
+from lib import keys as store
 
 _log = logging.getLogger(__name__)
 
 #: The scopes a route can require. A key names the ones it carries.
-SCOPES = ('tiles', 'search')
+SCOPES = store.SCOPES
 
 #: The query parameter, and the name stripped from logs and cache keys.
 QUERY_PARAM = 'key'
@@ -70,19 +83,32 @@ QUERY_PARAM = 'key'
 #: Sliding window for `rate`, which is documented as requests per minute.
 RATE_WINDOW_S = 60.0
 
+#: How old the key records may get: the delay before a disabled key is refused.
+KEYS_TTL_S = 30.0
+
+#: How often the usage counts go to the database; a crash loses at most this much.
+USAGE_FLUSH_S = 60.0
+
 
 @dataclass(frozen=True, slots=True)
 class Key:
-    """One configured key.
+    """One key record; the key itself is not part of it.
 
     `scopes` empty means every scope: a key record that names none is the
     shorthand form, and a deployment that wants a narrow key says so.
+    `expires` is the last day the key is valid, in UTC.
     """
 
-    key: str
+    id: int
+    name: str
     scopes: frozenset[str] = field(default_factory=frozenset)
     referrers: tuple[str, ...] = ()
     rate: int | None = None
+    expires: datetime.date | None = None
+    disabled: bool = False
+
+    def expired(self, today: datetime.date) -> bool:
+        return self.expires is not None and today > self.expires
 
     def allows(self, scope: str) -> bool:
         return not self.scopes or scope in self.scopes
@@ -126,9 +152,9 @@ class RateLimiter:
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._hits: dict[str, list[float]] = {}
+        self._hits: dict[int, list[float]] = {}
 
-    def allow(self, key: str, rate: int | None) -> bool:
+    def allow(self, key: int, rate: int | None) -> bool:
         if not rate:
             return True
         now = time.monotonic()
@@ -147,59 +173,87 @@ class RateLimiter:
             self._hits.clear()
 
 
+class Usage:
+    """Requests per (key id, month) and scope, since the last flush."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._counts: dict[tuple[int, datetime.date], dict[str, int]] = \
+            defaultdict(lambda: defaultdict(int))
+
+    def count(self, key: Key, column: str) -> None:
+        month = store.month_of(store.today())
+        with self._lock:
+            self._counts[(key.id, month)][column] += 1
+
+    def flush(self) -> None:
+        """Add the counts to the database; on failure keep them for the next."""
+        with self._lock:
+            counts, self._counts = self._counts, defaultdict(lambda: defaultdict(int))
+        if not counts:
+            return
+        try:
+            store.add_usage(counts)
+        except Exception as exc:                  # noqa: BLE001 - the counts are the invoice
+            _log.error('could not write the key usage, kept for the next flush: %s', exc)
+            with self._lock:
+                for slot, scopes in counts.items():
+                    for scope, n in scopes.items():
+                        self._counts[slot][scope] += n
+
+    def clear(self) -> None:
+        with self._lock:
+            self._counts.clear()
+
+
 _limiter = RateLimiter()
-_keys: tuple[Key, ...] | None = None
+_usage = Usage()
+_keys: dict[str, Key] | None = None
+_loaded_at = 0.0
+_load_lock = threading.Lock()
 
 
-def _records() -> tuple[Key, ...]:
-    """The configured keys.
-
-    A record may be a mapping or a bare string; a bare string is the
-    shorthand for "every scope, any origin, no rate". The whole value being
-    a string rather than a list is the environment case (`_coerce`
-    YAML-parses `GEOSERVICES_KEYS=abc` to the string `abc`), and wrapping it
-    is what stops `in` from becoming a substring test.
-    """
-    raw = config.opt('keys') or []
-    if isinstance(raw, (str, bytes, dict)):
-        raw = [raw]
-    out = []
-    for entry in raw:
-        if isinstance(entry, str):
-            out.append(Key(key=entry))
-            continue
-        if not isinstance(entry, dict) or not entry.get('key'):
-            _log.warning('ignoring a key record with no `key`: %r', entry)
-            continue
-        referrers = entry.get('referrers') or ()
-        if isinstance(referrers, str):
-            referrers = [referrers]
-        scopes = entry.get('scopes') or ()
-        if isinstance(scopes, str):
-            scopes = [scopes]
-        out.append(Key(
-            key=str(entry['key']),
-            scopes=frozenset(scopes),
-            referrers=tuple(referrers),
-            rate=int(entry['rate']) if entry.get('rate') else None,
-        ))
-    return tuple(out)
+def _records() -> dict[str, Key]:
+    """The key records by digest, from the database."""
+    return records_of(store.load())
 
 
-def configured(*, refresh: bool = False) -> tuple[Key, ...]:
-    """The key records, read once.
+def records_of(rows) -> dict[str, Key]:
+    """`service.api_key` rows as key records by digest."""
+    return {row['hash']: Key(
+        id=row['id'],
+        name=row['name'],
+        scopes=frozenset(row['scopes'] or ()),
+        referrers=tuple(row['referrers'] or ()),
+        rate=row['rate'],
+        expires=row['expires'],
+        disabled=row['disabled'],
+    ) for row in rows}
+
+
+def configured(*, refresh: bool = False) -> dict[str, Key]:
+    """The key records by digest, re-read every `KEYS_TTL_S`.
 
     Not called `keys()`: `auth.keys()` reads as a mapping's method at every
-    call site, which is what it is not.
+    call site. A failed read keeps the records there are; with none read
+    yet it raises 503 rather than answer "no keys", which would be "open".
     """
-    global _keys
-    if _keys is None or refresh:
-        _keys = _records()
-    return _keys
+    global _keys, _loaded_at
+    with _load_lock:
+        if _keys is not None and not refresh and time.monotonic() - _loaded_at < KEYS_TTL_S:
+            return _keys
+        try:
+            _keys = _records()
+        except Exception as exc:                  # noqa: BLE001 - any failure: keep what there is
+            _log.error('could not read the API keys: %s', exc)
+            if _keys is None:
+                raise HTTPException(status_code=503, detail='API keys unavailable') from exc
+        _loaded_at = time.monotonic()
+        return _keys
 
 
 def open_access() -> bool:
-    """True when no keys are configured, so every route is unauthenticated."""
+    """True when no keys are registered, so every route is unauthenticated."""
     return not configured()
 
 
@@ -208,6 +262,37 @@ def reset() -> None:
     global _keys
     _keys = None
     _limiter.clear()
+
+
+def count(request: Request, status: int) -> None:
+    """Count a finished request for its key: under its scope, or as an error."""
+    record = getattr(request.state, 'key', None)
+    scope = getattr(request.state, 'key_scope', None)
+    if record is not None and scope is not None:
+        _usage.count(record, scope if status < 400 else 'errors')
+
+
+def flush_usage() -> None:
+    _usage.flush()
+
+
+def start_usage_flush() -> Callable[[], None]:
+    """Flush every `USAGE_FLUSH_S` in a thread; returns the stop, which flushes once more."""
+    stop = threading.Event()
+
+    def loop() -> None:
+        while not stop.wait(USAGE_FLUSH_S):
+            _usage.flush()
+
+    thread = threading.Thread(target=loop, name='key-usage', daemon=True)
+    thread.start()
+
+    def stopper() -> None:
+        stop.set()
+        thread.join()
+        _usage.flush()
+
+    return stopper
 
 
 def presented(request: Request) -> str | None:
@@ -221,27 +306,14 @@ def presented(request: Request) -> str | None:
 
 
 def match(presented_key: str) -> Key | None:
-    """The configured key equal to this one, in constant time.
+    """The record of this key, by its digest.
 
-    `compare_digest` against every record rather than a dict lookup: a dict
-    would compare with `==`, which returns as soon as two bytes differ and
-    so leaks the length of the shared prefix. The loop does not stop early
-    for the same reason -- there are a handful of keys, and the cost of
-    checking them all is nothing next to a tile render.
-
-    Compared as **bytes**. `compare_digest` on `str` raises `TypeError` the
-    moment either side is not ASCII, and the presented key is whatever a
-    client sent -- so `?key=Ünicode` was an unhandled exception and a 500,
-    from an unauthenticated request, on the one code path that exists to
-    refuse them. UTF-8 encoding both sides makes a non-ASCII key an
-    ordinary mismatch.
+    A dict lookup is safe here although it compares with `==`: what it
+    compares is the SHA-256 of the presented key, and how much of a digest
+    matches says nothing about how much of the key does. The digest is over
+    UTF-8, so a non-ASCII key is an ordinary mismatch, not an exception.
     """
-    presented_bytes = presented_key.encode('utf-8')
-    found = None
-    for record in configured():
-        if secrets.compare_digest(record.key.encode('utf-8'), presented_bytes):
-            found = record
-    return found
+    return configured().get(store.digest(presented_key))
 
 
 def referrer_of(request: Request) -> str | None:
@@ -268,10 +340,18 @@ def check(request: Request, scope: str | None) -> Key | None:
         raise HTTPException(status_code=401, detail='an API key is required')
 
     record = match(presented_key)
+    if record is not None:
+        request.state.key = record                # for `count`, even if refused below
     if record is None:
         # Never echo what was sent: an error body is a place a key ends up
         # in someone's log or screenshot.
         raise HTTPException(status_code=401, detail='invalid API key')
+
+    if record.disabled:
+        raise HTTPException(status_code=403, detail='this key is disabled')
+
+    if record.expired(store.today()):
+        raise HTTPException(status_code=403, detail='this key has expired')
 
     if scope is not None and not record.allows(scope):
         raise HTTPException(status_code=403, detail=f'this key has no {scope} scope')
@@ -279,7 +359,7 @@ def check(request: Request, scope: str | None) -> Key | None:
     if not record.allows_referrer(referrer_of(request)):
         raise HTTPException(status_code=403, detail='this key is not allowed from this origin')
 
-    if not _limiter.allow(record.key, record.rate):
+    if not _limiter.allow(record.id, record.rate):
         raise HTTPException(status_code=429, detail='rate limit exceeded',
                             headers={'Retry-After': str(int(RATE_WINDOW_S))})
     return record
@@ -295,19 +375,24 @@ def requires(scope: str) -> Callable:
         raise ValueError(f'unknown scope {scope!r}')
 
     def dependency(request: Request) -> Key | None:
+        request.state.key_scope = scope
         return check(request, scope)
 
     return dependency
 
 
 def requires_key(request: Request) -> Key | None:
-    """A FastAPI dependency for any valid key, whatever its scopes."""
+    """A FastAPI dependency for any valid key, whatever its scopes; not counted."""
     return check(request, None)
 
 
 def warn_if_open() -> None:
     """Said once at startup, so an unprotected deployment is not silent."""
-    if open_access():
+    try:
+        is_open = open_access()
+    except HTTPException:
+        return                                    # configured() logged why
+    if is_open:
         _log.warning(
-            'No API keys configured: every route is open. Set `keys` in '
-            'config/options.yaml for a deployment. /status reports this.')
+            'No API keys registered: every route is open. Add one with '
+            '`manage.sh key-add` for a deployment. /status reports this.')

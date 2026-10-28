@@ -1,7 +1,6 @@
 # Template for config/options.yaml -- see config.example/README.md. Every option and its default
 # is in app/config/options.yaml; set here only what differs. A key that is not an option there is
-# refused.
+# refused. API keys are not options: they are in the database, added with
+# `./manage.sh key-add <name>`.
 host: geoservices.example.org
 serve_area: de_nrw
-keys:
-  - {key: CHANGEME, scopes: [search, tiles]}

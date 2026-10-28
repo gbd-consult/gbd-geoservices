@@ -17,6 +17,8 @@ DATA = Path(__file__).resolve().parent / 'data'
 # the suite renders `default_std` and the rest regardless. Empty is "all".
 os.environ['GEOSERVICES_SERVE_PALETTES'] = '[]'
 os.environ['GEOSERVICES_SERVE_DETAILS'] = '[]'
+# A test run writes no request log or host samples into the dev database.
+os.environ['GEOSERVICES_REQUEST_LOG'] = 'false'
 
 
 @pytest.fixture(scope='session')
@@ -107,3 +109,47 @@ def small(db, monkeypatch):
     api.clear_cache()
     yield schema
     api.clear_cache()
+
+
+def key_rows(records):
+    """`service.api_key` rows for key records given with their plain keys."""
+    from lib import keys as store
+    out = []
+    for i, record in enumerate(records, 1):
+        record = {'key': record} if isinstance(record, str) else record
+        out.append({'id': i, 'name': record['key'], 'hash': store.digest(record['key']),
+                    'scopes': record.get('scopes', []), 'referrers': record.get('referrers', []),
+                    'rate': record.get('rate'), 'expires': record.get('expires'),
+                    'disabled': record.get('disabled', False)})
+    return out
+
+
+@pytest.fixture(autouse=True)
+def no_registered_keys(monkeypatch):
+    """Every test runs open unless it installs keys with `keys`: what is
+    registered in the dev database is not the tests' business."""
+    from web import auth
+    monkeypatch.setattr(auth, '_records', dict)
+    auth.reset()
+    yield
+    auth.reset()
+
+
+@pytest.fixture
+def keys(monkeypatch):
+    """Install a set of key records and clear the caches around the test.
+
+    A record is a plain key or `{key, scopes, ...}`; the key is used as the
+    record's name, so a test can tell which record matched. The database
+    is not read.
+    """
+    from web import auth
+
+    def install(records):
+        monkeypatch.setattr(auth, '_records', lambda: auth.records_of(key_rows(records)))
+        auth.reset()
+        auth._usage.clear()
+        return records
+    yield install
+    auth.reset()
+    auth._usage.clear()

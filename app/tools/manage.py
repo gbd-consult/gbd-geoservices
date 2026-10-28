@@ -5,6 +5,14 @@
     python tools/manage.py compile-styles [<area>]
     python tools/manage.py pre-cache [<area>] [--fast] [--force]
     python tools/manage.py drop-cache [<area>]
+    python tools/manage.py key-register <name> [--customer C] [--scopes tiles search]
+                                       [--referrers P ...] [--rate N] [--trial | --expires DATE]
+                                       < key
+    python tools/manage.py key-list
+    python tools/manage.py key-disable <name> | key-enable <name>
+    python tools/manage.py usage-export <yyyy-mm>
+    python tools/manage.py stats-daily
+    python tools/manage.py stats-export <yyyy-mm>
 
 One small file of argparse subcommands that call functions of the modules.
 Every task with logic lives in its module -- the extract and the import in
@@ -29,6 +37,7 @@ An <area> defaults to `serve_area`. `update`, `vector`, `search`, `db` and
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import logging
 import sys
@@ -119,6 +128,82 @@ def cmd_drop_cache(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_key_register(args: argparse.Namespace) -> int:
+    """Register the key on stdin; `manage.sh key-add` generates and sends it."""
+    from lib import keys
+
+    try:
+        keys.add(args.name, sys.stdin.readline().strip(), customer=args.customer,
+                 scopes=args.scopes, referrers=args.referrers, rate=args.rate,
+                 expires=args.expires, trial=args.trial)
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(f'key {args.name!r} registered; it is stored only as a hash', file=sys.stderr)
+    return 0
+
+
+def cmd_key_list(args: argparse.Namespace) -> int:
+    """Every key's record, never the key."""
+    from lib import keys
+
+    print('name\tcustomer\tscopes\treferrers\trate\texpires\tdisabled\tcreated')
+    for name, customer, scopes, referrers, rate, expires, disabled, created in keys.listing():
+        print('\t'.join(str(v) for v in (
+            name, customer or '', ','.join(scopes) or 'all', ','.join(referrers) or 'any',
+            rate or '', expires or '', 'yes' if disabled else 'no', f'{created:%Y-%m-%d}')))
+    return 0
+
+
+def cmd_key_disable(args: argparse.Namespace) -> int:
+    """Disable or enable a key by name; the server notices within `auth.KEYS_TTL_S`."""
+    from lib import keys
+
+    if not keys.set_disabled(args.name, args.disabled):
+        print(f'no key named {args.name!r}', file=sys.stderr)
+        return 1
+    print(f'key {args.name!r} {"disabled" if args.disabled else "enabled"}', file=sys.stderr)
+    return 0
+
+
+def cmd_usage_export(args: argparse.Namespace) -> int:
+    """A month's requests per key, tiles and search apart, as CSV on stdout."""
+    from lib import keys
+
+    count = keys.export_usage(args.month, sys.stdout)
+    print(f'{count} keys', file=sys.stderr)
+    return 0
+
+
+def cmd_stats_daily(args: argparse.Namespace) -> int:
+    """Count the finished days, then drop the request log older than seven days."""
+    from lib import stats
+
+    counted, dropped = stats.daily()
+    print(f'counted {", ".join(map(str, counted)) or "nothing new"}; '
+          f'dropped {", ".join(dropped) or "nothing"}', file=sys.stderr)
+    return 0
+
+
+def cmd_stats_export(args: argparse.Namespace) -> int:
+    """A month's requests, cache and host figures per day as CSV on stdout."""
+    from lib import stats
+
+    totals = stats.export(args.month, sys.stdout)
+    print(f'{totals["requests"]} requests, {totals["errors"]} errors, cache hit rate '
+          f'{totals["cache_hit_rate"] or "-"}, cost {totals["cost_eur"] or "-"} EUR, '
+          f'{totals["eur_per_1000"] or "-"} EUR per 1000 requests', file=sys.stderr)
+    return 0
+
+
+def month(value: str) -> datetime.date:
+    return datetime.datetime.strptime(value, '%Y-%m').date()
+
+
+def day(value: str) -> datetime.date:
+    return datetime.date.fromisoformat(value)
+
+
 #: The server in this container. /internal/reload is loopback-only, which is
 #: exactly where this runs -- `docker compose exec app python tools/manage.py`.
 RELOAD_URL = 'http://127.0.0.1:8000/internal/reload'
@@ -163,6 +248,8 @@ def cmd_pre_cache(args: argparse.Namespace) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
+    from lib import keys
+
     main = argparse.ArgumentParser(prog='manage.py', description=__doc__.split('\n\n')[0])
     main.add_argument('-v', '--verbose', action='store_true', help='log every step as it runs')
     commands = main.add_subparsers(dest='command', required=True)
@@ -224,6 +311,55 @@ def parser() -> argparse.ArgumentParser:
         description='Remove every cached tile of the area, both tiers.')
     drop.add_argument('area', nargs='?', default=None, help=area_help)
     drop.set_defaults(func=cmd_drop_cache)
+
+    key_add = commands.add_parser(
+        'key-register', help='register the API key on stdin',
+        description='Read a key from stdin and store its SHA-256. Keys are generated by '
+                    'scripts/vaultwarden-send.sh only: `manage.sh key-add` runs it and then '
+                    'this. By hand, for a key a client already has.')
+    key_add.add_argument('name', help='unique name, the key\'s id in the usage export')
+    key_add.add_argument('--customer', help='who is invoiced for it')
+    key_add.add_argument('--scopes', nargs='+', default=[], metavar='SCOPE',
+                         help='tiles and/or search; none means every scope')
+    key_add.add_argument('--referrers', nargs='+', default=[], metavar='PATTERN',
+                         help='glob patterns for Origin/Referer, e.g. https://maps.example.de/*')
+    key_add.add_argument('--rate', type=int, help='requests per minute')
+    expiry = key_add.add_mutually_exclusive_group()
+    expiry.add_argument('--trial', action='store_true', help=f'valid for {keys.TRIAL_DAYS} days from today')
+    expiry.add_argument('--expires', type=day, metavar='YYYY-MM-DD',
+                        help='the last day the key is valid (UTC)')
+    key_add.set_defaults(func=cmd_key_register)
+
+    key_list = commands.add_parser('key-list', help='list the API keys, without the keys')
+    key_list.set_defaults(func=cmd_key_list)
+
+    for name, disabled in (('key-disable', True), ('key-enable', False)):
+        toggle = commands.add_parser(name, help=f'{name.split("-")[1]} an API key')
+        toggle.add_argument('name')
+        toggle.set_defaults(func=cmd_key_disable, disabled=disabled)
+
+    usage = commands.add_parser(
+        'usage-export', help='export a month\'s requests per key as CSV',
+        description='Write key;customer;month;tiles;search;errors for every key to stdout, a key '
+                    'without requests with zeros.')
+    usage.add_argument('month', type=month, metavar='YYYY-MM')
+    usage.set_defaults(func=cmd_usage_export)
+
+    stats_daily = commands.add_parser(
+        'stats-daily', help='count yesterday, drop the request log older than 7 days',
+        description='Create the request log\'s coming partitions, count every finished day '
+                    'into service.daily_stats and daily_host, then drop the request log and '
+                    'host samples older than seven days -- the IP addresses and search terms '
+                    'with them. Run daily from cron (setup.sh).')
+    stats_daily.set_defaults(func=cmd_stats_daily)
+
+    stats_export = commands.add_parser(
+        'stats-export', help='export a month\'s load figures as CSV',
+        description='One line per day: requests by kind, errors, tile cache hit rate, '
+                    '95th percentile durations, distinct IPs, CPU, RAM and disk. The totals '
+                    'with monthly_cost_eur per 1000 requests go to stderr.')
+    stats_export.add_argument('month', type=month, metavar='YYYY-MM')
+    stats_export.set_defaults(func=cmd_stats_export)
 
     return main
 

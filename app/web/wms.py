@@ -71,7 +71,7 @@ def served_crs() -> dict:
 
 
 def max_px() -> int:
-    return int(config.opt('wms_max_px', 4096))
+    return int(config.opt('wms_max_px', 2048))
 
 
 def get_map(request: Request, params: dict[str, str]) -> Response:
