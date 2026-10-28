@@ -7,7 +7,8 @@ Each decision here closes a way keys leak or a check fails open:
   in the database or in a backup of it.
 - a key is accepted in the query as well as in a header, so tiles can be
   protected too.
-- keys have scopes: a key opens only what it names.
+- keys have scopes: a key opens only what it names. A key that names none
+  opens the API, never the viewer (`devtools`).
 - a key can be disabled and can expire; either is a 403, at once for every
   request after the next reload of the records (`KEYS_TTL_S`).
 
@@ -94,8 +95,9 @@ USAGE_FLUSH_S = 60.0
 class Key:
     """One key record; the key itself is not part of it.
 
-    `scopes` empty means every scope: a key record that names none is the
-    shorthand form, and a deployment that wants a narrow key says so.
+    `scopes` empty means `DEFAULT_SCOPES`, tiles and search: a key record
+    that names none is the shorthand form, and a deployment that wants a
+    narrow key says so. `devtools` is only ever named.
     `expires` is the last day the key is valid, in UTC.
     """
 
@@ -111,7 +113,7 @@ class Key:
         return self.expires is not None and today > self.expires
 
     def allows(self, scope: str) -> bool:
-        return not self.scopes or scope in self.scopes
+        return scope in (self.scopes or store.DEFAULT_SCOPES)
 
     def allows_referrer(self, referrer: str | None) -> bool:
         """`referrers` is a list of globs checked against Origin/Referer.
@@ -384,6 +386,11 @@ def requires(scope: str) -> Callable:
 def requires_key(request: Request) -> Key | None:
     """A FastAPI dependency for any valid key, whatever its scopes; not counted."""
     return check(request, None)
+
+
+def requires_devtools(request: Request) -> Key | None:
+    """A FastAPI dependency for the viewer's own routes; not counted."""
+    return check(request, 'devtools')
 
 
 def warn_if_open() -> None:

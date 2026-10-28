@@ -171,9 +171,13 @@ function initKeyField() {
   keyInput.value = api.getKey();
   const apply = () => {
     api.setKey(keyInput.value.trim());
-    // Every tile URL and every request changes, so rebuild both.
-    tiles.reloadThemes();
-    loadStatus();
+    // Every request changes, the grids and the extent included, which a page
+    // opened without the devtools key could not load: start over. The URL
+    // holds the state.
+    if (collectorsReady) {
+      writeStateToUrl();
+    }
+    location.reload();
   };
   keyApply.addEventListener('click', apply);
   document.getElementById('keyNoticeGo').addEventListener('click', goToKeyField);

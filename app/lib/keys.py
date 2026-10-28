@@ -37,8 +37,13 @@ from lib import db
 
 SCHEMA = 'service'
 
-#: The scopes a key can carry; each is a usage column, beside `errors`.
-SCOPES = ('tiles', 'search')
+#: The scopes a key can carry. `tiles` and `search` are counted, each a usage
+#: column beside `errors`; `devtools` opens the viewer and is not counted.
+SCOPES = ('tiles', 'search', 'devtools')
+
+#: What a key that names no scope carries: the API, not the viewer. The
+#: viewer is ours, and a customer's key added without `--scopes` must not open it.
+DEFAULT_SCOPES = ('tiles', 'search')
 
 #: How long `add(..., trial=True)` makes a key valid.
 TRIAL_DAYS = 30

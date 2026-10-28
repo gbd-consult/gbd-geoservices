@@ -106,11 +106,21 @@ def test_a_real_key_without_the_scope_is_403(keys):
     assert excinfo.value.status_code == 403
 
 
-def test_a_key_with_no_scopes_carries_every_scope(keys):
+def test_a_key_with_no_scopes_carries_tiles_and_search(keys):
     # The shorthand form. A deployment that wants a narrow key says so.
     keys([KEY])
-    for scope in auth.SCOPES:
+    for scope in ('tiles', 'search'):
         assert auth.check(request(query={'key': KEY}), scope)
+
+
+def test_a_key_with_no_scopes_does_not_open_the_devtools(keys):
+    """The viewer is ours: a customer's key added without --scopes must not
+    reach it, so `devtools` is never implied."""
+    keys([KEY, {'key': OTHER, 'scopes': ['devtools']}])
+    with pytest.raises(HTTPException) as excinfo:
+        auth.requires_devtools(request(query={'key': KEY}))
+    assert excinfo.value.status_code == 403
+    assert auth.requires_devtools(request(query={'key': OTHER})).name == OTHER
 
 
 # --- the substring bug ---------------------------------------------------

@@ -8,7 +8,7 @@ The stack is configured from one directory:
 | `config/` | `docker-compose.yml` (production), copied to the server by `app/scripts/deploy.sh` | **no** — git-ignored |
 | `config.example/` | nobody; the template for `config/` | yes |
 
-Each holds six files:
+Each holds six files, and `config/` may hold a seventh thing, the directory `legal/` with the legal texts the landing page links (`impressum.html`, `datenschutz.html`, `nutzungsbedingungen.html`; README.md "Legal texts"):
 
 | file | read by | |
 |---|---|---|
@@ -26,7 +26,7 @@ cp -r config.example config
 chmod 600 config/options.yaml config/postgres.env
 ```
 
-Then, in `config/options.yaml`: `host` and `serve_area`. In `config/postgres.env`: a new strong
+Then, in `config/options.yaml`: `host`, `serve_area` and `operator`. In `config/postgres.env`: a new strong
 `POSTGRES_PASSWORD`. Every `CHANGEME` must go.
 In `config/Caddyfile`: the same host as the site address, and the ACME `email`. Size
 `shared_buffers` and friends in `config/postgresql.conf` for the host.

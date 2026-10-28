@@ -41,7 +41,11 @@ request_log: true           # write service.request_log (IPs and search terms, k
 monthly_cost_eur: null      # the server's monthly cost from the hosting invoice; `stats-export` divides it by the requests
 
 host: null                  # public host name Caddy serves; deploy.sh checks the Caddyfile names it
-devtools: false             # viewer only, never on a public deployment
+operator:                   # who runs this service, named on the landing page; the imprint says the rest
+  name: null
+  url: null
+source_url: https://github.com/gbd-consult/gbd-geoservices   # the code this server runs, linked from the landing page; AGPL-3.0: a modified version links its own
+devtools: false             # the viewer; its data only for a key with the devtools scope
 devtools_watch: false       # with devtools: recompile when styles/ changes, and the page polls for it every 1.5 s
 log_level: info
 slow_log_ms: 1000            # a tile or search slower than this logs its steps as a warning; at log_level debug every one does

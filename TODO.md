@@ -121,12 +121,14 @@ Each section is sorted by importance, most important first. Items are numbered a
 90. **The app's loopback port** (`127.0.0.1::8000` in `docker-compose.yml`) is used by nothing since the deploy smoke check was removed; it only lets an operator reach the app without Caddy.
 91. **The API's texts are English only**; wanted in German and English, picked with `?lang=` as the landing page and the devtools do (`lib/i18n.py`, `lib/messages.yaml`). What remains: the `detail` of every `HTTPException` in `web/` (~20) and the `RequestError`s of `search/request.py` (31) -- which the devtools show as they come -- the WMTS Capabilities' `Title`/`Abstract`, and `/docs` (the OpenAPI title, description, route docstrings and field descriptions). What stays: JSON keys, mode and parameter names, enum values, theme and grid names, URLs, WMTS keywords, log lines, and `interpretation`'s rule names, which name entries in `model/search_rules.yaml`. Open: whether a client matches on an error's text (the GWS plugin is to be checked); a stable error `code` beside a translated `detail` would make the text free to change. For `POST /search` the body's `lang` already exists and could pick the errors' language instead of `?lang=`.
 100. **An update drops the whole tile cache**: `manage.sh update` empties it and pre-caches again, so until the pre-cache is done every tile is rendered on request, and tiles deeper than the pre-cache stay cold. Only the tiles an update changed should go; that needs a diff of the two extracts (updates are a full re-import) and the changed areas turned into tiles per level.
+111. **No form for a trial key on the landing page.** Wanted: a form that issues a 30-day key (`keys.add(..., trial=True)`, scopes `tiles` and `search`) to whoever enters an e-mail address, with a rate per IP and a honeypot field against abuse. The e-mail addresses it collects need a retention period of their own, stated in the privacy policy like the logs' 7 days. Keys are generated only by `scripts/vaultwarden-send.sh` (`DESIGN.md` "Authentication"); a key made by the app for a form breaks that rule, so the form needs its own decision. Undecided: the key sent by e-mail (needs SMTP) or shown on the page once.
 
 ## Devtools
 
 92. On a non-Mercator grid, switching between Tiles and Search rebuilds the map, and the Search tab pins Web Mercator. Drawing a shape on the Tiles tab does nothing. Draw tools appear on the Tiles tab after a grid switch.
 93. The point radius is not derived from the zoom: an empty field means the server's 50 m / 25 m at every zoom.
 94. `docs/icons.html` (the category and icon table) is gone with `docs/`; there is no replacement.
+112. The page loads Leaflet, Proj4 and Leaflet.draw from unpkg.com and its fonts from Google Fonts; the page is open (only its data needs the `devtools` key), so anyone opening `/devtools/` makes those requests. Vendor them or drop them.
 
 ## GWS client (repository `gbd-websuite`)
 

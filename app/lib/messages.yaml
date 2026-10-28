@@ -51,13 +51,36 @@ landing.health:
 landing.docs:
   de: die generierte API-Referenz (Englisch)
   en: the generated API reference
-landing.devtools:
-  de: der Entwickler-Viewer
-  en: the viewer
+landing.open_source:
+  de: Open Source
+  en: Open source
+landing.licence:
+  de: 'Die Software ist freie Software unter der GNU Affero General Public License, Version 3 oder später (AGPL-3.0-or-later). Der Quelltext:'
+  en: 'The software is free software under the GNU Affero General Public License, version 3 or later (AGPL-3.0-or-later). The source code:'
+landing.self_hosting:
+  de: Betrieb im eigenen Netz
+  en: Operation in your own network
+landing.self_hosting_text:
+  de: Der Dienst wird gehostet angeboten. Der Betrieb im eigenen Netz, auf dem eigenen Server, folgt.
+  en: The service is offered hosted. Operation in your own network, on your own server, is to follow.
+landing.operator:
+  de: Betrieben von
+  en: Operated by
 # OpenStreetMap's own wording of its attribution in each language.
 landing.attribution:
   de: Kartendaten © OpenStreetMap-Mitwirkende, ODbL.
   en: Map data © OpenStreetMap contributors, ODbL.
+
+# The legal pages' names, as the links in the footer and the pages' titles.
+legal.impressum:
+  de: Impressum
+  en: Imprint
+legal.datenschutz:
+  de: Datenschutz
+  en: Privacy policy
+legal.nutzungsbedingungen:
+  de: Nutzungsbedingungen
+  en: Terms of use
 
 # The devtools page (`web/devtools/templates/devtools.html`). An entry with
 # markup is rendered as it is: the catalogue is ours, not a viewer's input.

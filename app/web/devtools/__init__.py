@@ -6,9 +6,8 @@
     GET /devtools/api/watch       the style watcher's state, which the page polls
     GET /devtools/static/...      its JavaScript and CSS
 
-Mounted only when the `devtools` option is on -- "viewer only, never on a
-public deployment" -- and it is a viewer plus a style watcher, no editor:
-styles are edited in the repository. The `devtools_watch` option also starts
+Mounted only when the `devtools` option is on, and it is a viewer plus a
+style watcher, no editor: styles are edited in the repository. The `devtools_watch` option also starts
 `watcher.py`, which recompiles the styles when a file under `styles/`
 changes, and has the page poll it -- a request every 1.5 s per open page,
 which on a deployment is only noise in the proxy's log. There is no vector
@@ -20,6 +19,15 @@ client uses rather than a private copy of them. The two endpoints here exist
 only because a browser cannot derive them: a Leaflet CRS needs a proj4
 definition and a resolution per level, and the initial view needs the
 imported extent.
+
+ONLY FOR A DEVTOOLS KEY
+
+The viewer is ours, not a customer's: its own routes, `/devtools/api/*`,
+take only a key that names the `devtools` scope -- a key with no scopes
+does not -- so the option may be on in production. The page and its
+scripts are open: a browser opening a URL sends no Authorization header,
+and they are the repository's code anyway. Without the key the page opens
+on a map with no grids and no themes, and says why.
 
 NO KEY IN THE PAGE
 
@@ -34,13 +42,14 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from lib import config, db, i18n
 from lib.version import __version__
+from web import auth
 from web.devtools import watcher
 
 _log = logging.getLogger(__name__)
@@ -49,6 +58,10 @@ HERE = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(HERE / 'templates'))
 
 router = APIRouter(prefix='/devtools', tags=['devtools'], include_in_schema=False)
+#: The routes behind the key, declared on their own router so that one added
+#: later is guarded by construction.
+api = APIRouter(prefix='/devtools/api', tags=['devtools'], include_in_schema=False,
+                dependencies=[Depends(auth.requires_devtools)])
 
 #: The CRS Leaflet knows natively. Every other grid is built with
 #: Proj4Leaflet from the definition PostGIS holds.
@@ -80,6 +93,7 @@ def mount(app) -> None:
     if not enabled():
         return
     app.include_router(router)
+    app.include_router(api)
     app.mount('/devtools/static', _Revalidated(directory=str(HERE / 'static')),
               name='devtools-static')
 
@@ -206,7 +220,7 @@ def page(request: Request, lang: str | None = None) -> HTMLResponse:
     })
 
 
-@router.get('/api/grids')
+@api.get('/grids')
 def grids() -> dict:
     """One entry per configured TileMatrixSet, keyed by identifier.
 
@@ -260,7 +274,7 @@ def _proj4(codes: list[str]) -> dict[str, str]:
     return {code: by_srid[srid] for code, srid in srids.items() if srid in by_srid}
 
 
-@router.get('/api/extent')
+@api.get('/extent')
 def extent() -> dict:
     """The imported area as [west, south, east, north] in EPSG:4326, or null.
 
@@ -281,6 +295,6 @@ def extent() -> dict:
     return {'area': area, 'bbox': list(row) if row and row[0] is not None else None}
 
 
-@router.get('/api/watch')
+@api.get('/watch')
 def watch() -> dict:
     return watcher.state()

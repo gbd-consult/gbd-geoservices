@@ -259,6 +259,48 @@ def test_the_landing_page_links_only_the_other_language(client):
     assert 'href="?lang=en"' not in english
 
 
+@pytest.fixture
+def legal_dir(tmp_path, monkeypatch):
+    """A deployment directory whose `legal/` the test fills."""
+    from lib import config
+    monkeypatch.setattr(config, 'deployment_path', lambda: tmp_path / 'options.yaml')
+    (tmp_path / 'legal').mkdir()
+    return tmp_path / 'legal'
+
+
+def test_a_legal_page_is_served_from_the_deployment_and_linked(client, legal_dir):
+    (legal_dir / 'impressum.html').write_text('<h1>Impressum</h1><p>Musterfirma GmbH</p>')
+    page = client.get('/impressum')
+    assert page.status_code == 200
+    assert '<p>Musterfirma GmbH</p>' in page.text
+    assert 'href="/impressum?lang=de"' in client.get('/').text
+    assert 'href="/impressum?lang=en"' in client.get('/', params={'lang': 'en'}).text
+
+
+def test_a_legal_page_without_its_file_is_neither_served_nor_linked(client, legal_dir):
+    """The texts come from management and the lawyer; until they do, the
+    page must not exist rather than show a placeholder as if it were law."""
+    assert client.get('/datenschutz').status_code == 404
+    assert '/datenschutz' not in client.get('/').text
+
+
+def test_the_landing_page_names_the_operator_and_links_the_source(client, monkeypatch):
+    from lib import config
+    real = config.opt
+    operator = {'name': 'Musterfirma GmbH', 'url': 'https://www.example.org/'}
+    monkeypatch.setattr(config, 'opt', lambda path, default=None:
+                        operator if path == 'operator' else real(path, default))
+    text = client.get('/').text
+    assert '<a href="https://www.example.org/">Musterfirma GmbH</a>' in text
+    assert f'href="{real("source_url")}"' in text
+    assert 'AGPL-3.0-or-later' in text
+
+
+def test_the_landing_page_does_not_link_the_devtools(client):
+    """They need the devtools key, which no visitor of the landing page has."""
+    assert '/devtools' not in client.get('/').text
+
+
 # --- the reload hook -----------------------------------------------------
 
 def test_reload_is_loopback_only(client):
