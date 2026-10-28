@@ -207,6 +207,11 @@ build_on_server() {
     # shellcheck disable=SC2029 # expanded locally on purpose
     ssh "$SSH_HOST" "docker build --build-arg GBD_BUILD_ID=$BUILD_ID \
         --tag $IMAGE_REPO:$VERSION --tag $IMAGE_REPO:$MOVING_TAG $BASE/src"
+    # The `keys` service's image: the app plus the Bitwarden CLI, from the
+    # cache of the build above but for one layer.
+    # shellcheck disable=SC2029 # expanded locally on purpose
+    ssh "$SSH_HOST" "docker build --build-arg GBD_BUILD_ID=$BUILD_ID --target keys \
+        --tag $IMAGE_REPO-keys:$VERSION --tag $IMAGE_REPO-keys:$MOVING_TAG $BASE/src"
 }
 
 # What ship() changed on the server: config/ files by name, for the log.
@@ -225,7 +230,7 @@ CHANGED=
 ship() {
     step "Copying docker-compose.yml and config/ to $SSH_HOST:$BASE"
     scp -q "$REPO/docker-compose.yml" "$REPO/app/scripts/manage.sh" "$REPO/app/scripts/setup.sh" \
-        "$REPO/app/scripts/vaultwarden-send.sh" "$SSH_HOST:$BASE/"
+        "$SSH_HOST:$BASE/"
     CHANGED=$( {
         rsync -rt --inplace --itemize-changes \
             --exclude options.yaml --exclude postgres.env \

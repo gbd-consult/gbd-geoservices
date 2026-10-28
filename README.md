@@ -129,7 +129,7 @@ The landing page links the imprint, the privacy policy and the terms of use, fro
 
 ### API keys
 
-API keys are in the database, stored only as their SHA-256; a key cannot be read back. Keys are generated only by `vaultwarden-send.sh`, which hands each one to its customer as a Vaultwarden Send: `key-add` runs it, registers the key and prints the Send link -- never the key. It needs the Bitwarden CLI `bw` on the server and `VAULTWARDEN_SERVER` (for a run without prompts also `BW_CLIENTID`, `BW_CLIENTSECRET`, `BW_PASSWORD`; see `./vaultwarden-send.sh --help`). On the server:
+API keys are in the database, stored only as their SHA-256; a key cannot be read back. Keys are generated only by `vaultwarden-send.sh`, which hands each one to its customer as a Vaultwarden Send: `key-add` runs it, registers the key and prints the Send link -- never the key. All of it runs in the one-off `keys` container, whose image has the Bitwarden CLI (`deploy.sh` builds it), so the server needs nothing but Docker. It needs `VAULTWARDEN_SERVER` in the shell that runs `manage.sh`; `BW_CLIENTID`, `BW_CLIENTSECRET` (the vault account's API key) and `BW_PASSWORD` too, or `bw` asks for them. They are passed into the container by name and written nowhere. On the server:
 
 ```sh
 ./manage.sh key-add stadt-kiel --customer "Stadt Kiel" --scopes tiles search

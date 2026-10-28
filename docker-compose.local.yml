@@ -116,6 +116,31 @@ services:
       # Unset, this is empty and changes nothing.
       GEOSERVICES_NOCACHE: ${GEOSERVICES_NOCACHE:-}
 
+  keys:
+    # `manage.sh key-add` against the dev database: the `keys` image, the app
+    # plus the Bitwarden CLI. See docker-compose.yml.
+    build:
+      context: .
+      target: keys
+    profiles: [keys]
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    user: "${GEOSERVICES_UID:-1000}:${GEOSERVICES_GID:-1000}"
+    env_file: ./config.local/postgres.env
+    environment:
+      - VAULTWARDEN_SERVER
+      - BW_CLIENTID
+      - BW_CLIENTSECRET
+      - BW_PASSWORD
+      - BITWARDENCLI_APPDATA_DIR=/tmp/bw
+    volumes:
+      - ./app:/app
+      - ./config.local:/config:ro
+    tmpfs:
+      - /tmp
+    entrypoint: ["python", "tools/manage.py", "key-add"]
+
   caddy:
     # Opt-in: `--profile caddy`. The production Caddyfile's log filter and
     # proxying in front of the dev app, over plain http on 8004.

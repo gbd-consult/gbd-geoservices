@@ -55,19 +55,26 @@ def image_tag(image: str) -> str:
 
 # --- docker-compose.yml --------------------------------------------------
 
-def test_the_four_services(compose):
-    assert set(compose['services']) == {'postgres', 'pgbouncer', 'app', 'caddy'}
+def test_the_four_services_and_the_keys_tool(compose):
+    assert set(compose['services']) == {'postgres', 'pgbouncer', 'app', 'caddy', 'keys'}
 
 
 def test_no_credential_is_in_any_compose_file(compose, local_compose, test_compose):
     """A compose file is tracked, so it must not carry the password.
 
     Postgres and the app both read it from postgres.env in the config
-    directory -- one copy, so the two cannot drift apart.
+    directory -- one copy, so the two cannot drift apart. A name alone, its
+    value taken from the shell that runs compose (the keys service's
+    BW_PASSWORD), holds none.
     """
     for stack in (compose, local_compose, test_compose):
         for spec in stack['services'].values():
-            assert not any('PASSWORD' in name for name in spec.get('environment') or {})
+            environment = spec.get('environment') or {}
+            if isinstance(environment, list):
+                environment = dict(entry.partition('=')[::2] if '=' in entry else (entry, None)
+                                   for entry in environment)
+            assert not any('PASSWORD' in name and value is not None
+                           for name, value in environment.items())
 
 
 @pytest.mark.parametrize('stack, directory', [('compose', 'config'),
@@ -313,11 +320,55 @@ def test_the_script_builds_on_the_server_and_pushes_nothing():
 
 
 def test_the_script_ships_manage_sh_and_setup_sh_next_to_the_compose_file():
-    """And vaultwarden-send.sh, which `manage.sh key-add` runs from beside itself."""
     scp = re.search(r'^\s*scp .*?"\$SSH_HOST:\$BASE/"', DEPLOY.read_text(), re.M | re.S).group(0)
     assert '"$REPO/app/scripts/manage.sh"' in scp
     assert '"$REPO/app/scripts/setup.sh"' in scp
-    assert '"$REPO/app/scripts/vaultwarden-send.sh"' in scp
+
+
+# --- the keys tool ---------------------------------------------------------
+
+def test_the_keys_service_runs_the_image_the_script_builds(compose):
+    """deploy.sh builds the `keys` target beside the app; compose runs that
+    image and never pulls one."""
+    keys = service(compose, 'keys')
+    assert keys['image'].startswith(script_value(DEPLOY, 'IMAGE_REPO') + '-keys:')
+    assert image_tag(keys['image']) == script_value(DEPLOY, 'MOVING_TAG')
+    assert keys['pull_policy'] == 'never'
+    assert '--target keys' in DEPLOY.read_text()
+
+
+def test_the_default_build_target_is_the_app_without_bw():
+    """Every `docker build` and `build: .` without a target -- the dev and
+    test stacks, deploy.sh's app image, publish.sh -- takes the last stage,
+    so the serving image would carry the vault tool if `keys` were last."""
+    stages = re.findall(r'^FROM (\S+)(?: AS (\S+))?$', (ROOT / 'Dockerfile').read_text(), re.M)
+    assert stages[-1] == ('app', '')
+    assert ('app', 'keys') in stages
+
+
+@pytest.mark.parametrize('stack', ['compose', 'local_compose'])
+def test_the_keys_service_only_runs_on_demand_and_takes_the_secrets_by_name(stack, request):
+    """Never started by `up`; the vault credentials come from the operator's
+    shell by name, so no compose file holds one."""
+    keys = service(request.getfixturevalue(stack), 'keys')
+    assert keys['profiles'] == ['keys']
+    assert keys['entrypoint'] == ['python', 'tools/manage.py', 'key-add']
+    for name in ('VAULTWARDEN_SERVER', 'BW_CLIENTID', 'BW_CLIENTSECRET', 'BW_PASSWORD'):
+        assert name in keys['environment']
+    assert 'BITWARDENCLI_APPDATA_DIR=/tmp/bw' in keys['environment']
+    assert '/tmp' in keys['tmpfs']
+
+
+def test_the_keys_service_logs_nothing(compose):
+    """Its output is the Send link, which opens the key until it is fetched;
+    the syslog driver would put it into data/log for a week."""
+    assert service(compose, 'keys')['logging'] == {'driver': 'none'}
+
+
+def test_manage_sh_runs_key_add_in_the_keys_container():
+    body = re.search(r'^key_add\(\) \{.*?^\}', MANAGE.read_text(), re.M | re.S).group(0)
+    assert 'docker compose run --rm keys "$@"' in body
+    assert 'vaultwarden-send' not in body
 
 
 #: Stands in for the Bitwarden CLI: logs every call's arguments, answers
@@ -341,11 +392,15 @@ SEND_TEMPLATE = {'name': 'Send name', 'type': 0, 'text': {'text': '', 'hidden': 
                  'disabled': False}
 
 
-def run_send(tmp_path, *args):
+def install_bw(tmp_path):
     (tmp_path / 'template.json').write_text(json.dumps(SEND_TEMPLATE))
     bw = tmp_path / 'bw'
     bw.write_text(BW_STUB)
     bw.chmod(0o755)
+
+
+def run_send(tmp_path, *args):
+    install_bw(tmp_path)
     env = {'PATH': f'{tmp_path}:/usr/local/bin:/usr/bin:/bin', 'VAULTWARDEN_SERVER': 'https://vault.test'}
     return subprocess.run(['bash', str(MANAGE.parent / 'vaultwarden-send.sh'), *args],
                           capture_output=True, text=True, env=env, check=True).stdout
@@ -375,20 +430,49 @@ def test_vaultwarden_send_never_puts_the_secret_in_an_argument(tmp_path):
     assert sent['maxAccessCount'] == 1
 
 
-def test_keys_are_generated_only_by_vaultwarden_send():
+def test_keys_are_generated_only_by_vaultwarden_send(tmp_path, monkeypatch):
     """One place makes keys, and it hands them over as a Send: a key printed
-    to a terminal ends up in scrollback, a ticket or a chat. manage.sh takes
-    the key from it and passes it on stdin, printing only the link."""
+    to a terminal ends up in scrollback, a ticket or a chat."""
     import inspect
 
     from lib import keys
     from tools import manage
     assert 'secrets' not in inspect.getsource(keys)
     assert 'token_' not in inspect.getsource(manage)
-    body = re.search(r'^key_add\(\) \{.*?^\}', MANAGE.read_text(), re.M | re.S).group(0)
-    assert 'vaultwarden-send.sh" --generate-key' in body
-    assert body.index('--generate-key') < body.index('manage_py key-register')
-    assert 'echo "$key"' not in body and 'echo "$sent"' not in body
+    install_bw(tmp_path)
+    monkeypatch.setenv('PATH', f'{tmp_path}:/usr/local/bin:/usr/bin:/bin')
+    monkeypatch.setenv('VAULTWARDEN_SERVER', 'https://vault.test')
+    key, link = keys.generate('kiel')
+    assert link == 'https://vault.test/#/send/x/y'
+    sent = json.loads((tmp_path / 'send.json').read_text())
+    assert sent['text']['text'] == key
+    assert sent['name'] == 'API-Key kiel'
+
+
+def test_key_add_registers_the_key_and_prints_only_the_link(monkeypatch, capsys):
+    from lib import keys
+    from tools import manage
+    registered = {}
+    monkeypatch.setattr(keys, 'generate', lambda name: ('k-secret-0123', 'https://vault.test/s'))
+    monkeypatch.setattr(keys, 'add', lambda name, key, **kw: registered.update(name=name, key=key, **kw))
+    assert manage.main(['key-add', 'kiel', '--scopes', 'tiles', 'search']) == 0
+    assert registered['key'] == 'k-secret-0123'
+    assert registered['scopes'] == ['tiles', 'search']
+    out, err = capsys.readouterr()
+    assert out == 'https://vault.test/s\n'
+    assert 'k-secret-0123' not in out + err
+
+
+def test_a_refused_registration_prints_no_link(monkeypatch, capsys):
+    from lib import keys
+    from tools import manage
+    monkeypatch.setattr(keys, 'generate', lambda name: ('k-secret-0123', 'https://vault.test/s'))
+
+    def refuse(name, key, **kw):
+        raise ValueError('unknown scope(s)')
+    monkeypatch.setattr(keys, 'add', refuse)
+    assert manage.main(['key-add', 'kiel', '--scopes', 'tile']) == 2
+    assert 'https://vault.test/s' not in capsys.readouterr().out
 
 
 # --- manage.sh -----------------------------------------------------------
