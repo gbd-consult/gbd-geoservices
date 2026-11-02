@@ -17,7 +17,9 @@ only in `request_log`, which `store.daily` empties after `request_log_days`.
 
 The same thread runs `store.daily` at start and then once a day, at
 `DAILY_AFTER_S` past midnight UTC: by then every process has flushed the
-rows of the day before, so the day is counted whole.
+rows of the day before, so the day is counted whole. After it,
+`store.report_month` writes the month before once it is over, its last day
+counted by then.
 """
 
 from __future__ import annotations
@@ -157,6 +159,10 @@ def run_daily(day: datetime.date) -> bool:
     if counted or dropped:
         _log.info('request log: counted %s, dropped %s',
                   ', '.join(map(str, counted)) or 'nothing', ', '.join(dropped) or 'nothing')
+    try:
+        store.report_month(day)
+    except Exception as exc:                      # noqa: BLE001 - the day is done; tried again tomorrow
+        _log.warning('request log: monthly report failed: %s', exc)
     return True
 
 

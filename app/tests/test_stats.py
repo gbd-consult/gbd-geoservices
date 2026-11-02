@@ -142,6 +142,35 @@ def test_the_export_has_a_line_per_day_and_the_cost_per_1000(store, monkeypatch)
     assert totals['eur_per_1000'] == 10000.0
 
 
+def test_a_finished_month_is_written_once(store, monkeypatch, tmp_path):
+    """The figures lie ready after four weeks without anyone running the
+    export; a second container, or the next day's run, leaves the file."""
+    monkeypatch.setattr(stats.config, 'opt', lambda path, default=None:
+                        str(tmp_path) if path == 'data_dir' else default)
+    day = datetime.date(2026, 10, 30)
+    stats.ensure(store, day)
+    stats.write_requests([row(at(day)) for _ in range(2)])
+    stats.roll_up(store, datetime.date(2026, 11, 1))
+
+    path = stats.report_month(datetime.date(2026, 11, 1))
+    assert path == tmp_path / 'stats' / 'load-2026-10.csv'
+    lines = path.read_text().splitlines()
+    assert lines[0].startswith('day;tiles;') and lines[1].startswith('2026-10-30;2;')
+    path.write_text('kept')
+    assert stats.report_month(datetime.date(2026, 11, 2)) is None
+    assert path.read_text() == 'kept'
+    assert [p.name for p in path.parent.iterdir()] == ['load-2026-10.csv']   # no .tmp left
+
+
+def test_a_month_without_requests_gets_no_file(store, monkeypatch, tmp_path):
+    """The month before the first deploy: an empty file would read as a
+    month without traffic."""
+    monkeypatch.setattr(stats.config, 'opt', lambda path, default=None:
+                        str(tmp_path) if path == 'data_dir' else default)
+    assert stats.report_month(datetime.date(2026, 11, 1)) is None
+    assert not any((tmp_path / 'stats').iterdir())
+
+
 # --- the app's side ------------------------------------------------------
 
 class FakeRequest:
@@ -167,6 +196,20 @@ def test_the_day_before_is_counted_only_after_every_process_flushed_it():
     assert web_stats.DAILY_AFTER_S > web_stats.FLUSH_S
     assert web_stats.daily_day(early) == datetime.date(2026, 10, 27)
     assert web_stats.daily_day(late) == datetime.date(2026, 10, 28)
+
+
+def test_the_daily_run_writes_the_monthly_report_after_counting(monkeypatch):
+    """After `daily`, so the month's last day is counted when it is written;
+    a failed report does not undo the day."""
+    calls = []
+    monkeypatch.setattr(web_stats.store, 'daily', lambda day: calls.append('daily') or ([], []))
+
+    def report(day):
+        calls.append('report')
+        raise OSError('disk full')
+    monkeypatch.setattr(web_stats.store, 'report_month', report)
+    assert web_stats.run_daily(datetime.date(2026, 11, 1)) is True
+    assert calls == ['daily', 'report']
 
 
 def test_a_failed_daily_run_is_retried(monkeypatch):

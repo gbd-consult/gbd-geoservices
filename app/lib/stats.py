@@ -26,19 +26,31 @@ in the default partition, which `daily` empties of expired rows too.
 Every app container runs `daily`, so it is idempotent: a day counted by
 another container is skipped (`on conflict do nothing`), a partition it
 dropped is not dropped again.
+
+`report_month`, run after `daily`, writes the month before as
+`<data_dir>/stats/load-YYYY-MM.csv` once it is over -- the same CSV as
+`stats-export` -- so the monthly figures lie ready without anyone running
+the export. Written once, atomically, so two containers cannot leave half
+a file.
 """
 
 from __future__ import annotations
 
 import csv
 import datetime
+import logging
+import os
+import tempfile
 from collections.abc import Iterable
+from pathlib import Path
 from typing import TextIO
 
 from psycopg import sql
 
 from lib import config, db
 from lib.keys import SCHEMA
+
+_log = logging.getLogger(__name__)
 
 #: `request_log_days` may not exceed this: the privacy policy promises it.
 MAX_RETENTION_DAYS = 7
@@ -278,6 +290,37 @@ def export(month: datetime.date, out: TextIO) -> dict:
     totals['eur_per_1000'] = (round(float(cost) / totals['requests'] * 1000, 4)
                               if cost is not None and totals['requests'] else None)
     return totals
+
+
+def report_month(today: datetime.date) -> Path | None:
+    """Write the month before `today` to `stats/load-YYYY-MM.csv` under
+    `data_dir`, unless it is there already or had no requests; return the
+    path written, or None.
+
+    No requests means the log was not running yet (the month before the
+    first deploy): an empty file would read as a month without traffic.
+    """
+    month = (today.replace(day=1) - datetime.timedelta(days=1)).replace(day=1)
+    directory = Path(config.opt('data_dir', '/data')) / 'stats'
+    path = directory / f'load-{month:%Y-%m}.csv'
+    if path.exists():
+        return None
+    directory.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(dir=directory, suffix='.tmp')
+    try:
+        with os.fdopen(handle, 'w', newline='') as out:
+            totals = export(month, out)
+        if not totals['requests']:
+            Path(temporary).unlink()
+            return None
+        os.replace(temporary, path)
+    except BaseException:
+        Path(temporary).unlink(missing_ok=True)
+        raise
+    _log.info('request log: %s written, %d requests, cache hit rate %s, %s EUR per 1000',
+              path, totals['requests'], totals['cache_hit_rate'] or '-',
+              totals['eur_per_1000'] if totals['eur_per_1000'] is not None else '-')
+    return path
 
 
 def _rate(hits: int, misses: int) -> str:
