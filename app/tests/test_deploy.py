@@ -556,9 +556,11 @@ def test_update_renews_the_tile_cache_after_the_reload():
     """The cache is not keyed by import, so without this the new data shows
     only where nothing was cached. Dropped before the reload, the old server
     caches old tiles again; pre-cached before the app is ready, there are no
-    styles compiled for the new import yet."""
+    styles compiled for the new import yet. Only the on-demand tier is
+    dropped: the pre-cache overwrites its own (`--force`, or it would skip
+    every tile that exists), so the pre-cached levels never go cold."""
     body = re.search(r'^update\(\) \{.*?^\}', MANAGE.read_text(), re.M | re.S).group(0)
-    order = ['reload', 'manage_py drop-cache', 'ready', 'manage_py pre-cache']
+    order = ['reload', 'manage_py drop-cache --ondemand', 'ready', 'manage_py pre-cache --force']
     assert [body.index(step) for step in order] == sorted(body.index(step) for step in order)
 
 

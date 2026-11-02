@@ -285,6 +285,25 @@ def test_clearing_an_area_empties_both_tiers(tmp_path, monkeypatch):
     assert other.read_bytes() == b'keep'
 
 
+def test_an_update_empties_only_the_on_demand_tier(tmp_path, monkeypatch):
+    """`manage.sh update` overwrites the pre-cache tier instead of emptying
+    it: emptied, every pre-cached level renders on request until the
+    pre-cache has run."""
+    from renderer import cache as cache_module
+
+    monkeypatch.setattr(cache_module, 'cache_root', lambda area=None: tmp_path / area)
+    tiles = {}
+    for tier in ('precache', 'ondemand'):
+        tile = tmp_path / 'de_sh' / tier / 'default' / 'GoogleMapsCompatible' / 'png' / '8' / '1' / '2.png'
+        tile.parent.mkdir(parents=True)
+        tile.write_bytes(b'old')
+        tiles[tier] = tile
+
+    assert cache_module.clear_area('de_sh', tiers=('ondemand',)) == 1
+    assert not tiles['ondemand'].exists()
+    assert tiles['precache'].read_bytes() == b'old'
+
+
 def test_clearing_an_area_with_no_cache_is_nothing(tmp_path, monkeypatch):
     from renderer import cache as cache_module
 

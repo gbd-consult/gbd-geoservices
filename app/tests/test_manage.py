@@ -224,10 +224,19 @@ def test_compile_styles_leaves_the_cache_alone(monkeypatch, capsys):
 
 def test_drop_cache_empties_the_area_s_cache(monkeypatch, capsys):
     cleared = []
-    monkeypatch.setattr(manage.cache, 'clear_area', lambda area: cleared.append(area) or 7)
+    monkeypatch.setattr(manage.cache, 'clear_area',
+                        lambda area, **kw: cleared.append((area, kw)) or 7)
     assert manage.main(['drop-cache', 'de_sh']) == 0
-    assert cleared == ['de_sh']
+    assert cleared == [('de_sh', {})]                     # both tiers
     assert '7 cached tiles' in capsys.readouterr().err
+
+
+def test_drop_cache_ondemand_leaves_the_pre_cache_tier(monkeypatch, capsys):
+    cleared = []
+    monkeypatch.setattr(manage.cache, 'clear_area',
+                        lambda area, **kw: cleared.append((area, kw)) or 3)
+    assert manage.main(['drop-cache', '--ondemand', 'de_sh']) == 0
+    assert cleared == [('de_sh', {'tiers': ('ondemand',)})]
 
 
 def test_pre_cache_passes_fast_and_force(monkeypatch, capsys):

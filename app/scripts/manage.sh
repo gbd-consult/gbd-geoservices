@@ -33,8 +33,9 @@
 # reaches it, and returns at once. The import appends to data/import.log
 # itself, under a line naming the run, and holds data/import.status while
 # it runs; a second import refuses to start. `update` waits for the import
-# and only if it succeeded reloads, empties the tile cache, waits for the
-# app and pre-caches again, so a cron job needs nothing else.
+# and only if it succeeded reloads, empties the on-demand tier, waits for
+# the app and pre-caches again over the old tiles, so a cron job needs
+# nothing else.
 #
 # In the checkout (app/scripts/manage.sh) it drives the dev stack,
 # docker-compose.local.yml, the same way.
@@ -99,14 +100,17 @@ ready() {
 }
 
 # The tile cache is not keyed by import, so after a reload it holds the
-# old data's tiles. Dropped after the reload, not before: the old server
-# would cache old tiles again in between.
+# old data's tiles. The on-demand tier is dropped after the reload, not
+# before: the old server would cache old tiles again in between. The
+# pre-cache tier is not dropped but overwritten (`--force`; without it the
+# pre-cache skips a tile that exists): until its turn each tile serves the
+# old data, rather than every pre-cached level rendering on request.
 update() {
     manage_py import "$@"
     reload
-    manage_py drop-cache "$1"
+    manage_py drop-cache --ondemand "$1"
     ready
-    manage_py pre-cache "$1"
+    manage_py pre-cache --force "$1"
 }
 
 # The whole of it runs in the one-off `keys` container (docker-compose.yml),

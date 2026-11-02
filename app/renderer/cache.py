@@ -272,16 +272,20 @@ def cache_root(area: str | None = None) -> Path:
     return Path(config.opt('data_dir', '/data')) / 'cache' / area
 
 
-def clear_area(area: str) -> int:
-    """Empty both tiers for one area. Returns how many tiles were removed.
+def clear_area(area: str, tiers: tuple[str, ...] = ('precache', 'ondemand')) -> int:
+    """Empty the tiers of one area, both by default. Returns how many tiles
+    were removed.
 
     Nothing else empties them. A re-import or a style change leaves every
     cached tile as it was drawn, and a cached tile is served as it is --
     `manage.py drop-cache` calls this, or `pre-cache --force` overwrites.
+    `manage.sh update` empties only `ondemand` and overwrites `precache`, so
+    the pre-cached levels are never cold: each serves the old tile until
+    the new one replaces it.
     """
     root = cache_root(area)
     removed = 0
-    for tier in ('precache', 'ondemand'):
+    for tier in tiers:
         directory = root / tier
         if directory.is_dir():
             removed += sum(1 for path in directory.rglob('*') if path.is_file())

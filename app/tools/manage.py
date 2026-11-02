@@ -120,11 +120,13 @@ def cmd_compile_styles(args: argparse.Namespace) -> int:
 
 
 def cmd_drop_cache(args: argparse.Namespace) -> int:
-    """Empty both tile-cache tiers of an area."""
+    """Empty both tile-cache tiers of an area, or with --ondemand only that one."""
     from lib import config
 
     area = args.area or config.opt('serve_area')
-    print(f'{cache.clear_area(area)} cached tiles of {area} removed', file=sys.stderr)
+    removed = (cache.clear_area(area, tiers=('ondemand',)) if args.ondemand
+               else cache.clear_area(area))
+    print(f'{removed} cached tiles of {area} removed', file=sys.stderr)
     return 0
 
 
@@ -337,6 +339,9 @@ def parser() -> argparse.ArgumentParser:
         'drop-cache', help='empty the tile cache of an area',
         description='Remove every cached tile of the area, both tiers.')
     drop.add_argument('area', nargs='?', default=None, help=area_help)
+    drop.add_argument('--ondemand', action='store_true',
+                      help='only the on-demand tier; `pre-cache --force` overwrites the other, '
+                           'which keeps serving the old tiles until then (manage.sh update)')
     drop.set_defaults(func=cmd_drop_cache)
 
     for command, func, help_text, description in (

@@ -74,9 +74,9 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh reload` | recreate the app: takes up a new image, a changed `options.yaml`, and the newest import |
 | `./manage.sh restart` | stop and start the whole stack: for changes to `postgres.env`, `postgresql.conf`, `pg_hba.conf`, `pgbouncer.ini` or the `Caddyfile` |
 | `./manage.sh import <area>` | import an area in the background; follow it with `tail -f data/import.log` |
-| `./manage.sh update <area>` | import in the foreground; if it succeeded, reload, empty the tile cache and pre-cache again -- the form for cron |
+| `./manage.sh update <area>` | import in the foreground; if it succeeded, reload, empty the on-demand tiles and pre-cache again over the old ones -- the form for cron |
 | `./manage.sh pre-cache [--fast]` | render the low zoom levels of every theme ahead of time |
-| `./manage.sh drop-cache` | empty the tile cache |
+| `./manage.sh drop-cache [--ondemand]` | empty the tile cache, or only the tiles below the pre-cache depth |
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
 | `./manage.sh init-elevation` | download the missing elevation tiles (`elevation_tiles`) and draw the contour lines once; the next import of an area takes its share |
 
