@@ -74,6 +74,13 @@ def test_it_is_a_wms_1_3_0_capabilities(capabilities):
     assert capabilities.find('w:Service/w:Name', NS).text == 'WMS'
 
 
+def test_the_access_constraints_credit_openmaptiles_and_openstreetmap(capabilities):
+    """The render classes follow the OpenMapTiles schema, whose design is
+    CC-BY 4.0: every map from these tiles credits it beside OpenStreetMap."""
+    text = next(e.text for e in capabilities.iter() if e.tag.endswith('AccessConstraints'))
+    assert 'OpenMapTiles' in text and 'OpenStreetMap contributors' in text
+
+
 def test_the_four_crs_are_advertised_for_the_default_grids(capabilities):
     advertised = {e.text for e in capabilities.findall('w:Capability/w:Layer/w:CRS', NS)}
     assert advertised == set(wms.served_crs())

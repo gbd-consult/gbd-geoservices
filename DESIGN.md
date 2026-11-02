@@ -375,7 +375,7 @@ WMS (`web/wms.py`) renders a GetMap as one image on a pooled Map, resized to WID
 
 `web/meta.py`. `/metadata` is the one document a client reads first, the same for every caller:
 
-- `version`, `area`, `date` (the extract's), `bounds` (WGS 84, from `import_meta.bbox_3857`), `attribution` (OpenStreetMap's, and Copernicus's where the schema has contours);
+- `version`, `area`, `date` (the extract's), `bounds` (WGS 84, from `import_meta.bbox_3857`), `attribution` (OpenMapTiles' and OpenStreetMap's, and Copernicus's where the schema has contours);
 - `themes`: `{id, palette, detail}`, `id` the URL name;
 - `grids`: `{id, crs, minzoom, maxzoom}`;
 - `categories`: the generated tree, `{id, names: {<lang>: name}, icon, subcategories}`, names in every language of the `languages` option, without the search terms;

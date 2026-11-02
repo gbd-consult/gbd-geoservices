@@ -196,7 +196,7 @@ def build_capabilities(*, themes, sets: dict, base_url: str,
     ET.SubElement(identification, f'{{{OWS_NS}}}ServiceTypeVersion').text = '1.0.0'
     ET.SubElement(identification, f'{{{OWS_NS}}}Fees').text = 'none'
     ET.SubElement(identification, f'{{{OWS_NS}}}AccessConstraints').text = (
-        'Map data (c) OpenStreetMap contributors, ODbL'
+        f'Map data {meta.ATTRIBUTION}, ODbL'
         + (f'; elevation {meta.ELEVATION_ATTRIBUTION}' if contours else ''))
 
     contents = ET.SubElement(capabilities, f'{{{WMTS_NS}}}Contents')

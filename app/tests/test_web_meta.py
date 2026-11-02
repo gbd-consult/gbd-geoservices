@@ -92,6 +92,13 @@ def test_metadata_has_its_documented_shape(client):
     assert {'id', 'crs', 'minzoom', 'maxzoom'} <= set(body['grids'][0])
 
 
+def test_metadata_credits_openmaptiles_and_openstreetmap(client):
+    """A client shows `attribution` as it is; the OpenMapTiles schema's
+    CC-BY 4.0 asks for its credit beside OpenStreetMap's."""
+    attribution = client.get('/metadata').json()['attribution']
+    assert attribution.startswith('© OpenMapTiles © OpenStreetMap contributors')
+
+
 def test_metadata_services_are_absolute_templates(client):
     """A client builds its URLs from these, so they must work as they are:
     absolute, and templated where they carry placeholders."""
@@ -226,6 +233,15 @@ def test_the_landing_page_renders(client):
     assert response.status_code == 200
     assert 'text/html' in response.headers['content-type']
     assert 'gbd-geoservices' in response.text
+
+
+def test_the_landing_page_links_openmaptiles_and_openstreetmap(client):
+    """CC-BY 4.0 asks for a visible link to OpenMapTiles, the ODbL for the
+    OpenStreetMap copyright page."""
+    for lang in ('de', 'en'):
+        text = client.get('/', params={'lang': lang}).text
+        assert 'href="https://openmaptiles.org/"' in text
+        assert 'href="https://www.openstreetmap.org/copyright"' in text
 
 
 def test_the_landing_page_names_the_routes_it_offers(client):

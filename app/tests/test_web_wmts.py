@@ -71,6 +71,13 @@ def test_it_is_a_wmts_1_0_0_capabilities(capabilities):
     assert identification.find('o:ServiceTypeVersion', NS).text == '1.0.0'
 
 
+def test_the_access_constraints_credit_openmaptiles_and_openstreetmap(capabilities):
+    """The render classes follow the OpenMapTiles schema, whose design is
+    CC-BY 4.0: every map from these tiles credits it beside OpenStreetMap."""
+    text = next(e.text for e in capabilities.iter() if e.tag.endswith('AccessConstraints'))
+    assert 'OpenMapTiles' in text and 'OpenStreetMap contributors' in text
+
+
 def test_every_compiled_theme_is_a_layer(capabilities, served):
     from lib import db
     from renderer import core

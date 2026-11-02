@@ -60,8 +60,9 @@ router = APIRouter(tags=['meta'])
 #: since its URLs are absolute.
 CACHE_SECONDS = 30.0
 
-#: Shown with every map built from these tiles.
-ATTRIBUTION = '© OpenStreetMap contributors'
+#: Shown with every map built from these tiles. OpenMapTiles because the
+#: render classes follow its schema, whose design is CC-BY 4.0 (NOTICE.md).
+ATTRIBUTION = '© OpenMapTiles © OpenStreetMap contributors'
 #: Added where the served schema has contour lines (importer/elevation.py):
 #: Copernicus GLO-30 is free on the condition that it is credited so.
 ELEVATION_ATTRIBUTION = ('© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 '

@@ -42,7 +42,7 @@
 <nav class="lang-switch">{% for code, name in languages.items() %}<a href="?lang={{ code }}" hreflang="{{ code }}" lang="{{ code }}" title="{{ name }}" aria-label="{{ name }}">{{ code | upper }}</a>{% endfor %}</nav>
 {% block content %}{% endblock %}
 <footer>
-  {{ t('landing.attribution') }}
+  <a href="https://openmaptiles.org/">© OpenMapTiles</a> &middot; <a href="https://www.openstreetmap.org/copyright">{{ t('landing.attribution') }}</a>
   {% if operator.name %}<br>{{ t('landing.operator') }} {% if operator.url %}<a href="{{ operator.url }}">{{ operator.name }}</a>{% else %}{{ operator.name }}{% endif %}{% endif %}
   {% if legal %}<br>{% for page in legal %}<a href="/{{ page }}?lang={{ lang }}">{{ t('legal.' + page) }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}{% endif %}
 </footer>
