@@ -37,7 +37,8 @@ search:
   cache_size: 512           # only on a full re-import, so nothing has to notice one happened
 
 cors_origins: ['*']
-request_log: true           # write service.request_log (IPs and search terms, kept 7 days) and host samples
+request_log: true           # write service.request_log (IPs and search terms, kept request_log_days) and host samples
+request_log_days: 7         # 1-7: days the request log, with its IPs and search terms, is kept, today included
 monthly_cost_eur: null      # the server's monthly cost from the hosting invoice; `stats-export` divides it by the requests
 
 host: null                  # public host name Caddy serves; deploy.sh checks the Caddyfile names it

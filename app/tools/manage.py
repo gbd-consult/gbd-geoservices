@@ -203,7 +203,7 @@ def cmd_usage_export(args: argparse.Namespace) -> int:
 
 
 def cmd_stats_daily(args: argparse.Namespace) -> int:
-    """Count the finished days, then drop the request log older than seven days."""
+    """Count the finished days, then drop the request log older than `request_log_days`."""
     from lib import stats
 
     counted, dropped = stats.daily()
@@ -378,11 +378,12 @@ def parser() -> argparse.ArgumentParser:
     usage.set_defaults(func=cmd_usage_export)
 
     stats_daily = commands.add_parser(
-        'stats-daily', help='count yesterday, drop the request log older than 7 days',
+        'stats-daily', help='count yesterday, drop the request log older than request_log_days',
         description='Create the request log\'s coming partitions, count every finished day '
                     'into service.daily_stats and daily_host, then drop the request log and '
-                    'host samples older than seven days -- the IP addresses and search terms '
-                    'with them. Run daily from cron (setup.sh).')
+                    'host samples older than request_log_days -- the IP addresses and search '
+                    'terms with them. The app does this itself at start and daily; this is '
+                    'the same run by hand.')
     stats_daily.set_defaults(func=cmd_stats_daily)
 
     stats_export = commands.add_parser(
