@@ -9,9 +9,10 @@
 # service roads and ferries with their names and refs, the buildings with their house numbers,
 # rail, water and settlement areas for orientation, place names down to the hamlet -- no landcover,
 # no POIs. `std` is the full map with the important icons, `max` draws everything, contours
-# included. `topographic` is `std` with the contour lines. `vegetation` puts the landcover first:
-# every vegetation unit, water and protected areas, with only the main roads, rail, borders and
-# place names down to villages for orientation -- no buildings, no POIs.
+# included. `topographic` is `std` with the contour lines, without the lines that cross them in the
+# open country -- tracks, paths, protected-area and district/municipal boundaries. `vegetation`
+# puts the landcover first: every vegetation unit, water and protected areas, with only the main
+# roads, rail, borders and place names down to villages for orientation -- no buildings, no POIs.
 #
 # Icons are not selected by class: `symbols.icons` maps an importance (model/importance.yaml,
 # 1-100) to the zoom icons of at least that importance start at -- an icon starts at the zoom of
@@ -102,19 +103,24 @@ topographic:
     - cls_ferry
     - cls_landcover_*
     - cls_landuse_*
-    - cls_protected_area
     - cls_water_*
     - cls_waterway_*
     - cls_contour*
-    - cls_road_*
+    - cls_road_motorway*
+    - cls_road_trunk*
+    - cls_road_primary*
+    - cls_road_secondary*
+    - cls_road_tertiary*
+    - cls_road_minor*
+    - cls_road_service*
+    - cls_road_bus*
+    - cls_road_raceway
     - cls_rail_*
     - cls_transit_*
     - cls_aeroway_*
     - cls_building
     - cls_boundary_admin_2
     - cls_boundary_admin_4
-    - cls_boundary_admin_6
-    - cls_boundary_admin_8
     - cls_place_*
     - cls_public_transport_path
   symbols:
