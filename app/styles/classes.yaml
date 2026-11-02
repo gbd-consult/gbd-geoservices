@@ -245,11 +245,11 @@ line:
   # starts where neighbouring lines stay at least 6 px apart on a 30 degree slope at 48 N -- spacing
   # interval / tan 30, over the ground metres per pixel -- and stays: 1000 m from z9, then one level
   # finer per zoom (100 m and 50 m: 6.8 px, the others 8.5). Coarser levels are drawn heavier.
-  cls_contour_1000 9: {line-color: clr_contour, line-width: 1.6}
-  cls_contour_500 10: {line-color: clr_contour, line-width: 1.3}
-  cls_contour_250 11: {line-color: clr_contour, line-width: 1.1}
-  cls_contour_100 12: {line-color: clr_contour, line-width: 0.9}
-  cls_contour_50 13: {line-color: clr_contour, line-width: 0.7}
+  cls_contour_1000 9: {line-color: clr_contour, line-width: 2.0}
+  cls_contour_500 10: {line-color: clr_contour, line-width: 1.7}
+  cls_contour_250 11: {line-color: clr_contour, line-width: 1.4}
+  cls_contour_100 12: {line-color: clr_contour, line-width: 1.2}
+  cls_contour_50 13: {line-color: clr_contour, line-width: 1.0}
 
   # --- aeroways
   cls_aeroway_runway 10: {line-color: clr_runway_line, line-width: 2}

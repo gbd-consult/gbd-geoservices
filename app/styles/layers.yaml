@@ -9,13 +9,6 @@
 - {name: landuse,          mode: fill,   classes: [cls_landuse_*, cls_aeroway_aerodrome, cls_aeroway_apron, cls_aeroway_helipad]}
 - {name: protected,        mode: fill,   classes: [cls_protected_area]}
 - {name: water,            mode: fill,   classes: [cls_water_*]}
-# Contours: one layer per level, so each reads only its own lines through its own partial index --
-# a z9 tile must not scan the 50 m lines to draw the 1000 m ones. Finest first, coarsest on top.
-- {name: contours_50,      mode: line,   classes: [cls_contour_50]}
-- {name: contours_100,     mode: line,   classes: [cls_contour_100]}
-- {name: contours_250,     mode: line,   classes: [cls_contour_250]}
-- {name: contours_500,     mode: line,   classes: [cls_contour_500]}
-- {name: contours_1000,    mode: line,   classes: [cls_contour_1000]}
 - {name: waterways,        mode: line,   classes: [cls_waterway_*, cls_coastline, cls_ferry]}
 - {name: aeroways,         mode: line,   classes: [cls_aeroway_runway, cls_aeroway_taxiway]}
 - {name: buildings,        mode: fill,   classes: [cls_building]}
@@ -27,6 +20,14 @@
 - {name: bridges_casing,   mode: casing, classes: ['*_bridge']}
 - {name: bridges_fill,     mode: fill,   classes: ['*_bridge']}
 - {name: boundaries,       mode: line,   classes: [cls_boundary_admin_*]}
+# Contours: one layer per level, so each reads only its own lines through its own partial index --
+# a z9 tile must not scan the 50 m lines to draw the 1000 m ones. Finest first, coarsest on top.
+# Above roads, rail and boundaries, below all text: in a topographic map the relief is in front.
+- {name: contours_50,      mode: line,   classes: [cls_contour_50]}
+- {name: contours_100,     mode: line,   classes: [cls_contour_100]}
+- {name: contours_250,     mode: line,   classes: [cls_contour_250]}
+- {name: contours_500,     mode: line,   classes: [cls_contour_500]}
+- {name: contours_1000,    mode: line,   classes: [cls_contour_1000]}
 - {name: labels_area,      mode: label,  classes: [cls_landcover_wood*, cls_landuse_*, cls_protected_area, cls_water_lake, cls_aeroway_aerodrome, cls_building]}
 - {name: numbers,          mode: number, classes: [cls_building]}   # after the names: a name keeps its spot
 - {name: labels_line,      mode: label,  classes: [cls_waterway_*, cls_road_*, cls_rail_rail]}
