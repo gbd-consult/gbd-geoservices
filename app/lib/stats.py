@@ -3,7 +3,7 @@
     service.request_log   one row per API request: time, kind (tiles,
                           search, wms), key, status, duration, tile cache
                           hit or miss, client IP, search terms. Kept for
-                          `RETENTION_DAYS` days, then dropped whole.
+                          `request_log_days` days (1-7), then dropped whole.
     service.host_sample   CPU, RAM and disk of the host, once a minute.
                           Kept as long as the request log.
     service.daily_stats   per day and kind, and over all kinds as `all`:
@@ -13,17 +13,19 @@
     service.daily_host    per day: CPU and RAM average and peak, disk used.
 
 The IP addresses and search terms exist only in `request_log`, so deleting
-it after seven days leaves no personal data behind; what lasts is
-`daily_stats`, counted from it before it goes. `daily` does both, once a
-day from cron (`setup.sh`), and creates the coming days' partitions.
+it after `request_log_days` leaves no personal data behind; what lasts is
+`daily_stats`, counted from it before it goes. `daily` does both and
+creates the coming days' partitions; the app runs it at start and once a
+day (`web/stats.py`).
 
 `request_log` is partitioned by day: a day expires by dropping its table,
 not by deleting millions of rows from the one the server is writing to. A
-row for a day with no partition yet -- cron did not run -- lands in the
-default partition, which `daily` empties of expired rows too.
+row for a day with no partition yet -- the app was down for days -- lands
+in the default partition, which `daily` empties of expired rows too.
 
-The app writes, in batches (`web/stats.py`), and runs `ensure` once when it
-starts, so the log works before cron first ran.
+Every app container runs `daily`, so it is idempotent: a day counted by
+another container is skipped (`on conflict do nothing`), a partition it
+dropped is not dropped again.
 """
 
 from __future__ import annotations
@@ -38,8 +40,8 @@ from psycopg import sql
 from lib import config, db
 from lib.keys import SCHEMA
 
-#: How many days of request log are kept, today included.
-RETENTION_DAYS = 7
+#: `request_log_days` may not exceed this: the privacy policy promises it.
+MAX_RETENTION_DAYS = 7
 
 #: The request log's columns, in the order `write_requests` takes them.
 REQUEST_COLUMNS = ('ts', 'kind', 'key_id', 'status', 'ms', 'cache', 'ip', 'terms')
@@ -47,6 +49,15 @@ REQUEST_COLUMNS = ('ts', 'kind', 'key_id', 'status', 'ms', 'cache', 'ip', 'terms
 
 def _t(name: str) -> sql.Identifier:
     return sql.Identifier(SCHEMA, name)
+
+
+def retention_days() -> int:
+    """The `request_log_days` option, refused outside 1..`MAX_RETENTION_DAYS`."""
+    days = config.opt('request_log_days')
+    if isinstance(days, bool) or not isinstance(days, int) or not 1 <= days <= MAX_RETENTION_DAYS:
+        raise ValueError(f'request_log_days must be a whole number from 1 to '
+                         f'{MAX_RETENTION_DAYS}, got {days!r}')
+    return days
 
 
 def _partition(day: datetime.date) -> sql.Identifier:
@@ -159,14 +170,16 @@ def roll_up(conn, today: datetime.date) -> list[datetime.date]:
                    percentile_cont(0.95) within group (order by ms),
                    count(distinct ip), count(distinct key_id)
             from {log} where ts >= %(from)s and ts < %(to)s
-            group by grouping sets ((kind), ())""").format(
+            group by grouping sets ((kind), ())
+            on conflict do nothing""").format(
             stats=_t('daily_stats'), log=_t('request_log')), _span(day))
     for day in _days(conn, 'host_sample', 'daily_host', today):
         conn.execute(sql.SQL("""
             insert into {host}
             select %(from)s::date, avg(cpu), max(cpu), avg(mem_used)::bigint, max(mem_used),
                    max(mem_total), max(disk_used), max(disk_total)
-            from {sample} where ts >= %(from)s and ts < %(to)s""").format(
+            from {sample} where ts >= %(from)s and ts < %(to)s
+            on conflict do nothing""").format(
             host=_t('daily_host'), sample=_t('host_sample')), _span(day))
     conn.commit()
     return days
@@ -178,8 +191,8 @@ def _span(day: datetime.date) -> dict:
 
 def purge(conn, today: datetime.date) -> list[str]:
     """Drop the request log's partitions, and delete the rows, older than
-    `RETENTION_DAYS` days; the same for the host samples."""
-    cutoff = today - datetime.timedelta(days=RETENTION_DAYS - 1)
+    `request_log_days` days, today included; the same for the host samples."""
+    cutoff = today - datetime.timedelta(days=retention_days() - 1)
     dropped = []
     names = [row[0] for row in conn.execute(
         "select c.relname from pg_inherits i join pg_class c on c.oid = i.inhrelid"
@@ -188,7 +201,7 @@ def purge(conn, today: datetime.date) -> list[str]:
     for name in names:
         stamp = name.removeprefix('request_log_')
         if stamp.isdigit() and datetime.datetime.strptime(stamp, '%Y%m%d').date() < cutoff:
-            conn.execute(sql.SQL('drop table {}').format(_t(name)))
+            conn.execute(sql.SQL('drop table if exists {}').format(_t(name)))
             dropped.append(name)
     conn.execute(sql.SQL('delete from {} where ts < %s').format(_t('request_log_default')),
                  (cutoff.isoformat(),))
@@ -199,7 +212,7 @@ def purge(conn, today: datetime.date) -> list[str]:
 
 
 def daily(today: datetime.date | None = None) -> tuple[list[datetime.date], list[str]]:
-    """The cron job: partitions ahead, count the finished days, drop the old ones.
+    """Partitions ahead, count the finished days, drop the old ones.
 
     Counted before dropped, so a day is never gone before it is counted.
     """

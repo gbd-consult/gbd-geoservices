@@ -92,7 +92,7 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 
 **Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and kept for a week. `docker compose logs` shows only the last megabyte of each service.
 
-**Request log and load figures.** Every API request (tiles, WMS, search) is written to the table `service.request_log` with its time, key, status, duration, tile cache hit or miss, client IP and, for a search, its search terms. Once a minute the host's CPU, RAM and disk are sampled. The cron job from `setup.sh` runs `./manage.sh stats-daily` every night: it counts the finished days into `service.daily_stats` (no IPs, no search terms; kept) and drops the request log older than 7 days, IP addresses and search terms with it. `./manage.sh stats-export 2026-10 > load-2026-10.csv` writes one line per day: requests by kind, errors, cache hit rate, 95th percentile durations, distinct IPs, CPU, RAM and disk; the totals with the cost per 1000 requests (option `monthly_cost_eur`) go to the terminal. `request_log: false` turns the log off.
+**Request log and load figures.** Every API request (tiles, WMS, search) is written to the table `service.request_log` with its time, key, status, duration, tile cache hit or miss, client IP and, for a search, its search terms. Once a minute the host's CPU, RAM and disk are sampled. The app itself, at start and every night shortly after midnight UTC, counts the finished days into `service.daily_stats` and `service.daily_host` (no IPs, no search terms; kept), creates the coming days' partitions and drops the request log older than `request_log_days` (1-7, default 7, today included), IP addresses and search terms with it; `./manage.sh stats-daily` does the same by hand. `./manage.sh stats-export 2026-10 > load-2026-10.csv` writes one line per day: requests by kind, errors, cache hit rate, 95th percentile durations, distinct IPs, CPU, RAM and disk; the totals with the cost per 1000 requests (option `monthly_cost_eur`) go to the terminal. `request_log: false` turns the log off.
 
 **Status.** `GET /health` answers when the app is up; `GET /status` (with any valid key) shows the version, the build, the served import, and whether keys are registered (`"auth": "open"` means no keys and no protection).
 
@@ -116,6 +116,7 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 | `wms_max_px` | the largest WMS map, per side |
 | `monthly_cost_eur` | the server's monthly cost, for `stats-export` |
 | `request_log` | write the request log and host samples (default on) |
+| `request_log_days` | days the request log, with IPs and search terms, is kept: 1-7, default 7; the privacy policy has to say the same |
 | `areas` | the importable areas: name -> Geofabrik path |
 | `operator` | `name` and `url` of who runs the service, named on the landing page |
 | `source_url` | the source code the landing page links to (AGPL-3.0); a modified version sets its own |

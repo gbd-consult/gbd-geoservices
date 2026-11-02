@@ -13,7 +13,11 @@ the server's memory.
 
 Search terms are the request's own text fields, cut to `TERMS_MAX`; the
 route puts them on `request.state.search_terms`. Like the IP they live
-only in `request_log`, which `manage.py stats-daily` empties after seven days.
+only in `request_log`, which `store.daily` empties after `request_log_days`.
+
+The same thread runs `store.daily` at start and then once a day, at
+`DAILY_AFTER_S` past midnight UTC: by then every process has flushed the
+rows of the day before, so the day is counted whole.
 """
 
 from __future__ import annotations
@@ -27,7 +31,7 @@ from collections.abc import Callable
 
 from fastapi import Request
 
-from lib import config, db
+from lib import config
 from lib import stats as store
 
 _log = logging.getLogger(__name__)
@@ -40,6 +44,10 @@ MAX_BUFFERED = 200_000
 
 #: Search terms are cut to this many characters.
 TERMS_MAX = 200
+
+#: How long after midnight UTC the day before is counted: past the last
+#: flush of every process, so no row of that day arrives after its count.
+DAILY_AFTER_S = 5 * FLUSH_S
 
 _lock = threading.Lock()
 _rows: deque[tuple] = deque(maxlen=MAX_BUFFERED)
@@ -134,24 +142,46 @@ def flush(sampler: HostSampler | None = None) -> None:
         _log.warning('request log: %d rows not written: %s', len(rows), exc)
 
 
+def daily_day(now: datetime.datetime) -> datetime.date:
+    """The day `store.daily` treats as today: the UTC date `DAILY_AFTER_S` ago."""
+    return (now - datetime.timedelta(seconds=DAILY_AFTER_S)).date()
+
+
+def run_daily(day: datetime.date) -> bool:
+    """`store.daily` for `day`; False if it failed, so the next flush retries."""
+    try:
+        counted, dropped = store.daily(day)
+    except Exception as exc:                      # noqa: BLE001 - retried at the next flush
+        _log.warning('request log: daily run failed: %s', exc)
+        return False
+    if counted or dropped:
+        _log.info('request log: counted %s, dropped %s',
+                  ', '.join(map(str, counted)) or 'nothing', ', '.join(dropped) or 'nothing')
+    return True
+
+
 def start() -> Callable[[], None]:
-    """Flush every `FLUSH_S` in a thread; returns the stop, which flushes once more.
+    """Flush every `FLUSH_S` in a thread, and run `store.daily` at start and
+    once a day; returns the stop, which flushes once more.
 
     Off with the `request_log` option (the test suite turns it off, so a
-    test run writes nothing into the dev database).
+    test run writes nothing into the dev database). A `request_log_days`
+    out of range stops the start: it is what the privacy policy promises.
     """
     if not config.opt('request_log', True):
         return lambda: None
+    store.retention_days()
     stop = threading.Event()
     sampler = HostSampler()
 
     def loop() -> None:
-        try:
-            with db.connection() as conn:
-                store.ensure(conn, datetime.datetime.now(datetime.UTC).date())
-        except Exception as exc:                  # noqa: BLE001 - flushes will say it again
-            _log.warning('request log: could not create its tables: %s', exc)
-        while not stop.wait(FLUSH_S):
+        done: datetime.date | None = None
+        while True:
+            day = daily_day(datetime.datetime.now(datetime.UTC))
+            if day != done and run_daily(day):
+                done = day
+            if stop.wait(FLUSH_S):
+                return
             flush(sampler)
 
     thread = threading.Thread(target=loop, name='request-log', daemon=True)

@@ -21,9 +21,7 @@
 #       `manage.sh update` on Monday, Wednesday and Friday at 02:00 (UTC on
 #       the server): imports serve_area, reloads and renews the tile
 #       cache, as the owner of this directory, appending to data/cron.log.
-#       Daily at 00:15 `manage.sh stats-daily`: counts yesterday's requests
-#       and drops the request log older than seven days, with its IP
-#       addresses and search terms. A job running this manage.sh in that
+#       A job running this manage.sh in that
 #       user's own crontab is removed first. Docker makes data/ root's, so
 #       the log is created here: cron's shell could not create it, and with
 #       no MTA on the host cron discards that error.
@@ -119,7 +117,6 @@ cat > "$CRON_CONF" <<EOF
 # Written by $BASE/setup.sh.
 
 0 2 * * 1,3,5  $OPERATOR  $BASE/manage.sh update $AREA >> $CRON_LOG 2>&1
-15 0 * * *     $OPERATOR  $BASE/manage.sh stats-daily >> $CRON_LOG 2>&1
 EOF
 
 rsyslogd -N1 >/dev/null
