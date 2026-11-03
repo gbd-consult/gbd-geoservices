@@ -67,6 +67,10 @@ ATTRIBUTION = '© OpenMapTiles © OpenStreetMap contributors'
 #: Copernicus GLO-30 is free on the condition that it is credited so.
 ELEVATION_ATTRIBUTION = ('© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 '
                          'provided under COPERNICUS by the European Union and ESA')
+#: The credit for a map's corner, where the full one does not fit; the full
+#: one stays in `attribution` and the capabilities.
+SHORT_ATTRIBUTION = '© OpenStreetMap contributors'
+ELEVATION_SHORT_ATTRIBUTION = 'Höhendaten: Copernicus / ESA'
 
 #: The legal pages, by their path and their file's name in `config/legal/`.
 #: German paths: the texts are German law's, and so are the names people look for.
@@ -117,6 +121,7 @@ def collect_metadata(base: str) -> dict:
         'date': extract.get('date'),
         'bounds': extract.get('bounds'),
         'attribution': attribution(schema),
+        'attribution_short': attribution_short(schema),
         'themes': [_theme(name) for name in (core.available_themes(schema) if schema else [])],
         'grids': [{'id': tms.identifier, 'crs': tms.crs, 'minzoom': 0, 'maxzoom': tms.levels - 1}
                   for tms in grids.values()],
@@ -232,6 +237,13 @@ def attribution(schema: str | None) -> str:
     if schema and has_contours(schema):
         return f'{ATTRIBUTION}; {ELEVATION_ATTRIBUTION}'
     return ATTRIBUTION
+
+
+def attribution_short(schema: str | None) -> str:
+    """`attribution` shortened for display in the map."""
+    if schema and has_contours(schema):
+        return f'{SHORT_ATTRIBUTION} | {ELEVATION_SHORT_ATTRIBUTION}'
+    return SHORT_ATTRIBUTION
 
 
 def import_status(schema: str) -> dict:

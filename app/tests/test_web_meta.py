@@ -87,7 +87,7 @@ def test_metadata_needs_no_key(client, configured_keys):
 def test_metadata_has_its_documented_shape(client):
     body = client.get('/metadata').json()
     assert set(body) == {'version', 'area', 'date', 'bounds', 'attribution',
-                         'themes', 'grids', 'categories', 'services'}
+                         'attribution_short', 'themes', 'grids', 'categories', 'services'}
     assert body['version'] and body['area']
     assert {'id', 'crs', 'minzoom', 'maxzoom'} <= set(body['grids'][0])
 
@@ -97,6 +97,12 @@ def test_metadata_credits_openmaptiles_and_openstreetmap(client):
     CC-BY 4.0 asks for its credit beside OpenStreetMap's."""
     attribution = client.get('/metadata').json()['attribution']
     assert attribution.startswith('© OpenMapTiles © OpenStreetMap contributors')
+
+
+def test_metadata_short_attribution_credits_openstreetmap(client):
+    """The in-map credit; the ODbL asks for OpenStreetMap's in any map."""
+    short = client.get('/metadata').json()['attribution_short']
+    assert short.startswith('© OpenStreetMap contributors')
 
 
 def test_metadata_services_are_absolute_templates(client):
