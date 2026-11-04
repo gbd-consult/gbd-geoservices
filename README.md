@@ -21,8 +21,10 @@ A Linux server with Docker and the Compose plugin, `rsync`, and SSH access from 
 | area | extract | import |
 |---|---|---|
 | `li` (Liechtenstein) | 3 MB | under a minute |
-| `de_sh` (Schleswig-Holstein) | 160 MB | 5-10 minutes |
+| `de_sh` (Schleswig-Holstein) | 160 MB | ~12 minutes, plus the download |
 | `de` (Germany) | 4 GB | ~6 hours; ~53 GB per import in the database, and two imports are kept |
+
+The times are for the default `--pass-workers 1`, the node, way and area passes one after another; on `de` the passes are 3.5 of the 6 hours. `import <area> --pass-workers 2` or `3` runs them in parallel and shortens that part, but each way or area pass holds every node location of the file, so memory grows with every worker.
 
 The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik) and Caddy for TLS.
 

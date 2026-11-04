@@ -112,7 +112,7 @@ services:
     environment:
       # The served area is config.local's `serve_area`, `de_sh`, the test area.
       # Export GEOSERVICES_SERVE_AREA=li to point the dev server at
-      # Liechtenstein, which imports in 26 seconds; unset, this is empty and
+      # Liechtenstein, which imports in under half a minute; unset, this is empty and
       # changes nothing. (`devtools` is on in config.local and only there.)
       GEOSERVICES_SERVE_AREA: ${GEOSERVICES_SERVE_AREA:-}
       # The tile cache, off in config.local for style work. Set
