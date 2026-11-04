@@ -151,6 +151,16 @@ def test_the_app_runs_the_image_built_on_the_server_never_a_pulled_one(compose):
     assert not any('build' in spec for spec in compose['services'].values())
 
 
+def test_the_app_has_ports_for_every_layer_the_preload_opens(compose, local_compose):
+    """Mapnik opens a connection per layer and leaves its port in TIME_WAIT
+    for 60 s; the ~31,000 layers of a `de` preload ran out of the default
+    28,000 ports, and the themes they belonged to answered every tile with a
+    500 while the container stayed healthy."""
+    for stack in (compose, local_compose):
+        low, high = map(int, service(stack, 'app')['sysctls']['net.ipv4.ip_local_port_range'].split())
+        assert high - low >= 50_000
+
+
 def test_the_app_is_published_on_loopback_only(compose):
     """Published on 0.0.0.0, the app is reachable past ufw, because
     Docker's rules run ahead of it, and a spoofed X-Forwarded-For opens the

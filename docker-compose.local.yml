@@ -105,6 +105,9 @@ services:
     # app's own access log already covers every request with it stripped.
     command: ["uvicorn", "web.main:app", "--host", "0.0.0.0", "--port", "8000",
               "--no-access-log", "--reload", "--reload-dir", "/app"]
+    # As in docker-compose.yml: the preload's layers outrun the default ports.
+    sysctls:
+      net.ipv4.ip_local_port_range: "10000 65535"
     environment:
       # The served area is config.local's `serve_area`, `de_sh`, the test area.
       # Export GEOSERVICES_SERVE_AREA=li to point the dev server at
