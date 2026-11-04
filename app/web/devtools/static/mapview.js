@@ -183,6 +183,11 @@ function clampedIsValidTile(coords) {
 const BufferedTileLayer = L.TileLayer.extend({
   options: {
     keepBuffer: TILE_KEEP_BUFFER,
+    // Leaflet's default loads every integer zoom an animation passes: a jump
+    // to a search hit (z10 -> z17) asked for some 250 tiles at z11-16 before
+    // the 110 it shows. A cancelled request does not cancel the render, so
+    // those held the Mapnik pool while the target tiles waited.
+    updateWhenZooming: false,
     // z -> {width, height}, or null to leave clamping entirely to Leaflet.
     matrixSize: null,
   },
