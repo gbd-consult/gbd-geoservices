@@ -153,12 +153,16 @@ def test_the_app_runs_the_image_built_on_the_server_never_a_pulled_one(compose):
 
 def test_the_app_has_ports_for_every_layer_the_preload_opens(compose, local_compose):
     """Mapnik opens a connection per layer and leaves its port in TIME_WAIT
-    for 60 s; the ~31,000 layers of a `de` preload ran out of the default
+    for 60 s; the ~62,000 layers of a `de` preload ran out of the default
     28,000 ports, and the themes they belonged to answered every tile with a
-    500 while the container stayed healthy."""
+    500 while the container stayed healthy. A wider range alone is short of
+    62,000; tcp_tw_reuse=1 lets a connect reuse a port once its TIME_WAIT is
+    a second old."""
     for stack in (compose, local_compose):
-        low, high = map(int, service(stack, 'app')['sysctls']['net.ipv4.ip_local_port_range'].split())
+        sysctls = service(stack, 'app')['sysctls']
+        low, high = map(int, sysctls['net.ipv4.ip_local_port_range'].split())
         assert high - low >= 50_000
+        assert sysctls['net.ipv4.tcp_tw_reuse'] == '1'
 
 
 def test_the_app_is_published_on_loopback_only(compose):

@@ -108,6 +108,7 @@ services:
     # As in docker-compose.yml: the preload's layers outrun the default ports.
     sysctls:
       net.ipv4.ip_local_port_range: "10000 65535"
+      net.ipv4.tcp_tw_reuse: "1"
     environment:
       # The served area is config.local's `serve_area`, `de_sh`, the test area.
       # Export GEOSERVICES_SERVE_AREA=li to point the dev server at

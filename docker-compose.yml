@@ -167,11 +167,15 @@ services:
       - /tmp
     # Mapnik opens and closes one connection per layer it loads (see
     # pgbouncer), and each leaves a port in TIME_WAIT for 60 s. The startup
-    # preload loads ~31,000 layers (2608 per set x 4 Maps x 3 sets) in about
-    # a minute, more than the default 28,000 ports: past them, a layer fails
-    # with "Cannot assign requested address" and its theme is not served.
+    # preload loads ~62,000 layers on `de` (2608 per set x map_pool_size 8 x
+    # 3 sets) at ~950 a second, more than the default 28,000 ports: past
+    # them, a layer fails with "Cannot assign requested address" and its
+    # theme is not served. tcp_tw_reuse=1 lets a connect take a port whose
+    # TIME_WAIT is over a second old (the default 2 allows it on loopback
+    # only); the wider range keeps them that old at this rate.
     sysctls:
       net.ipv4.ip_local_port_range: "10000 65535"
+      net.ipv4.tcp_tw_reuse: "1"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 30s
