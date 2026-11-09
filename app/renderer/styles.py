@@ -72,7 +72,7 @@ LINE_ATTRS = {
 TEXT_ATTRS = {
     'font': 'face-name', 'size': 'size', 'fill': 'fill', 'halo': 'halo-fill',
     'halo-radius': 'halo-radius', 'placement': 'placement', 'spacing': 'spacing',
-    'dy': 'dy', 'wrap': 'wrap-width',
+    'dy': 'dy', 'wrap': 'wrap-width', 'margin': 'margin',
 }
 #: A shield is an icon and its text. `size` is the icon's, so the text's
 #: size is `text-size` there.
