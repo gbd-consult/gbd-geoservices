@@ -91,8 +91,15 @@ search:
   merge_classes: [cls_road_*]    # line classes merged into one search object; a river split into 40 ways
                                  # is 40 hits until waterway_* is added here
 
+shield:                     # a road's ref on a box (styles/classes.yaml `shield`, renderer/icons.py)
+  max_chars: 8              # one box per length 1..max_chars; a longer ref gets no shield
+  char_px: 5.0              # box width per character: Noto Sans Bold 9 px advances 5.15 for a digit,
+                            # 2.34 for the space, 4.4-4.8 px per character over "A 7".."St 2145"
+  padding_px: 3             # left and right of the text
+  height_px: 14
+
 water:
-  bbox_margin_deg: 0.5      # the osmdata sets are clipped to the extract's bbox plus this, so the
+  bbox_margin_deg: 0.5     # the osmdata sets are clipped to the extract's bbox plus this, so the
                             # clip seam falls outside any tile the area actually serves
 
 contours:                   # manage.py init-elevation and the import's contours step (importer/elevation.py)

@@ -616,7 +616,7 @@ def _generate(tmp_path, classifier, sets):
     styles_dir = tmp_path / 'styles'
     shutil.copytree(Path(STYLES), styles_dir)
     return gen.generate('small', styles_dir, tmp_path / 'out', PRESENT,
-                        '0,0,1,1', _params(), classifier, sets)
+                        '0,0,1,1', _params(), classifier, sets, icons=tmp_path / 'icons')
 
 
 def _params():
@@ -651,9 +651,10 @@ def test_a_theme_no_longer_selected_leaves_no_xml_behind(tmp_path, two_sets):
     styles_dir = tmp_path / 'styles'
     shutil.copytree(Path(STYLES), styles_dir)
     gen.generate('small', styles_dir, tmp_path / 'out', PRESENT, '0,0,1,1', _params(),
-                 classifier, two_sets)
+                 classifier, two_sets, icons=tmp_path / 'icons')
     gen.generate('small', styles_dir, tmp_path / 'out', PRESENT, '0,0,1,1', _params(),
-                 classifier, two_sets, only_palettes=['default'], only_details=['std'])
+                 classifier, two_sets, icons=tmp_path / 'icons',
+                 only_palettes=['default'], only_details=['std'])
     for directory in (tmp_path / 'out').iterdir():
         assert [p.name for p in directory.glob('*.xml')] == ['default_std.xml']
 
@@ -772,7 +773,7 @@ def style_run(monkeypatch, tmp_path):
     monkeypatch.setattr(db, 'connection', connection)
     monkeypatch.setattr(meta, 'read', lambda conn, schema: dict(stored))
     monkeypatch.setattr(meta, 'update', lambda conn, schema, **values: stored.update(values))
-    monkeypatch.setattr(params_module, 'load', lambda *a: None)
+    monkeypatch.setattr(params_module, 'load', lambda *a: SimpleNamespace(shield=None))
     monkeypatch.setattr(rules_module, 'load', lambda *a: SimpleNamespace(categories=None))
     monkeypatch.setattr(matrix, 'load', lambda: {})
     monkeypatch.setattr(icons_module, 'write', lambda *a: (tmp_path, drawn))
@@ -815,3 +816,66 @@ def test_a_changed_icon_mapping_is_written(style_run, tmp_path):
     gen.run('schema_1', out_dir=tmp_path)
     assert calls == ['icons']
     assert stored['icons_applied'] == key
+
+
+# --- road shields --------------------------------------------------------
+
+ROADS = ('cls_road_motorway', 'cls_road_trunk', 'cls_road_primary', 'cls_road_secondary')
+
+
+def road_shields(styles, palette, params, icons=Path('/i')):
+    from importer.run import STYLES
+
+    _, layers, details = gen.load_style_files(STYLES)
+    present = {'osm_line': {cls: 1 for cls in ROADS}}
+    root = gen.build('sh', Theme(palette, 'max'), styles, layers, details, params, present,
+                     '0,0,1,1', icons=icons)
+    return root, root.findall('.//ShieldSymbolizer')
+
+
+def test_every_road_shield_has_a_box_of_every_length_it_can_ask_for(styles, params):
+    """A missing box file draws nothing, with no error: Mapnik logs it per
+    object and the motorway simply has no ref. So every file a compiled
+    `file` expression can resolve to -- every palette, every length the
+    query lets through -- has to be among the files the style run writes."""
+    from renderer import icons
+
+    boxes = icons.shields(styles, params.shield)
+    for palette in styles.palettes:
+        _, shields = road_shields(styles, palette, params)
+        assert len(shields) >= len(ROADS), palette
+        for shield in shields:
+            file = shield.get('file')
+            assert file.startswith(f'/i/{palette}/') and file.endswith('-[label_len].svg')
+            stem = file.removeprefix(f'/i/{palette}/').removesuffix('[label_len].svg')
+            for chars in range(1, params.shield.max_chars + 1):
+                assert f'{stem}{chars}' in boxes[palette], (palette, stem, chars)
+
+
+def test_a_road_shield_reads_the_first_ref_and_only_lengths_it_has_a_box_for(styles, params):
+    root, shields = road_shields(styles, 'default', params)
+    assert all(s.text == '[label]' for s in shields)
+    shield_layers = [layer for layer in root.findall('Layer')
+                     if layer.find('StyleName').text.startswith('shields_')]
+    assert shield_layers
+    for layer in shield_layers:
+        table = layer.find(".//Parameter[@name='table']").text
+        ref = "trim(split_part(label, ';', 1))"
+        assert f'{ref} as label, char_length({ref}) as label_len' in table
+        assert f'char_length({ref}) between 1 and {params.shield.max_chars}' in table
+
+
+def test_a_road_shield_has_no_halo_and_its_text_contrasts_with_the_box(styles, params):
+    _, shields = road_shields(styles, 'default', params)
+    for shield in shields:
+        assert shield.get('halo-fill') is None
+        assert shield.get('fill') in ('#000000', '#ffffff')
+        assert shield.get('allow-overlap') == 'false'
+        # OSM cuts a motorway at every junction; each piece would place its own.
+        assert float(shield.get('repeat-distance')) > 0
+
+
+def test_a_road_shield_without_its_border_colour_is_refused():
+    with pytest.raises(gen.GenerationError, match='box-stroke'):
+        gen.symbolizer(ET.Element('Rule'), 'road_shield',
+                       {'text': 'label', 'box-fill': '#e892a2'}, Path('/i'))

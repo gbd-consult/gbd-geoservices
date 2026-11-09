@@ -62,6 +62,7 @@ CASING_SCALE = 'casing_scale'
 #: literal whatever it happens to spell.
 TOKEN_PROPERTIES = frozenset({
     'polygon-fill', 'line-color', 'fill', 'halo', 'stroke', 'halo-radius',
+    'box-fill', 'box-stroke',
 })
 
 #: The token value by which a palette leaves out whatever is painted with

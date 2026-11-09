@@ -42,7 +42,11 @@ templates:
 
 defaults:
   label: {text: name}
-  shield: {<<: [*bold, *halo_place], text: label, size: 9, fill: clr_label_road, placement: line, spacing: 600}
+  # A road's ref on a box in the road's own colours, `box-fill` and `box-stroke`; the text is black
+  # or white by the box's brightness (renderer/icons.py). Only the first of several refs, and none
+  # longer than `shield.max_chars` (model/parameters.yaml). OSM cuts a motorway at every junction
+  # and each piece places its own: `repeat-distance` keeps the same ref that many pixels apart.
+  shield: {<<: *bold, text: label, size: 9, placement: line, spacing: 600, repeat-distance: 250}
   # One class per second-level category; the icon and its colour are the row's (styles/icons.yaml).
   marker: {icon: true, size: 27}
 
@@ -362,10 +366,10 @@ number:
   cls_building 19: {<<: [*regular, *halo], text: label, size: 9, fill: clr_label_address}
 
 shield:
-  cls_road_motorway 10: {}
-  cls_road_trunk 10: {}
-  cls_road_primary 10: {}
-  cls_road_secondary 10: {}
+  cls_road_motorway 10: {box-fill: clr_motorway, box-stroke: clr_motorway_case}
+  cls_road_trunk 10: {box-fill: clr_trunk, box-stroke: clr_trunk_case}
+  cls_road_primary 10: {box-fill: clr_primary, box-stroke: clr_primary_case}
+  cls_road_secondary 10: {box-fill: clr_secondary, box-stroke: clr_secondary_case}
 
 marker:
   cls_aeroway_gate: {<<: *poi_label, fill: clr_label_poi_public}

@@ -90,6 +90,10 @@ class Source:
     #: On osm_label: the classes whose label gives way to their icon from the
     #: zoom the icon starts at (`icon_zooms`), when the icon is drawn at all.
     yields: tuple[str, ...] = ()
+    #: On a shield layer: the longest ref drawn on a box (`shield.max_chars`).
+    #: The query then reads the first ref only and its length, `label_len`,
+    #: which picks the box file. 0 for every other layer.
+    shield_chars: int = 0
 
 
 def scale_denominator(zoom: float, metres_factor: float = 1.0) -> float:
@@ -204,7 +208,11 @@ def sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
     """
     check_name(schema)
     check_name(source.table)
-    if source.text:
+    # `B 76;L 52` carries two refs; the box shows the first.
+    ref = "trim(split_part(label, ';', 1))"
+    if source.shield_chars:
+        columns = f'class, name, {ref} as label, char_length({ref}) as label_len, geom'
+    elif source.text:
         columns = 'class, name, label, geom'
     elif source.icon:
         # `name` for the shield: an icon's label is drawn with it or not at
@@ -226,6 +234,10 @@ def sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
         condition = f'minzoom_label is not null and minzoom_label <= {zoom}'
         if source.label_only:
             condition += ' and label is not null'
+        if source.shield_chars:
+            # A box exists for each of these lengths and no other: a longer
+            # ref would ask for a file that is not there and draw nothing.
+            condition += f' and char_length({ref}) between 1 and {int(source.shield_chars)}'
         if source.yields:
             # An airport, a hospital: named by the area's label until its
             # icon appears, then by the icon's -- never both. A category with
