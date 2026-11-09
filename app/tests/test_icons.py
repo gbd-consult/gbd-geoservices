@@ -220,3 +220,59 @@ def test_nocache_serves_icons_no_store(tmp_path, monkeypatch):
     response = TestClient(app).get('/icons/cat_a.svg')
     assert response.status_code == 200
     assert response.headers['cache-control'] == 'no-store'
+
+
+# --- road shield boxes ---------------------------------------------------
+
+def test_shield_text_is_black_on_a_light_box_and_white_on_a_dark_one():
+    assert icons.shield_text_colour('#f7fabf') == '#000000'   # default secondary
+    assert icons.shield_text_colour('#e892a2') == '#000000'   # default motorway
+    assert icons.shield_text_colour('#1f3b73') == '#ffffff'
+    assert icons.shield_text_colour('#000000') == '#ffffff'
+
+
+def test_a_box_is_as_wide_as_its_characters_and_its_padding(params):
+    shield = params.shield
+    svg = icons.shield_svg('#e892a2', '#c07a86', 3, shield)
+    width = round(2 * shield.padding_px + 3 * shield.char_px)
+    assert f'width="{width}"' in svg and f'height="{round(shield.height_px)}"' in svg
+    assert 'fill="#e892a2"' in svg and 'stroke="#c07a86"' in svg
+
+
+def test_the_widest_common_refs_fit_their_box(params):
+    """Measured advances of Noto Sans Bold at 9 px (parameters.yaml): the
+    text has to fit inside the padding, or it runs over the border."""
+    measured_px = {'A 7': 13.7, 'B 207': 23.8, 'K 1234': 28.9, 'St 2145': 31.8}
+    for ref, width in measured_px.items():
+        assert width <= len(ref) * params.shield.char_px, ref
+
+
+def test_a_box_colour_that_is_not_hex_is_refused():
+    with pytest.raises(icons.IconError, match='#rrggbb'):
+        icons.shield_key('red', '#000000')
+
+
+def test_write_adds_the_boxes_and_a_changed_box_is_a_new_set(tmp_path, vendored, params):
+    model = tmp_path / 'model'
+    (model / 'generated').mkdir(parents=True)
+    (model / 'generated' / 'categories.yaml').write_text(yaml.safe_dump(TREE))
+    styles = vendored.parent
+    palettes = {name: {**tokens, 'clr_motorway': '#e892a2', 'clr_motorway_case': '#c07a86'}
+                for name, tokens in PALETTES.items()}
+    (styles / 'palettes.yaml').write_text(yaml.safe_dump(palettes))
+    (styles / 'icons.yaml').write_text(yaml.safe_dump([
+        {'category': 'cat_a', 'icon': 'maki/one.svg', 'color': 'clr_x', 'draw': True}]))
+    classes = {'shield': {'cls_road_motorway 10': {
+        'text': 'label', 'box-fill': 'clr_motorway', 'box-stroke': 'clr_motorway_case'}}}
+    (styles / 'classes.yaml').write_text(yaml.safe_dump(classes))
+    data = tmp_path / 'data'
+    first, _ = icons.write(model, styles, data, params.shield)
+    for palette in palettes:
+        names = {p.stem for p in (first / palette).iterdir()}
+        assert {f'shield-e892a2-c07a86-{n}' for n in range(1, params.shield.max_chars + 1)} <= names
+
+    palettes['default']['clr_motorway'] = '#1f3b73'
+    (styles / 'palettes.yaml').write_text(yaml.safe_dump(palettes))
+    second, _ = icons.write(model, styles, data, params.shield)
+    assert second != first
+    assert (second / 'default' / 'shield-1f3b73-c07a86-1.svg').is_file()

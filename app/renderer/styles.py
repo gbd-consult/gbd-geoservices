@@ -72,7 +72,7 @@ LINE_ATTRS = {
 TEXT_ATTRS = {
     'font': 'face-name', 'size': 'size', 'fill': 'fill', 'halo': 'halo-fill',
     'halo-radius': 'halo-radius', 'placement': 'placement', 'spacing': 'spacing',
-    'dy': 'dy', 'wrap': 'wrap-width',
+    'dy': 'dy', 'wrap': 'wrap-width', 'repeat-distance': 'repeat-distance',
 }
 #: A shield is an icon and its text. `size` is the icon's, so the text's
 #: size is `text-size` there.
@@ -246,6 +246,22 @@ def symbolizer(parent, kind: str, properties: dict, icons: Path | None = None) -
         element.set('allow-overlap', 'false')
         element.set('avoid-edges', 'true')
         element.text = f"[{properties['text']}]"
+    elif kind == 'road_shield':
+        # A road's ref on a box in the road's colours. The box is a file per
+        # length (renderer/icons.py); the row's `label_len` picks it.
+        if icons is None:
+            raise GenerationError('a road shield needs the icon directory')
+        if not properties.get('box-stroke'):
+            raise GenerationError(f'a road shield needs box-stroke, got {properties!r}')
+        element = ET.SubElement(parent, 'ShieldSymbolizer')
+        # The text's colour follows from the box, not from a token.
+        attrs = {name: attr for name, attr in TEXT_ATTRS.items() if name != 'fill'}
+        stem = icons_module.shield_key(properties['box-fill'], properties['box-stroke'])
+        element.set('file', f'{icons}/{stem}-[label_len].svg')
+        element.set('fill', icons_module.shield_text_colour(properties['box-fill']))
+        element.set('allow-overlap', 'false')
+        element.set('avoid-edges', 'true')
+        element.text = f"[{properties['text']}]"
     else:
         element = ET.SubElement(parent, 'TextSymbolizer')
         attrs = TEXT_ATTRS
@@ -355,6 +371,8 @@ def build(schema: str, theme: Theme, styles: Styles, layers: list[dict], details
             if source.icon:
                 source = dataclasses.replace(source, icon_zooms=icon_zooms,
                                              label_zooms=label_zooms)
+            elif mode == 'shield':
+                source = dataclasses.replace(source, shield_chars=params.shield.max_chars)
             elif source.table == 'osm_label' and iconic & set(source.classes):
                 source = dataclasses.replace(source, icon_zooms=icon_zooms,
                                              yields=tuple(sorted(iconic & set(source.classes))))
@@ -410,7 +428,9 @@ def _rule(style, cls: str, properties: dict, low: int, high: int,
         for kind in drawn:
             symbolizer(rule, kind, properties, icons)
 
-    if properties.get('icon') and 'text' in kinds:
+    if properties.get('box-fill') and 'text' in kinds:
+        add('', ('road_shield',))
+    elif properties.get('icon') and 'text' in kinds:
         # An icon's text is placed together with it, as one shield, or not
         # at all. Two symbolizers would each run their own collision test,
         # and a label whose icon lost its spot would stand there alone.
@@ -747,7 +767,7 @@ def run(schema: str | None = None, out_dir: Path | None = None) -> list[Path]:
     started = time.monotonic()
     params = params_module.load(MODEL, STYLES)
     classifier = rules_module.load(MODEL)
-    icon_set, drawn = icons_module.write(MODEL, STYLES, data_dir)
+    icon_set, drawn = icons_module.write(MODEL, STYLES, data_dir, params.shield)
     lap = time.monotonic()
     with db.connection() as conn:
         imported_meta = meta.read(conn, schema) or {}

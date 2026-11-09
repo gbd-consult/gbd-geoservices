@@ -47,6 +47,16 @@ class Contours:
     bbox_margin_deg: float
 
 
+@dataclass(frozen=True)
+class Shield:
+    """`shield` in parameters.yaml: the boxes a road's ref is drawn on. The
+    query and the box files agree on `max_chars` (renderer/icons.py)."""
+    max_chars: int
+    char_px: float
+    padding_px: float
+    height_px: float
+
+
 class Params:
     def __init__(self, values: dict, layers: list[dict], styles: Styles):
         self._layers = layers
@@ -91,6 +101,9 @@ class Params:
         self.place_area_share = float(places['area_share'])
         self.merge_classes = tuple(values['search']['merge_classes'])
         self.polygon_simplify_m = float(values['search']['polygon_simplify_m'])
+        shield = values['shield']
+        self.shield = Shield(int(shield['max_chars']), float(shield['char_px']),
+                             float(shield['padding_px']), float(shield['height_px']))
         self.water_bbox_margin_deg = float(values['water']['bbox_margin_deg'])
         contours = dict(values['contours'])
         self.contours = Contours(

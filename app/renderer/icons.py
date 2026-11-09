@@ -14,7 +14,12 @@ colour and `draw`, each inherited down the tree on its own -- and writes
   for one whose category is not. The marker layer reads
   `<set>/<palette>/[icon].svg` and skips NULL, so an undrawn category is
   never fetched at all -- a missing marker file is logged by Mapnik per
-  object per render, which is what this replaced.
+  object per render, which is what this replaced;
+- the boxes a road's ref is drawn on (`shield` mode in classes.yaml): one
+  file per (box colour, border colour, character count), per palette.
+  Mapnik draws no background behind text, so the box is an image the
+  ShieldSymbolizer centres its text on, and the row's `label_len` picks the
+  width (renderer/queries.py).
 
 The colour is baked into the file rather than applied by Mapnik, because a
 MarkersSymbolizer's `fill` recolours every shape of the SVG -- the white disc
@@ -132,17 +137,81 @@ def drawn_keys(model_dir: Path, styles_dir: Path) -> dict[str, str]:
             for category, (icon, draw, color) in resolve(tree, entries).items() if draw}
 
 
+_HEX = re.compile(r'\A#[0-9a-fA-F]{6}\Z')
+
+
+def shield_key(fill: str, stroke: str) -> str:
+    """The file name of a box without its length: `#e892a2`, `#c07a86` ->
+    `shield-e892a2-c07a86`. The style's `file` appends `-[label_len]`."""
+    for colour in (fill, stroke):
+        if not _HEX.match(str(colour)):
+            raise IconError(f'a shield box needs #rrggbb colours, got {colour!r}')
+    return f'shield-{fill[1:].lower()}-{stroke[1:].lower()}'
+
+
+def shield_text_colour(fill: str) -> str:
+    """Black or white, whichever contrasts more with the box (WCAG relative
+    luminance): the same rule serves the light and the dark palettes."""
+    def linear(channel: int) -> float:
+        c = channel / 255
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(fill[i:i + 2], 16) for i in (1, 3, 5))
+    luminance = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+    # Contrast with black (L + 0.05) / 0.05 against white 1.05 / (L + 0.05).
+    return '#000000' if (luminance + 0.05) ** 2 > 0.0525 else '#ffffff'
+
+
+def shield_svg(fill: str, stroke: str, chars: int, shield) -> str:
+    width = round(2 * shield.padding_px + chars * shield.char_px)
+    height = round(shield.height_px)
+    # The border on the half pixel, so a 1 px stroke covers whole pixels.
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"'
+            f' viewBox="0 0 {width} {height}"><rect x="0.5" y="0.5" width="{width - 1}"'
+            f' height="{height - 1}" rx="2" fill="{fill}" stroke="{stroke}"'
+            f' stroke-width="1"/></svg>')
+
+
+def shields(styles, shield) -> dict[str, dict[str, str]]:
+    """{palette: {file stem: svg}} for every box classes.yaml's `shield` mode
+    paints, in every length the query can ask for."""
+    out: dict[str, dict[str, str]] = {palette: {} for palette in styles.palettes}
+    for cls in sorted(styles.classes):
+        if 'shield' not in styles.modes(cls):
+            continue
+        for zoom in styles.zoom_keys(cls, 'shield'):
+            properties = styles.properties(cls, 'shield', zoom)
+            if 'box-fill' not in properties:
+                continue
+            for palette in styles.palettes:
+                if styles.omits(properties, palette):
+                    continue
+                painted = styles.paint(properties, palette, 'shield')
+                fill, stroke = painted['box-fill'], painted.get('box-stroke')
+                stem = shield_key(fill, stroke)
+                for chars in range(1, shield.max_chars + 1):
+                    out[palette][f'{stem}-{chars}'] = shield_svg(fill, stroke, chars, shield)
+    return out
+
+
 def digest(texts: dict[str, dict[str, str]], keys: dict[str, str]) -> str:
     payload = json.dumps({'texts': texts, 'keys': keys}, sort_keys=True)
     return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
-def write(model_dir: Path, styles_dir: Path, data_dir: Path) -> tuple[Path, dict[str, str]]:
-    """Write the icon set, point `current` at it; its directory and {drawn category: key}."""
+def write(model_dir: Path, styles_dir: Path, data_dir: Path,
+          shield=None) -> tuple[Path, dict[str, str]]:
+    """Write the icon set, point `current` at it; its directory and {drawn category: key}.
+
+    `shield` is `Params.shield`; without it the set has no road shield boxes."""
+    from renderer import resolve
+
     tree = yaml.safe_load((model_dir / 'generated' / 'categories.yaml').read_text())
     entries = yaml.safe_load((styles_dir / 'icons.yaml').read_text()) or []
     palettes = yaml.safe_load((styles_dir / 'palettes.yaml').read_text())
     texts, keys, drawn = build(tree, entries, styles_dir / 'icons', palettes)
+    if shield is not None:
+        for palette, boxes in shields(resolve.load(styles_dir), shield).items():
+            texts[palette].update(boxes)
     root = data_dir / 'styles' / 'icons'
     name = digest(texts, keys)
     target = root / name
