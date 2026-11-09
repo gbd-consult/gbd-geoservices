@@ -44,9 +44,10 @@ defaults:
   label: {text: name}
   # A road's ref on a box in the road's own colours, `box-fill` and `box-stroke`; the text is black
   # or white by the box's brightness (renderer/icons.py). Only the first of several refs, and none
-  # longer than `shield.max_chars` (model/parameters.yaml). OSM cuts a motorway at every junction
-  # and each piece places its own: `repeat-distance` keeps the same ref that many pixels apart.
-  shield: {<<: *bold, text: label, size: 9, placement: line, spacing: 600, repeat-distance: 250}
+  # longer than `shield.max_chars` (model/parameters.yaml). Where a shield stands is the query's,
+  # one per ref and `shield.spacing_px`, so `placement` and `spacing` do not apply. Two picks on
+  # either side of a cell border can still be close; `repeat-distance` drops one within a tile.
+  shield: {<<: *bold, text: label, size: 9, repeat-distance: 200}
   # One class per second-level category; the icon and its colour are the row's (styles/icons.yaml).
   marker: {icon: true, size: 27}
 
