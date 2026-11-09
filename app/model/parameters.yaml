@@ -97,9 +97,6 @@ shield:                     # a road's ref on a box (styles/classes.yaml `shield
                             # 2.34 for the space, 4.4-4.8 px per character over "A 7".."St 2145"
   padding_px: 3             # left and right of the text
   height_px: 14
-  spacing_px: 256           # one shield per ref per square of this many pixels, on a grid fixed in
-                            # Web Mercator: every tile picks the same points (renderer/queries.py).
-                            # The tile size, so a GoogleMapsCompatible tile reads only its own cell
 
 water:
   bbox_margin_deg: 0.5     # the osmdata sets are clipped to the extract's bbox plus this, so the

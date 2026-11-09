@@ -72,7 +72,7 @@ LINE_ATTRS = {
 TEXT_ATTRS = {
     'font': 'face-name', 'size': 'size', 'fill': 'fill', 'halo': 'halo-fill',
     'halo-radius': 'halo-radius', 'placement': 'placement', 'spacing': 'spacing',
-    'dy': 'dy', 'wrap': 'wrap-width', 'repeat-distance': 'repeat-distance',
+    'dy': 'dy', 'wrap': 'wrap-width',
 }
 #: A shield is an icon and its text. `size` is the icon's, so the text's
 #: size is `text-size` there.
@@ -377,7 +377,6 @@ def build(schema: str, theme: Theme, styles: Styles, layers: list[dict], details
                                              label_zooms=label_zooms)
             elif mode == 'shield':
                 source = dataclasses.replace(source, shield_chars=params.shield.max_chars,
-                                             shield_spacing_px=params.shield.spacing_px,
                                              shield_buffer_px=buffer_px)
             elif source.table == 'osm_label' and iconic & set(source.classes):
                 source = dataclasses.replace(source, icon_zooms=icon_zooms,
