@@ -376,8 +376,7 @@ def test_the_label_floor_actually_filters(db, imported):
 
 def shield_source(**overrides):
     base = dict(table='osm_line', classes=('cls_road_motorway',), text=True, descending=True,
-                min_zoom=0, max_zoom=21, shield_chars=8, shield_spacing_px=256,
-                shield_buffer_px=64)
+                min_zoom=0, max_zoom=21, shield_chars=8, shield_buffer_px=64)
     return Source(**{**base, **overrides})
 
 

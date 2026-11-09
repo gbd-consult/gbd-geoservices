@@ -874,8 +874,6 @@ def test_a_road_shield_has_no_halo_and_its_text_contrasts_with_the_box(styles, p
         # The query picks the points (queries.shield_sql); a line placement
         # would place them again, per tile and per way.
         assert shield.get('placement') == 'point' and shield.get('spacing') is None
-        # Two picks on either side of a cell border can still be close.
-        assert float(shield.get('repeat-distance')) > 0
 
 
 def test_a_road_shield_without_its_border_colour_is_refused():

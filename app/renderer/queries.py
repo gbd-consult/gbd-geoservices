@@ -90,11 +90,9 @@ class Source:
     #: On osm_label: the classes whose label gives way to their icon from the
     #: zoom the icon starts at (`icon_zooms`), when the icon is drawn at all.
     yields: tuple[str, ...] = ()
-    #: On a shield layer: the longest ref drawn on a box (`shield.max_chars`)
-    #: and the grid one shield per ref is placed on (`shield.spacing_px`).
+    #: On a shield layer: the longest ref drawn on a box (`shield.max_chars`).
     #: The query is then `shield_sql`. 0 for every other layer.
     shield_chars: int = 0
-    shield_spacing_px: float = 0
     #: The layer's buffer: `!bbox!` is the tile plus this, and the cells are
     #: those of the tile itself.
     shield_buffer_px: int = 0
@@ -278,8 +276,8 @@ def shield_sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
     So the query picks the points itself. Every way the class draws at this
     zoom (`minzoom`, not `minzoom_label`) offers a point every half cell,
     and of all the points of one ref in a cell the one nearest the cell's
-    centre is the shield. The cell is `spacing_px` pixels of this zoom on a
-    grid anchored at the Web Mercator origin, so every tile -- and every
+    centre is the shield. The cell is one GoogleMapsCompatible tile of this
+    zoom, on a grid anchored at the Web Mercator origin, so every tile -- and every
     grid's tile, whose zoom rounds the same way -- picks the same point.
     For that a tile has to see every candidate of every cell it shows: the
     ways are read over those cells' envelope. The cells are those the tile
@@ -287,6 +285,7 @@ def shield_sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
     put its box across the tile's edge, where `avoid-edges` drops it. With
     a cell of one GoogleMapsCompatible tile that is the tile's own cell and
     nothing more; a UTM tile or a WMS map reads the cells around it too.
+    Two picks on either side of a cell border can still stand close.
     The tile is shrunk by one pixel more than the buffer, so an edge that
     lands on a cell border by float arithmetic does not take in a neighbour.
 
@@ -294,12 +293,15 @@ def shield_sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
     ref with a box (`shield_chars`) is read: a longer one would ask for a
     file that does not exist and draw nothing.
     """
+    # Imported here: renderer.matrix imports this module.
+    from renderer.matrix import TILE_SIZE
+
     zoom = zoom_expression(metres_factor)
     # Written into each expression rather than read from a one-row subquery:
     # from there the envelope is no constant, and the index scan lost more
     # than the repeated arithmetic costs.
     pixel = f'({UNITS_PER_PIXEL_Z0} / power(2, {zoom}))'
-    cell = f'({pixel} * {float(source.shield_spacing_px)})'
+    cell = f'({pixel} * {TILE_SIZE})'
     step = f'({cell} / 2)'
     ref = "trim(split_part(label, ';', 1))"
     tile = f'st_expand(!bbox!, -{pixel} * {int(source.shield_buffer_px) + 1})'
