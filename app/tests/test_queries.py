@@ -370,3 +370,61 @@ def test_the_label_floor_actually_filters(db, imported):
     assert labelled[13] == 0
     assert 0 < labelled[14] < labelled[18]
 
+
+
+# --- road shields --------------------------------------------------------
+
+def shield_source(**overrides):
+    base = dict(table='osm_line', classes=('cls_road_motorway',), text=True, descending=True,
+                min_zoom=0, max_zoom=21, shield_chars=8, shield_spacing_px=256,
+                shield_buffer_px=64)
+    return Source(**{**base, **overrides})
+
+
+def test_a_shield_reads_the_class_zoom_not_the_label_zoom():
+    """OSM cuts a motorway at every junction, so its pieces reach
+    `line_label_px` only at z13 or later: with `minzoom_label` 98 % of the
+    refs in de_nrw had no shield at z12."""
+    statement = queries.sql('sh', shield_source())
+    assert 'minzoom <= ' in statement
+    assert 'minzoom_label' not in statement
+
+
+def test_one_shield_per_ref_and_tile_and_none_across_a_seam(db, temp_schema):
+    """The shield query picks its points on a grid fixed in Web Mercator.
+
+    Placed by Mapnik, a ref stood on each carriageway and once more in the
+    neighbouring tile at every seam: each tile placed its own, and
+    `repeat-distance` sees only its own tile. Here two carriageways cross
+    three tiles; each tile gets one shield for the ref, inside the tile and
+    not in its buffer, so no neighbour draws it a second time.
+    """
+    from importer import tables as t
+
+    db.execute(t.ddl(temp_schema, t.OSM_LINE))
+    zoom, row, columns = 12, 1372, (2126, 2127, 2128)
+    origin = 20037508.342789244
+    span = 2 * origin / 2 ** zoom
+    top = origin - row * span
+    west, east = -origin + columns[0] * span, -origin + (columns[-1] + 1) * span
+    for osm_id, offset, label in ((1, 0.45, 'A 1;E 37'), (2, 0.47, 'A 1'),
+                                  (3, 0.6, 'A 1234567890')):   # longer than any box
+        y = top - offset * span
+        db.execute(f"insert into {temp_schema}.osm_line (osm_id, class, label, z_order,"
+                   f" minzoom, minzoom_label, geom) values (%s, 'cls_road_motorway', %s, 0, 5,"
+                   f" null, st_setsrid(st_makeline(st_point(%s, %s), st_point(%s, %s)), 3857))",
+                   (osm_id, label, west, y, east, y))
+    statement = queries.sql(temp_schema, shield_source())
+    buffer = span / 256 * 64
+    for column in columns:
+        left = -origin + column * span
+        bbox = (f'st_makeenvelope({left - buffer}, {top - span - buffer},'
+                f' {left + span + buffer}, {top + buffer}, 3857)')
+        inner = (statement.replace('!bbox!', bbox)
+                 .replace('!scale_denominator!', repr(queries.scale_denominator(zoom)))
+                 .removeprefix('(').removesuffix(') as t'))
+        rows = db.execute(f'select label, label_len, st_x(geom), st_y(geom) from ({inner}) s'
+                          ).fetchall()
+        assert [(label, length) for label, length, _, _ in rows] == [('A 1', 3)], column
+        _, _, x, y = rows[0]
+        assert left < x < left + span and top - span < y < top, column

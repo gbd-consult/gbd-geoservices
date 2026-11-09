@@ -871,7 +871,10 @@ def test_a_road_shield_has_no_halo_and_its_text_contrasts_with_the_box(styles, p
         assert shield.get('halo-fill') is None
         assert shield.get('fill') in ('#000000', '#ffffff')
         assert shield.get('allow-overlap') == 'false'
-        # OSM cuts a motorway at every junction; each piece would place its own.
+        # The query picks the points (queries.shield_sql); a line placement
+        # would place them again, per tile and per way.
+        assert shield.get('placement') == 'point' and shield.get('spacing') is None
+        # Two picks on either side of a cell border can still be close.
         assert float(shield.get('repeat-distance')) > 0
 
 

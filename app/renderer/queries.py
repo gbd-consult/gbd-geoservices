@@ -90,10 +90,14 @@ class Source:
     #: On osm_label: the classes whose label gives way to their icon from the
     #: zoom the icon starts at (`icon_zooms`), when the icon is drawn at all.
     yields: tuple[str, ...] = ()
-    #: On a shield layer: the longest ref drawn on a box (`shield.max_chars`).
-    #: The query then reads the first ref only and its length, `label_len`,
-    #: which picks the box file. 0 for every other layer.
+    #: On a shield layer: the longest ref drawn on a box (`shield.max_chars`)
+    #: and the grid one shield per ref is placed on (`shield.spacing_px`).
+    #: The query is then `shield_sql`. 0 for every other layer.
     shield_chars: int = 0
+    shield_spacing_px: float = 0
+    #: The layer's buffer: `!bbox!` is the tile plus this, and the cells are
+    #: those of the tile itself.
+    shield_buffer_px: int = 0
 
 
 def scale_denominator(zoom: float, metres_factor: float = 1.0) -> float:
@@ -208,11 +212,9 @@ def sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
     """
     check_name(schema)
     check_name(source.table)
-    # `B 76;L 52` carries two refs; the box shows the first.
-    ref = "trim(split_part(label, ';', 1))"
     if source.shield_chars:
-        columns = f'class, name, {ref} as label, char_length({ref}) as label_len, geom'
-    elif source.text:
+        return shield_sql(schema, source, metres_factor)
+    if source.text:
         columns = 'class, name, label, geom'
     elif source.icon:
         # `name` for the shield: an icon's label is drawn with it or not at
@@ -234,10 +236,6 @@ def sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
         condition = f'minzoom_label is not null and minzoom_label <= {zoom}'
         if source.label_only:
             condition += ' and label is not null'
-        if source.shield_chars:
-            # A box exists for each of these lengths and no other: a longer
-            # ref would ask for a file that is not there and draw nothing.
-            condition += f' and char_length({ref}) between 1 and {int(source.shield_chars)}'
         if source.yields:
             # An airport, a hospital: named by the area's label until its
             # icon appears, then by the icon's -- never both. A category with
@@ -264,4 +262,74 @@ def sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
         f' and {condition}'
         f' and geom && !bbox!'
         f' order by {ordering}) as t'
+    )
+
+
+def shield_sql(schema: str, source: Source, metres_factor: float = 1.0) -> str:
+    """The road shield query: one point per ref per grid cell, fixed in Web Mercator.
+
+    Mapnik places line labels per tile and per way. OSM cuts a motorway at
+    every junction and draws each carriageway as a way of its own, so a ref
+    stood on both carriageways and once more in the neighbouring tile, at
+    every seam -- and `repeat-distance` sees only its own tile. And a way
+    gets text only from where it is `line_label_px` long, which the pieces
+    of a motorway are not until z13 or later.
+
+    So the query picks the points itself. Every way the class draws at this
+    zoom (`minzoom`, not `minzoom_label`) offers a point every half cell,
+    and of all the points of one ref in a cell the one nearest the cell's
+    centre is the shield. The cell is `spacing_px` pixels of this zoom on a
+    grid anchored at the Web Mercator origin, so every tile -- and every
+    grid's tile, whose zoom rounds the same way -- picks the same point.
+    For that a tile has to see every candidate of every cell it shows: the
+    ways are read over those cells' envelope. The cells are those the tile
+    itself touches, without the layer's buffer: a point in the buffer would
+    put its box across the tile's edge, where `avoid-edges` drops it. With
+    a cell of one GoogleMapsCompatible tile that is the tile's own cell and
+    nothing more; a UTM tile or a WMS map reads the cells around it too.
+    The tile is shrunk by one pixel more than the buffer, so an edge that
+    lands on a cell border by float arithmetic does not take in a neighbour.
+
+    The ref is the first of several (`B 76;L 52` shows `B 76`), and only a
+    ref with a box (`shield_chars`) is read: a longer one would ask for a
+    file that does not exist and draw nothing.
+    """
+    zoom = zoom_expression(metres_factor)
+    # Written into each expression rather than read from a one-row subquery:
+    # from there the envelope is no constant, and the index scan lost more
+    # than the repeated arithmetic costs.
+    pixel = f'({UNITS_PER_PIXEL_Z0} / power(2, {zoom}))'
+    cell = f'({pixel} * {float(source.shield_spacing_px)})'
+    step = f'({cell} / 2)'
+    ref = "trim(split_part(label, ';', 1))"
+    tile = f'st_expand(!bbox!, -{pixel} * {int(source.shield_buffer_px) + 1})'
+    cells = (f'st_makeenvelope(floor(st_xmin({tile}) / {cell}) * {cell},'
+             f' floor(st_ymin({tile}) / {cell}) * {cell},'
+             f' ceil(st_xmax({tile}) / {cell}) * {cell},'
+             f' ceil(st_ymax({tile}) / {cell}) * {cell}, 3857)')
+    classes = ', '.join(f"'{check_name(c)}'" for c in source.classes)
+    candidates = (
+        f'select class, name, {ref} as label, char_length({ref}) as label_len, z_order,'
+        f' {cell} as cell,'
+        f' (st_dump(case when st_length(geom) <= {step}'
+        f' then st_lineinterpolatepoint(geom, 0.5)'
+        f' else st_lineinterpolatepoints(geom, {step} / st_length(geom)) end)).geom as geom'
+        f' from {schema}.{source.table}'
+        f' where class in ({classes})'
+        f' and minzoom <= {zoom}'
+        f' and char_length({ref}) between 1 and {int(source.shield_chars)}'
+        f' and geom && {cells}'
+    )
+    cell = 'cell'
+    cx, cy = f'floor(st_x(geom) / {cell})', f'floor(st_y(geom) / {cell})'
+    picked = (
+        f'select distinct on (label, {cx}, {cy}) class, name, label, label_len, z_order, geom'
+        f' from ({candidates}) c'
+        f' order by label, {cx}, {cy},'
+        f' st_distance(geom, st_point(({cx} + 0.5) * {cell}, ({cy} + 0.5) * {cell}, 3857))'
+    )
+    return (
+        f'(select class, name, label, label_len, geom from ({picked}) p'
+        f' where geom && !bbox!'
+        f' order by z_order desc) as t'
     )

@@ -255,10 +255,14 @@ def symbolizer(parent, kind: str, properties: dict, icons: Path | None = None) -
             raise GenerationError(f'a road shield needs box-stroke, got {properties!r}')
         element = ET.SubElement(parent, 'ShieldSymbolizer')
         # The text's colour follows from the box, not from a token.
-        attrs = {name: attr for name, attr in TEXT_ATTRS.items() if name != 'fill'}
+        attrs = {name: attr for name, attr in TEXT_ATTRS.items()
+                 if name not in ('fill', 'placement', 'spacing')}
         stem = icons_module.shield_key(properties['box-fill'], properties['box-stroke'])
         element.set('file', f'{icons}/{stem}-[label_len].svg')
         element.set('fill', icons_module.shield_text_colour(properties['box-fill']))
+        # The query picks the points (queries.shield_sql); a line placement
+        # would place them again, per tile.
+        element.set('placement', 'point')
         element.set('allow-overlap', 'false')
         element.set('avoid-edges', 'true')
         element.text = f"[{properties['text']}]"
@@ -372,7 +376,9 @@ def build(schema: str, theme: Theme, styles: Styles, layers: list[dict], details
                 source = dataclasses.replace(source, icon_zooms=icon_zooms,
                                              label_zooms=label_zooms)
             elif mode == 'shield':
-                source = dataclasses.replace(source, shield_chars=params.shield.max_chars)
+                source = dataclasses.replace(source, shield_chars=params.shield.max_chars,
+                                             shield_spacing_px=params.shield.spacing_px,
+                                             shield_buffer_px=buffer_px)
             elif source.table == 'osm_label' and iconic & set(source.classes):
                 source = dataclasses.replace(source, icon_zooms=icon_zooms,
                                              yields=tuple(sorted(iconic & set(source.classes))))

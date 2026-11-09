@@ -55,6 +55,7 @@ class Shield:
     char_px: float
     padding_px: float
     height_px: float
+    spacing_px: float
 
 
 class Params:
@@ -103,7 +104,8 @@ class Params:
         self.polygon_simplify_m = float(values['search']['polygon_simplify_m'])
         shield = values['shield']
         self.shield = Shield(int(shield['max_chars']), float(shield['char_px']),
-                             float(shield['padding_px']), float(shield['height_px']))
+                             float(shield['padding_px']), float(shield['height_px']),
+                             float(shield['spacing_px']))
         self.water_bbox_margin_deg = float(values['water']['bbox_margin_deg'])
         contours = dict(values['contours'])
         self.contours = Contours(
