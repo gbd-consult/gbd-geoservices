@@ -46,7 +46,7 @@ defaults:
   # or white by the box's brightness (renderer/icons.py). Only the first of several refs, and none
   # longer than `shield.max_chars` (model/parameters.yaml). Where a shield stands is the query's,
   # one per ref and tile (renderer/queries.py), so `placement` and `spacing` do not apply.
-  shield: {<<: *bold, text: label, size: 9}
+  shield: {<<: *bold, text: label, size: 9, margin: 40}
   # One class per second-level category; the icon and its colour are the row's (styles/icons.yaml).
   marker: {icon: true, size: 27}
 
@@ -365,11 +365,12 @@ label:
 number:
   cls_building 19: {<<: [*regular, *halo], text: label, size: 9, fill: clr_label_address}
 
+# The start zooms are osm-carto's: a motorway's ref from z10, trunk and primary from z11, secondary from z12.
 shield:
   cls_road_motorway 10: {box-fill: clr_motorway, box-stroke: clr_motorway_case}
-  cls_road_trunk 10: {box-fill: clr_trunk, box-stroke: clr_trunk_case}
-  cls_road_primary 10: {box-fill: clr_primary, box-stroke: clr_primary_case}
-  cls_road_secondary 10: {box-fill: clr_secondary, box-stroke: clr_secondary_case}
+  cls_road_trunk 11: {box-fill: clr_trunk, box-stroke: clr_trunk_case}
+  cls_road_primary 11: {box-fill: clr_primary, box-stroke: clr_primary_case}
+  cls_road_secondary 12: {box-fill: clr_secondary, box-stroke: clr_secondary_case}
 
 marker:
   cls_aeroway_gate: {<<: *poi_label, fill: clr_label_poi_public}
