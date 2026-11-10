@@ -4,6 +4,7 @@
     GET  /impressum, /datenschutz, /nutzungsbedingungen
                       the deployment's legal texts, where it has them
     GET  /health      liveness, no key
+    GET  /health/data whether the served data is recent enough, no key
     GET  /metadata    what a client needs to use the server, no key
     GET  /status      what an operator needs, any valid key
     POST /internal/reload   loopback only
@@ -25,6 +26,12 @@ but it is not a client's business.
 `/health` takes no key because the container healthcheck polls it before
 any key exists.
 
+`/health/data` is for the external monitor: 503 when the served extract
+is older than `max_data_age_days`, or when there is none. A failed weekly
+update leaves the server answering with the old data, so neither `/health`
+nor a tile request would notice; the extract's date is the one thing that
+does. It takes no key, so the monitor needs none, and says only the date.
+
 The legal texts -- imprint, privacy policy, terms of use -- come from the
 operator's management and lawyer, not from this repository: they are HTML
 files in `config/legal/` beside `options.yaml`, one per page, put into the
@@ -35,6 +42,7 @@ only a deploy, no reload.
 
 from __future__ import annotations
 
+import datetime
 import ipaddress
 import logging
 import time
@@ -42,7 +50,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from lib import config, db, i18n
 from lib.version import __version__, build_id
@@ -98,6 +106,20 @@ def health() -> dict:
     you look for whether the data is there.
     """
     return {'status': 'ok'}
+
+
+@router.get('/health/data')
+def health_data() -> JSONResponse:
+    """The served extract's date and age; 503 when too old or missing."""
+    schema = _schema()
+    date = _cached(f'extract {schema}', lambda: extract_info(schema)).get('date') if schema else None
+    limit = config.opt('max_data_age_days')
+    age = (datetime.datetime.now(datetime.UTC).date()
+           - datetime.date.fromisoformat(date)).days if date else None
+    fresh = age is not None and age <= limit
+    return JSONResponse({'status': 'ok' if fresh else 'stale', 'date': date,
+                         'age_days': age, 'max_age_days': limit},
+                        status_code=200 if fresh else 503)
 
 
 @router.get('/metadata')

@@ -363,6 +363,7 @@ Names follow `lang`. Responses are cached per request for `search.cache_ttl_s`; 
 | `GET /metadata` | what a client needs, one document; no key |
 | `GET /status` | what an operator needs; any valid key |
 | `GET /`, `/health` | landing page (`?lang=de\|en`), liveness; no key |
+| `GET /health/data` | 503 when the served extract is older than `max_data_age_days` or missing: the external monitor's alarm for a failed update; no key |
 | `GET /impressum`, `/datenschutz`, `/nutzungsbedingungen` | the deployment's legal texts from `config/legal/`; 404 without the file; no key |
 | `POST /internal/reload` | loopback only: re-resolve the schema, load the compiled XML |
 | `/devtools` | the viewer, only with the `devtools` option; `/devtools/api/*` needs the `devtools` scope |

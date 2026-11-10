@@ -92,11 +92,22 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 
 **Updating the software.** `app/scripts/deploy.sh <ssh-host>` from the new checkout, then `./manage.sh reload` on the server. The app takes a few minutes to start: it compiles the styles and loads its renderers (`tail -f data/log/app.log`).
 
-**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and deleted after 7 days. They are the only copy: `docker compose logs` shows nothing. Personal data in them, for the privacy policy: Caddy's access log has the client's IP address, the URL (without the key), the referrer and the user agent; the app's log has a search's text when the search is slow, Postgres's a slow statement with its parameters. Apart from these and the request log below, nothing is kept about a request: no cookies, no tracking, no analytics.
+**Logs.** `data/log/app.log`, `postgres.log`, `pgbouncer.log`, `caddy.log`, one line each as `date | message`, rotated daily and deleted after 7 days. They are the only copy: `docker compose logs` shows nothing. What personal data they hold is under **Personal data**.
 
 **Request log and load figures.** Every API request (tiles, WMS, search) is written to the table `service.request_log` with its time, key, status, duration, tile cache hit or miss, client IP and, for a search, its search terms. Once a minute the host's CPU, RAM and disk are sampled. The app itself, at start and every night shortly after midnight UTC, counts the finished days into `service.daily_stats` and `service.daily_host` (no IPs, no search terms; kept), creates the coming days' partitions and drops the request log older than `request_log_days` (1-7, default 7, today included), IP addresses and search terms with it; `./manage.sh stats-daily` does the same by hand. `./manage.sh stats-export 2026-10 > load-2026-10.csv` writes one line per day: requests by kind, errors, cache hit rate, 95th percentile durations, distinct IPs, CPU, RAM and disk; the totals with the cost per 1000 requests (option `monthly_cost_eur`) go to the terminal. The app writes the same file for every finished month itself, as `data/stats/load-YYYY-MM.csv` shortly after midnight UTC on the 1st, with the totals in `app.log`; a month without requests gets none. `request_log: false` turns the log off.
 
-**Status.** `GET /health` answers when the app is up; `GET /status` (with any valid key) shows the version, the build, the served import, and whether keys are registered (`"auth": "open"` means no keys and no protection).
+**Personal data**, for the privacy policy and the data processing agreement. Everything with a period is deleted automatically, with no one having to act:
+
+| data | where | kept | deleted by |
+|---|---|---|---|
+| client IP, URL (without the key), referrer, user agent | `data/log/caddy.log` | 7 days | logrotate and journald, as `setup.sh` sets them up |
+| a slow search's text; a slow statement with its parameters | `data/log/app.log`, `postgres.log` | 7 days | the same |
+| client IP, key and, for a search, its terms, per API request | table `service.request_log` | `request_log_days` (1-7, today included) | the app, every night shortly after midnight UTC |
+| a key's name, customer and allowed referrers; its requests per month | tables `service.api_key`, `service.key_usage` | as long as the key is registered | the operator, by hand: `key-disable` blocks a key but deletes nothing |
+
+The daily and monthly figures (`service.daily_stats`, `daily_host`, `data/stats/`) hold counts only, no IPs and no search terms. Nothing else is kept about a request: no cookies, no tracking, no analytics.
+
+**Status.** `GET /health` answers when the app is up; `GET /health/data` answers 503 when the served data is older than `max_data_age_days` (default 14) or there is none, so an external monitor raises the alarm when updates stop; `GET /status` (with any valid key) shows the version, the build, the served import, and whether keys are registered (`"auth": "open"` means no keys and no protection).
 
 **Database shell.** `docker compose exec postgres psql -U geoservices geoservices`.
 
@@ -110,6 +121,7 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 |---|---|
 | `serve_area` | the area this server serves |
 | `force_schema` | serve this import instead of the newest (rollback) |
+| `max_data_age_days` | `GET /health/data` answers 503 when the served extract is older (default 14) |
 | `serve_palettes`, `serve_details` | which color schemes and levels of detail are served |
 | `serve_grids` | which tile grids are served (`GoogleMapsCompatible`, `DE_EPSG_25832_ADV`, `DE_EPSG_25833_ADV`) |
 | `precache` | per grid, the deepest level `pre-cache` renders |
@@ -255,6 +267,7 @@ Every feature has the same properties, `null` where one does not apply. Its `id`
 | `GET /legend/{theme}.png?lang=de` | a theme's legend as an image; WMTS clients such as QGIS find it in the capabilities on their own. No key |
 | `GET /status` | for operators: build, the served import, whether keys are registered. Any valid key |
 | `GET /health` | answers when the app is up. No key |
+| `GET /health/data` | the served extract's date and age in days; 503 when it is older than `max_data_age_days` or missing. No key |
 | `GET /` | the landing page, in German, or in English with `?lang=en`. No key |
 
 ## Development
