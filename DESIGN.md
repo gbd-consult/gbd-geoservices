@@ -370,7 +370,7 @@ Names follow `lang`. Responses are cached per request for `search.cache_ttl_s`; 
 | `GET /status` | what an operator needs; any valid key |
 | `GET /`, `/health` | landing page (`?lang=de\|en`), liveness; no key |
 | `GET /health/data` | 503 when the served extract is older than `max_data_age_days` or missing: the external monitor's alarm for a failed update; no key |
-| `POST /key-request` | the landing page's trial key form: stores e-mail and organisation in `service.key_request` for the operator; a honeypot field and a cap of open requests against bots; no key |
+| `POST /key-request` | the landing page's trial key form: stores e-mail and organisation in `service.key_request` for the operator; a honeypot field, 3 requests per IP an hour (in memory, not stored), one place per address and a cap of open requests against bots; no key |
 | `GET /impressum`, `/datenschutz`, `/nutzungsbedingungen` | the deployment's legal texts from `config/legal/`; 404 without the file; no key |
 | `POST /internal/reload` | loopback only: re-resolve the schema, load the compiled XML |
 | `/devtools` | the viewer, only with the `devtools` option; `/devtools/api/*` needs the `devtools` scope |

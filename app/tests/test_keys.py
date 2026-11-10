@@ -95,3 +95,10 @@ def test_key_requests_stop_at_the_limit_and_go_when_done(store):
     assert keys.request_done(first)
     assert not keys.request_done(first)
     assert [r[2] for r in keys.requests()] == ['b@example.org']
+
+
+def test_an_address_already_waiting_takes_no_second_place(store):
+    first = keys.request_add('a@example.org', 'A GmbH', limit=2)
+    assert keys.request_add('A@Example.org', None, limit=2) == first
+    assert keys.request_add('b@example.org', None, limit=2) is not None
+    assert len(keys.requests()) == 2

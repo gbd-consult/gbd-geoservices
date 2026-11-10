@@ -185,9 +185,17 @@ def listing() -> list[tuple]:
 
 
 def request_add(email: str, organisation: str | None, limit: int) -> int | None:
-    """Store a trial key request; its id, or None with `limit` requests open."""
+    """Store a trial key request; its id, or None with `limit` requests open.
+
+    An address already waiting is not stored again: its request's id comes
+    back, so repeating it takes no second place under `limit`.
+    """
     with db.connection() as conn:
         ensure(conn)
+        waiting = conn.execute(sql.SQL('select id from {} where lower(email) = lower(%s)').format(
+            _t('key_request')), (email,)).fetchone()
+        if waiting:
+            return waiting[0]
         if conn.execute(sql.SQL('select count(*) from {}').format(
                 _t('key_request'))).fetchone()[0] >= limit:
             return None
