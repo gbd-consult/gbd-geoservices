@@ -178,6 +178,26 @@ def test_a_finished_month_is_written_once(store, monkeypatch, tmp_path):
     assert [p.name for p in path.parent.iterdir()] == ['load-2026-10.csv']   # no .tmp left
 
 
+def test_the_requests_per_key_lie_ready_for_the_invoice(store, monkeypatch, tmp_path):
+    """IT4: the monthly report per key is written on the 1st without anyone
+    running `usage-export`, every key in it, once."""
+    monkeypatch.setattr(stats.config, 'opt', lambda path, default=None:
+                        str(tmp_path) if path == 'data_dir' else default)
+    stats.keys.add('kiel', 'k-kiel', customer='Stadt Kiel')
+    stats.keys.add('idle', 'k-idle')
+    kiel = next(r['id'] for r in stats.keys.load() if r['name'] == 'kiel')
+    stats.keys.add_usage({(kiel, datetime.date(2026, 10, 1)): {'tiles': 5, 'search': 2}})
+
+    stats.report_month(datetime.date(2026, 11, 1))
+    path = tmp_path / 'stats' / 'usage-2026-10.csv'
+    assert path.read_text().splitlines() == ['key;customer;month;tiles;search;errors',
+                                             'idle;;2026-10;0;0;0',
+                                             'kiel;Stadt Kiel;2026-10;5;2;0']
+    path.write_text('kept')
+    stats.report_month(datetime.date(2026, 11, 2))
+    assert path.read_text() == 'kept'
+
+
 def test_a_month_without_requests_gets_no_file(store, monkeypatch, tmp_path):
     """The month before the first deploy: an empty file would read as a
     month without traffic."""

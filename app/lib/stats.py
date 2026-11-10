@@ -29,8 +29,9 @@ dropped is not dropped again.
 
 `report_month`, run after `daily`, writes the month before as
 `<data_dir>/stats/load-YYYY-MM.csv` once it is over -- the same CSV as
-`stats-export` -- so the monthly figures lie ready without anyone running
-the export. Written once, atomically, so two containers cannot leave half
+`stats-export` -- and the requests per key for the invoice as
+`usage-YYYY-MM.csv` -- the same as `usage-export` -- so both lie ready
+without anyone running an export. Written once, atomically, so two containers cannot leave half
 a file.
 """
 
@@ -296,34 +297,54 @@ def export(month: datetime.date, out: TextIO) -> dict:
 
 
 def report_month(today: datetime.date) -> Path | None:
-    """Write the month before `today` to `stats/load-YYYY-MM.csv` under
-    `data_dir`, unless it is there already or had no requests; return the
-    path written, or None.
+    """Write the month before `today` under `data_dir`/stats: the load
+    figures as `load-YYYY-MM.csv`, unless it had no requests, and the
+    requests per key for the invoice as `usage-YYYY-MM.csv`, unless there
+    are no keys. A file already there is left. Returns the load file's
+    path if this run wrote it, else None.
 
     No requests means the log was not running yet (the month before the
-    first deploy): an empty file would read as a month without traffic.
+    first deploy): an empty file would read as a month without traffic. The
+    usage file lists every key, one without requests with zeros.
     """
     month = (today.replace(day=1) - datetime.timedelta(days=1)).replace(day=1)
     directory = Path(config.opt('data_dir', '/data')) / 'stats'
+
+    def load(out: TextIO) -> dict | None:
+        totals = export(month, out)
+        return totals if totals['requests'] else None
+
     path = directory / f'load-{month:%Y-%m}.csv'
+    totals = _write_once(path, load)
+    if totals:
+        _log.info('request log: %s written, %d requests, cache hit rate %s, %s EUR per 1000',
+                  path, totals['requests'], totals['cache_hit_rate'] or '-',
+                  totals['eur_per_1000'] if totals['eur_per_1000'] is not None else '-')
+    usage = directory / f'usage-{month:%Y-%m}.csv'
+    if count := _write_once(usage, lambda out: keys.export_usage(month, out)):
+        _log.info('request log: %s written, %d keys', usage, count)
+    return path if totals else None
+
+
+def _write_once(path: Path, write):
+    """`write(out)` into `path` unless it exists, kept only if it returns
+    something true; that result, or None. Once and atomically, since every
+    app container runs this."""
     if path.exists():
         return None
-    directory.mkdir(parents=True, exist_ok=True)
-    handle, temporary = tempfile.mkstemp(dir=directory, suffix='.tmp')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(dir=path.parent, suffix='.tmp')
     try:
         with os.fdopen(handle, 'w', newline='') as out:
-            totals = export(month, out)
-        if not totals['requests']:
+            result = write(out)
+        if not result:
             Path(temporary).unlink()
             return None
         os.replace(temporary, path)
     except BaseException:
         Path(temporary).unlink(missing_ok=True)
         raise
-    _log.info('request log: %s written, %d requests, cache hit rate %s, %s EUR per 1000',
-              path, totals['requests'], totals['cache_hit_rate'] or '-',
-              totals['eur_per_1000'] if totals['eur_per_1000'] is not None else '-')
-    return path
+    return result
 
 
 def _rate(hits: int, misses: int) -> str:
