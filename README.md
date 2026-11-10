@@ -271,6 +271,7 @@ Every feature has the same properties, `null` where one does not apply. Its `id`
 | `GET /health` | answers when the app is up. No key |
 | `GET /health/data` | the served extract's date and age in days; 503 when it is older than `max_data_age_days` or missing. No key |
 | `GET /` | the landing page, in German, or in English with `?lang=en`. No key |
+| `GET /openapi.json` | the API description (OpenAPI), for Swagger and other tools. No key; there is no `/docs` page, whose Swagger UI would load from a CDN |
 | `POST /key-request` | the landing page's trial key form: stores the request for the operator. No key |
 
 ## Development

@@ -49,8 +49,8 @@ landing.health:
   de: Erreichbarkeit
   en: liveness
 landing.docs:
-  de: die generierte API-Referenz (Englisch)
-  en: the generated API reference
+  de: die API-Beschreibung als OpenAPI-JSON (Englisch), für Swagger und andere Werkzeuge
+  en: the API description as OpenAPI JSON, for Swagger and other tools
 landing.open_source:
   de: Open Source
   en: Open source

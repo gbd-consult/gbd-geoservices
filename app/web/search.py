@@ -17,7 +17,7 @@ refused for the same reasons.
 That split is also why there are no pydantic models for the body. FastAPI
 would give one route a generated schema and leave every non-HTTP caller
 unvalidated, which is precisely the drift `search/request.py` exists to
-prevent. `/docs` gets the shape from the docstrings and the examples below.
+prevent. `/openapi.json` gets the shape from the docstrings and the examples below.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ from web import icons as icon_routes
 router = APIRouter(prefix='/search', tags=['search'],
                    dependencies=[Depends(auth.requires('search'))])
 
-#: Shown in `/docs`. The four modes, so the shape is discoverable without
+#: Shown in `/openapi.json`. The four modes, so the shape is discoverable without
 #: reading `DESIGN.md`.
 EXAMPLES = {
     'name': {'summary': 'a name, optionally narrowed by category',

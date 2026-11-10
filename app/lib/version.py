@@ -1,7 +1,7 @@
 """The one version constant, and what identifies a build.
 
 Everything that names a version derives it from here rather than repeating a
-literal: FastAPI passes it to `/docs` and `/openapi.json`, `/metadata` and
+literal: FastAPI passes it to `/openapi.json`, `/metadata` and
 `/status` report it, and the Docker image tag is built from it, so a version
 literal in several places cannot drift and the running build can always be
 told.
