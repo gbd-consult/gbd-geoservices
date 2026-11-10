@@ -5,6 +5,7 @@
 serve_area: sh              # the area served: its newest complete import, its compiled styles and its tile cache
 force_schema: null          # serve this schema (e.g. de_sh_20260920_030000) instead of the area's newest: a rollback
 languages: [de, en]         # names and terms carried by categories and served by the API
+max_data_age_days: 14       # GET /health/data answers 503 when the served extract is older: the alarm for a failed update
 
 db:
   host: pgbouncer           # the compose service in front of postgres

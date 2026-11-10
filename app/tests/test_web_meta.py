@@ -9,6 +9,8 @@ are properties of the wiring and not of any function.
 
 from __future__ import annotations
 
+import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -73,6 +75,33 @@ def test_health_does_not_touch_the_database(client, monkeypatch):
     from lib import db
     monkeypatch.setattr(db, 'connect', lambda **kw: pytest.fail('health opened a connection'))
     assert client.get('/health').status_code == 200
+
+
+def _served_extract(monkeypatch, date):
+    from web import meta
+    meta._cache.clear()
+    monkeypatch.setattr(meta, '_schema', lambda: 'x' if date != 'no import' else None)
+    monkeypatch.setattr(meta, 'extract_info', lambda schema: {'date': date} if date else {})
+
+
+def test_health_data_is_ok_within_the_limit_and_needs_no_key(client, configured_keys, monkeypatch):
+    """The external monitor polls it with no key."""
+    configured_keys(['k-something'])
+    _served_extract(monkeypatch, (datetime.datetime.now(datetime.UTC).date()
+                                  - datetime.timedelta(days=14)).isoformat())
+    response = client.get('/health/data')
+    assert response.status_code == 200
+    assert response.json()['age_days'] == 14
+
+
+@pytest.mark.parametrize('date', ['2000-01-01', None, 'no import'])
+def test_health_data_alarms_on_old_or_missing_data(client, monkeypatch, date):
+    """A failed update leaves the old data served and `/health` green: the
+    extract's age is the only signal, and no date at all must alarm too."""
+    _served_extract(monkeypatch, date)
+    response = client.get('/health/data')
+    assert response.status_code == 503
+    assert response.json()['status'] == 'stale'
 
 
 # --- /metadata -----------------------------------------------------------
