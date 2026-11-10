@@ -114,7 +114,7 @@ Evaluating a thousand rules per object in Python would be too slow, so `importer
 
 ## Import
 
-`tools/manage.py import <area>` → `importer/run.py` `import_area()`. Inputs: the extract (`.osm.pbf`, downloaded by `importer/extract.py`), osmdata's water polygons, the contour lines of the schema `elevation` ("Contour lines"), the model files, and `styles/classes.yaml` for the zooms each class is drawn and labelled from. The steps, each timed and logged as `[n/16]`:
+`tools/manage.py import <area>` → `importer/run.py` `import_area()`. Inputs: the extract (`.osm.pbf`, downloaded by `importer/extract.py` when Geofabrik's is newer than the one in `downloads/`, by `Last-Modified`), osmdata's water polygons, the contour lines of the schema `elevation` ("Contour lines"), the model files, and `styles/classes.yaml` for the zooms each class is drawn and labelled from. The steps, each timed and logged as `[n/16]`:
 
 1. **Schema.** A new schema `_<area>_<timestamp>`, tables `UNLOGGED`. Before anything is written, the class sets of the rules and the style are compared; drift aborts the import.
 2. **Passes.** A relation pre-pass collects the ways of administrative boundaries with their lowest admin level. Then nodes, ways and areas run as separate pyosmium passes (`with_locations()`, `with_areas()`), in parallel up to `--pass-workers`. Each classifies its objects, builds the geometry (osmium WKB → shapely → EPSG:3857 by the spherical Mercator formula, vectorised per batch), computes sizes, zooms, `z_order`, label anchors and building heights, and writes with `COPY`.

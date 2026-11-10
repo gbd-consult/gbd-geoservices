@@ -82,7 +82,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
 | `./manage.sh init-elevation` | download the missing elevation tiles (`elevation_tiles`) and draw the contour lines once; the next import of an area takes its share |
 
-**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Monday, Wednesday and Friday at 02:00 and appends to `data/cron.log`.
+**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Monday, Wednesday and Friday at 02:00 and appends to `data/cron.log`. An import downloads the Geofabrik extract again only when Geofabrik's is newer (its `Last-Modified`) and otherwise reuses the one in `data/downloads/`; `GET /health/data` shows the date of the data served.
 
 The two newest complete imports of an area are kept. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. `update` empties the tile cache and pre-caches again; after an `import` and `reload` by hand the cache is kept until `drop-cache` (and `pre-cache`).
 

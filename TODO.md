@@ -133,3 +133,4 @@ Each section is sorted by importance, most important first. Items are numbered a
 96. The point radius is sent in map units, which in EPSG:3857 is ~1.7× too large at 54° N.
 97. `app.bundle.json` not rebuilt, no `feature.title` template, demo tile URLs without `?key=`.
 99. **Legend not configured in GWS.** A layer added through the WMTS capabilities takes the `LegendURL` itself (`ows_client/wmts/layer.py` `configure_legend`); an XYZ `tile_layer` needs `legend: {type: remote, urls: [".../legend/<theme>.png"]}` in the project config. Plugin code only if `gbd_geoservices` gets a layer type of its own that builds tile URL, key and legend.
+136. **The water polygons are downloaded once and never again** (`importer/water.py` `fetch`): osmdata.openstreetmap.de renews them, but an import reuses `downloads/water-polygons-split-3857/` for good. They change slowly; the Geofabrik extract checks `Last-Modified` (`importer/extract.py`), the same would do here.

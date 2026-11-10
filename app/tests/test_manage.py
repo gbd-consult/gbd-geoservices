@@ -9,6 +9,7 @@ importer.
 from __future__ import annotations
 
 import logging
+import os
 import re
 from pathlib import Path
 
@@ -86,11 +87,30 @@ def test_path_is_the_basename_in_downloads(tmp_path):
 
 # --- fetching ------------------------------------------------------------
 
-def test_an_existing_extract_is_reused(tmp_path, monkeypatch):
+def _remote(monkeypatch, timestamp):
+    monkeypatch.setattr(extract, 'last_modified', lambda url: timestamp)
+
+
+def _download(monkeypatch):
+    calls = []
+
+    def fake(url, target):
+        calls.append((url, Path(target)))
+        Path(target).write_bytes(b'new')
+    monkeypatch.setattr(extract, 'urlretrieve', fake)
+    return calls
+
+
+@pytest.mark.parametrize('remote', [1_000.0, None])
+def test_an_existing_extract_is_reused_unless_geofabrik_has_a_newer_one(tmp_path, monkeypatch,
+                                                                         remote):
     # A `de` extract is several gigabytes; re-downloading it because
-    # a run was repeated is not a small mistake.
+    # a run was repeated is not a small mistake. Nor is it when Geofabrik
+    # cannot be asked: the import goes on with what is here.
     existing = tmp_path / 'schleswig-holstein-latest.osm.pbf'
-    existing.write_bytes(b'not really a pbf')
+    existing.write_bytes(b'old')
+    os.utime(existing, (2_000.0, 2_000.0))
+    _remote(monkeypatch, remote)
 
     def fail(*args, **kwargs):
         raise AssertionError('should not download an extract that is already here')
@@ -99,20 +119,31 @@ def test_an_existing_extract_is_reused(tmp_path, monkeypatch):
     assert extract.ensure('de_sh', tmp_path) == existing
 
 
+def test_a_newer_extract_replaces_the_old_one(tmp_path, monkeypatch):
+    """The update cron imports three times a week; reusing the first
+    download kept the served data at its date for good."""
+    existing = tmp_path / 'schleswig-holstein-latest.osm.pbf'
+    existing.write_bytes(b'old')
+    os.utime(existing, (1_000.0, 1_000.0))
+    _remote(monkeypatch, 2_000.0)
+    calls = _download(monkeypatch)
+
+    assert extract.ensure('de_sh', tmp_path) == existing
+    assert existing.read_bytes() == b'new'
+    assert existing.stat().st_mtime == 2_000.0         # the next run compares against it
+    assert calls[0][1].name.endswith('.part')          # an interrupted one is never the extract
+    assert not calls[0][1].exists()
+
+
 def test_a_missing_extract_is_downloaded(tmp_path, monkeypatch):
-    calls = []
-
-    def fake(url, target):
-        calls.append((url, Path(target)))
-        Path(target).write_bytes(b'')
-
-    monkeypatch.setattr(extract, 'urlretrieve', fake)
+    _remote(monkeypatch, None)
+    calls = _download(monkeypatch)
     result = extract.ensure('li', tmp_path / 'nested')
 
     assert len(calls) == 1
-    url, target = calls[0]
-    assert url == extract.url_for('li')
-    assert target == result == tmp_path / 'nested' / 'liechtenstein-latest.osm.pbf'
+    assert calls[0][0] == extract.url_for('li')
+    assert result == tmp_path / 'nested' / 'liechtenstein-latest.osm.pbf'
+    assert result.read_bytes() == b'new'
 
 
 def test_ensure_rejects_an_unknown_area(tmp_path):
