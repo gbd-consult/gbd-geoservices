@@ -24,4 +24,16 @@ POST /search        {"mode": "point", "near": [lon, lat]}</pre>
 <p>{{ t('landing.licence') }} <a href="{{ source_url }}">{{ source_url }}</a></p>
 <h2>{{ t('landing.self_hosting') }}</h2>
 <p>{{ t('landing.self_hosting_text') }}</p>
+<h2 id="key-request">{{ t('landing.trial_key') }}</h2>
+{% if key_request %}<p role="status"><strong>{{ t('landing.key_request_' + key_request) }}</strong></p>{% endif %}
+<p>{{ t('landing.trial_key_text') }}</p>
+<form method="post" action="/key-request">
+  <input type="hidden" name="lang" value="{{ lang }}">
+  <label>{{ t('landing.email') }}<input type="email" name="email" required maxlength="254" autocomplete="email"></label>
+  <label>{{ t('landing.organisation') }}<input name="organisation" maxlength="200" autocomplete="organization"></label>
+  {# The honeypot: off-screen and out of the tab order, so only a bot fills it. #}
+  <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+  <button>{{ t('landing.request_key') }}</button>
+</form>
+<p class="sub">{{ t('landing.key_request_privacy', days=request_days) }}</p>
 {% endblock %}

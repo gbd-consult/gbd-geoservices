@@ -63,6 +63,33 @@ landing.self_hosting:
 landing.self_hosting_text:
   de: Der Dienst wird gehostet angeboten. Der Betrieb im eigenen Netz, auf dem eigenen Server, ist auf Anfrage möglich.
   en: The service is offered hosted. Operation in your own network, on your own server, is available on request.
+landing.trial_key:
+  de: Testschlüssel
+  en: Trial key
+landing.trial_key_text:
+  de: Ein Testschlüssel gilt 30 Tage für Kacheln und Suche. Wir prüfen die Anfrage und senden Ihnen den Schlüssel per E-Mail.
+  en: A trial key is valid for 30 days for tiles and search. We check the request and send you the key by e-mail.
+landing.email:
+  de: E-Mail-Adresse
+  en: E-mail address
+landing.organisation:
+  de: Name oder Firma
+  en: Name or company
+landing.request_key:
+  de: Testschlüssel anfragen
+  en: Request a trial key
+landing.key_request_privacy:
+  de: Die Angaben werden nur zur Bearbeitung der Anfrage gespeichert und danach, spätestens nach {days} Tagen, gelöscht.
+  en: The details are stored only to deal with the request and deleted afterwards, after {days} days at the latest.
+landing.key_request_sent:
+  de: Danke, Ihre Anfrage ist eingegangen.
+  en: Thank you, your request has been received.
+landing.key_request_invalid:
+  de: Bitte eine gültige E-Mail-Adresse angeben.
+  en: Please enter a valid e-mail address.
+landing.key_request_full:
+  de: Zurzeit können keine weiteren Anfragen angenommen werden. Bitte versuchen Sie es später noch einmal.
+  en: No further requests can be taken at the moment. Please try again later.
 landing.operator:
   de: Betrieben von
   en: Operated by

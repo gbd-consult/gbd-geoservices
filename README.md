@@ -103,6 +103,7 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 | client IP, URL (without the key), referrer, user agent | `data/log/caddy.log` | 7 days | logrotate and journald, as `setup.sh` sets them up |
 | a slow search's text; a slow statement with its parameters | `data/log/app.log`, `postgres.log` | 7 days | the same |
 | client IP, key and, for a search, its terms, per API request | table `service.request_log` | `request_log_days` (1-7, today included) | the app, every night shortly after midnight UTC |
+| e-mail address and name or company from the trial key form | table `service.key_request` | until the operator marks it done, at most 7 days | the operator (`key-request-done`), else the app every night |
 | a key's name, customer and allowed referrers; its requests per month | tables `service.api_key`, `service.key_usage` | as long as the key is registered | the operator, by hand: `key-disable` blocks a key but deletes nothing |
 
 The daily and monthly figures (`service.daily_stats`, `daily_host`, `data/stats/`) hold counts only, no IPs and no search terms. Nothing else is kept about a request: no cookies, no tracking, no analytics.
@@ -156,6 +157,7 @@ echo "$KEY" | ./manage.sh key-register old-client   # a key a client already has
 ```
 
 - `--scopes`: `tiles`, `search` and/or `devtools`; none means `tiles` and `search`. `devtools` opens the viewer's data and is given only by name, to our own keys. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
+- Trial key requests from the landing page's form wait in the database: `./manage.sh key-requests` lists them, `key-add <name> --customer <company> --trial` issues the key, you send the link to the address, and `./manage.sh key-request-done <id>` deletes the request. The app logs each new request (`key request <id>: waiting` in `app.log`) and deletes requests older than 7 days by itself. With 100 open requests the form refuses more.
 - `--trial` makes a key valid for 30 days, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
 - Every request with a key is counted per month: successful tile requests (XYZ, WMTS, WMS) and search requests apart, and every request answered with an error (status 400 or above, the key's own refusals included) as `errors`. A WMS map counts as one request, whatever its size up to `wms_max_px`. `usage-export` writes `key;customer;month;tiles;search;errors` for every key.
 
@@ -269,6 +271,7 @@ Every feature has the same properties, `null` where one does not apply. Its `id`
 | `GET /health` | answers when the app is up. No key |
 | `GET /health/data` | the served extract's date and age in days; 503 when it is older than `max_data_age_days` or missing. No key |
 | `GET /` | the landing page, in German, or in English with `?lang=en`. No key |
+| `POST /key-request` | the landing page's trial key form: stores the request for the operator. No key |
 
 ## Development
 

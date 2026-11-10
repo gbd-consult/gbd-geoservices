@@ -1,6 +1,7 @@
 """What this server serves, how it is doing, and the reload hook.
 
     GET  /            the landing page
+    POST /key-request the landing page's trial key form
     GET  /impressum, /datenschutz, /nutzungsbedingungen
                       the deployment's legal texts, where it has them
     GET  /health      liveness, no key
@@ -32,6 +33,12 @@ update leaves the server answering with the old data, so neither `/health`
 nor a tile request would notice; the extract's date is the one thing that
 does. It takes no key, so the monitor needs none, and says only the date.
 
+The trial key form only stores a request (`lib/keys.py`): the e-mail
+address and organisation, for the operator to issue a key by hand. Two
+guards against a bot: a honeypot field, answered as a success so the bot
+learns nothing, and `MAX_KEY_REQUESTS` open requests, past which the form
+refuses rather than let the table fill.
+
 The legal texts -- imprint, privacy policy, terms of use -- come from the
 operator's management and lawyer, not from this repository: they are HTML
 files in `config/legal/` beside `options.yaml`, one per page, put into the
@@ -45,14 +52,17 @@ from __future__ import annotations
 import datetime
 import ipaddress
 import logging
+import re
 import time
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from starlette.concurrency import run_in_threadpool
 
-from lib import config, db, i18n
+from lib import config, db, i18n, keys, stats
 from lib.version import __version__, build_id
 from web import auth, serving
 from web import icons as icon_routes
@@ -83,6 +93,13 @@ ELEVATION_SHORT_ATTRIBUTION = 'Höhendaten: Copernicus / ESA'
 #: The legal pages, by their path and their file's name in `config/legal/`.
 #: German paths: the texts are German law's, and so are the names people look for.
 LEGAL_PAGES = ('impressum', 'datenschutz', 'nutzungsbedingungen')
+
+#: Open trial key requests past which the form refuses.
+MAX_KEY_REQUESTS = 100
+#: The form's hidden field: a person leaves it empty, a form-filling bot does not.
+HONEYPOT = 'website'
+#: Enough to catch a typo, no more: whether the address works shows when the key is sent.
+EMAIL = re.compile(r'[^@\s]+@[^@\s]+\.[^@\s]+')
 
 _cache: dict[str, Any] = {}
 
@@ -361,8 +378,36 @@ def require_loopback(request: Request) -> None:
         raise HTTPException(status_code=403, detail='loopback only')
 
 
+@router.post('/key-request', include_in_schema=False)
+async def key_request(request: Request) -> RedirectResponse:
+    """Store a trial key request; back to the landing page with the outcome.
+
+    Parsed with the standard library: FastAPI's form support needs
+    python-multipart, a dependency for two text fields.
+    """
+    form = urllib.parse.parse_qs((await request.body()).decode('utf-8', 'replace'))
+
+    def field(name: str) -> str:
+        return (form.get(name) or [''])[0].strip()
+
+    email = field('email')
+    if field(HONEYPOT):
+        outcome = 'sent'
+    elif len(email) > 254 or not EMAIL.fullmatch(email):
+        outcome = 'invalid'
+    else:
+        request_id = await run_in_threadpool(keys.request_add, email,
+                                             field('organisation')[:200] or None, MAX_KEY_REQUESTS)
+        outcome = 'sent' if request_id else 'full'
+        _log.info('key request %s: %s', request_id or '-',
+                  'waiting, see manage.sh key-requests' if request_id else 'refused, too many open')
+    lang = i18n.pick(field('lang') or None)
+    return RedirectResponse(f'/?lang={lang}&key_request={outcome}#key-request', status_code=303)
+
+
 @router.get('/', response_class=HTMLResponse)
-def landing(request: Request, lang: str | None = None) -> HTMLResponse:
+def landing(request: Request, lang: str | None = None,
+            key_request: str | None = None) -> HTMLResponse:
     """What this server is, and a URL of each kind that works, in `?lang=`."""
     try:
         schema = db.active_schema()
@@ -376,6 +421,8 @@ def landing(request: Request, lang: str | None = None) -> HTMLResponse:
         'themes': [serving.url_name(name) for name in core.available_themes(schema)] if schema else [],
         'grids': matrix.load(),
         'source_url': config.opt('source_url'),
+        'key_request': key_request if key_request in ('sent', 'invalid', 'full') else None,
+        'request_days': stats.MAX_RETENTION_DAYS,
     })
 
 

@@ -34,6 +34,7 @@ def store(db, monkeypatch):
     drop = sql.SQL('drop schema if exists {} cascade').format(sql.Identifier(SCHEMA))
     db.execute(drop)
     monkeypatch.setattr(stats, 'SCHEMA', SCHEMA)
+    monkeypatch.setattr(stats.keys, 'SCHEMA', SCHEMA)
     retention(monkeypatch, stats.MAX_RETENTION_DAYS)
     yield db
     db.execute(drop)
@@ -94,6 +95,21 @@ def test_ips_and_search_terms_are_gone_after_request_log_days(store, monkeypatch
     counted_days = [r[0] for r in store.execute(
         f"select day from {SCHEMA}.daily_stats where kind = 'all' order by day").fetchall()]
     assert old in counted_days                             # counted before it went
+
+
+def test_key_requests_are_gone_after_seven_days_whatever_request_log_days(store, monkeypatch):
+    """An e-mail address from the trial key form lasts at most what the
+    privacy policy states for the logs, however short the request log is set."""
+    retention(monkeypatch, 1)
+    today = datetime.date(2026, 10, 28)
+    stats.keys.ensure(store)
+    for day, email in ((today - datetime.timedelta(days=stats.MAX_RETENTION_DAYS), 'alt@x.de'),
+                       (today - datetime.timedelta(days=stats.MAX_RETENTION_DAYS - 1), 'neu@x.de')):
+        store.execute(f'insert into {SCHEMA}.key_request (ts, email) values (%s, %s)',
+                      (at(day), email))
+    stats.daily(today)
+    left = [r[0] for r in store.execute(f'select email from {SCHEMA}.key_request').fetchall()]
+    assert left == ['neu@x.de']
 
 
 @pytest.mark.parametrize('days', [0, 8, '7', 2.5, True, None])

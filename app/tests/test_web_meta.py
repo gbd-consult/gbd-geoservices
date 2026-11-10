@@ -354,6 +354,43 @@ def test_the_landing_page_does_not_link_the_devtools(client):
 
 # --- the reload hook -----------------------------------------------------
 
+@pytest.fixture
+def stored(monkeypatch):
+    """The key requests the form stored, with no database."""
+    from lib import keys
+    calls = []
+
+    def add(email, organisation, limit):
+        calls.append((email, organisation))
+        return None if email == 'full@example.org' else len(calls)
+    monkeypatch.setattr(keys, 'request_add', add)
+    return calls
+
+
+@pytest.mark.parametrize('form, outcome, stored_as', [
+    ({'email': ' a@example.org ', 'organisation': 'A GmbH', 'lang': 'en'}, 'sent',
+     [('a@example.org', 'A GmbH')]),
+    ({'email': 'a@example.org', 'website': 'http://spam'}, 'sent', []),
+    ({'email': 'not an address'}, 'invalid', []),
+    ({'email': 'full@example.org'}, 'full', [('full@example.org', None)]),
+])
+def test_the_key_request_form(client, stored, form, outcome, stored_as):
+    """A filled honeypot is told it worked, so the bot learns nothing, and
+    stores nothing; the outcome comes back to the landing page."""
+    response = client.post('/key-request', data=form, follow_redirects=False)
+    assert response.status_code == 303
+    lang = form.get('lang', 'de')
+    assert response.headers['location'] == f'/?lang={lang}&key_request={outcome}#key-request'
+    assert stored == stored_as
+
+
+def test_the_landing_page_has_the_key_request_form_and_its_outcome(client):
+    page = client.get('/', params={'key_request': 'sent'}).text
+    assert 'action="/key-request"' in page and 'name="website"' in page
+    assert 'Ihre Anfrage ist eingegangen' in page
+    assert '<script' not in client.get('/', params={'key_request': '<script>'}).text
+
+
 def test_reload_is_loopback_only(client):
     # The TestClient's own client host is "testclient", not an address.
     assert client.post('/internal/reload').status_code == 403
