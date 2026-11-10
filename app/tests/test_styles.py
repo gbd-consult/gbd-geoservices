@@ -345,6 +345,18 @@ def test_the_background_is_the_palette_land(small, classifier, params):
     assert dark.get('background-color') == '#14181d'
 
 
+def test_a_transparent_detail_leaves_the_background_out(small, classifier, params):
+    """The overlay detail, for an aerial image underneath; anything but a
+    boolean is refused rather than read as true."""
+    details = {**DETAILS, 'overlay': {**DETAILS['min'], 'transparent': True}}
+    root = gen.build('sh', Theme('default', 'overlay'), small, LAYERS, details,
+                     params, PRESENT, '0,0,1,1')
+    assert root.get('background-color') == 'transparent'
+    wrong = {**DETAILS, 'min': {**DETAILS['min'], 'transparent': 'yes'}}
+    errors, _ = gen.check(small, LAYERS, wrong, classifier)
+    assert 'details.yaml min: transparent must be true or false' in errors
+
+
 def test_a_detail_drops_the_classes_it_does_not_draw(small, classifier, params):
     minimal = gen.build('sh', Theme('default', 'min'), small, LAYERS, DETAILS,
                            params, PRESENT, '0,0,1,1')
@@ -660,7 +672,7 @@ def test_a_theme_no_longer_selected_leaves_no_xml_behind(tmp_path, two_sets):
 
 
 def test_a_theme_is_compiled_once_per_set(tmp_path, two_sets):
-    """Forty-eight themes, but a file per theme *per grid*.
+    """Fifty-six themes, but a file per theme *per grid*.
 
     `metres_factor` is a constant of the set and is baked into both the
     rule scale denominators and the datasource's zoom expression, so one
@@ -670,10 +682,10 @@ def test_a_theme_is_compiled_once_per_set(tmp_path, two_sets):
     from importer.run import MODEL
 
     written = _generate(tmp_path, rules_module.load(MODEL), two_sets)
-    assert len(written) == 96
+    assert len(written) == 112
     for identifier in ('GoogleMapsCompatible', 'DE_EPSG_25832_ADV'):
         directory = tmp_path / 'out' / identifier
-        assert len(list(directory.glob('*.xml'))) == 48
+        assert len(list(directory.glob('*.xml'))) == 56
 
 
 def test_each_sets_xml_carries_its_own_metres_factor(tmp_path, two_sets):

@@ -29,7 +29,7 @@ nocache: false              # no tile cache: neither tier is read or written, ev
 map_pool_size: 4            # Mapnik Map objects per theme = concurrent renders per theme
 serve_grids: [GoogleMapsCompatible, DE_EPSG_25832_ADV, DE_EPSG_25833_ADV]  # the grids of styles/grids.yaml to advertise, render, pre-cache; others 404
 serve_palettes: [default, light, dark, hico]  # the palettes of palettes.yaml to compile and serve
-serve_details: [min, nav, std, max]             # the details of details.yaml to compile and serve
+serve_details: [min, nav, std, max, overlay]             # the details of details.yaml to compile and serve
 buffer_px: 64               # Mapnik Layer buffer: how far beyond a tile features are fetched
 wms_max_px: 2048            # WMS GetMap: the largest WIDTH and HEIGHT; a map is rendered on every request, never cached, and counted as one request whatever its size
 

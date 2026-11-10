@@ -81,9 +81,10 @@ class MapnikBackend(Protocol):
 #: `RuntimeError: unknown file type: jpg` -- Mapnik wants `jpeg`, and passing
 #: the format straight through fails only once something asks for a JPEG.
 #: `png` is 8-bit paletted:
-#: the styles draw an opaque background in flat colours, so 256 colours
-#: look the same as RGBA at 40 % of the size and half the encode time
-#: (measured on `li`).
+#: the styles draw in flat colours, so 256 colours look the same as RGBA at
+#: 40 % of the size and half the encode time (measured on `li`). The palette
+#: carries alpha, so a transparent detail (`overlay`) keeps its transparent
+#: background and its antialiased edges.
 MAPNIK_ENCODER = {
     'png': 'png8',
     'jpg': 'jpeg',
