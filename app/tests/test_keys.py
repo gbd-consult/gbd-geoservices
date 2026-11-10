@@ -83,3 +83,15 @@ def test_usage_adds_up_and_exports_every_key(store):
         'idle;;2026-10;0;0;0',
         'kiel;Stadt Kiel;2026-10;120;3;5',
     ]
+
+
+def test_key_requests_stop_at_the_limit_and_go_when_done(store):
+    """The limit is what a bot past the honeypot can fill; done deletes the
+    address at once rather than after the seven days."""
+    first = keys.request_add('a@example.org', 'A GmbH', limit=2)
+    keys.request_add('b@example.org', None, limit=2)
+    assert keys.request_add('c@example.org', None, limit=2) is None
+    assert [r[2] for r in keys.requests()] == ['a@example.org', 'b@example.org']
+    assert keys.request_done(first)
+    assert not keys.request_done(first)
+    assert [r[2] for r in keys.requests()] == ['b@example.org']

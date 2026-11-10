@@ -10,6 +10,8 @@
     python tools/manage.py key-register <name> [the same options] < key
     python tools/manage.py key-list
     python tools/manage.py key-disable <name> | key-enable <name>
+    python tools/manage.py key-requests
+    python tools/manage.py key-request-done <id>
     python tools/manage.py usage-export <yyyy-mm>
     python tools/manage.py stats-daily
     python tools/manage.py stats-export <yyyy-mm>
@@ -195,6 +197,27 @@ def cmd_key_disable(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_key_requests(args: argparse.Namespace) -> int:
+    """The trial key requests from the landing page that wait for an answer."""
+    from lib import keys
+
+    print('id\tasked\temail\torganisation')
+    for request_id, ts, email, organisation in keys.requests():
+        print(f'{request_id}\t{ts:%Y-%m-%d %H:%M}\t{email}\t{organisation or ""}')
+    return 0
+
+
+def cmd_key_request_done(args: argparse.Namespace) -> int:
+    """Delete a request once its key is sent, or it is turned down."""
+    from lib import keys
+
+    if not keys.request_done(args.id):
+        print(f'no key request {args.id}', file=sys.stderr)
+        return 1
+    print(f'key request {args.id} deleted', file=sys.stderr)
+    return 0
+
+
 def cmd_usage_export(args: argparse.Namespace) -> int:
     """A month's requests per key, tiles and search apart, as CSV on stdout."""
     from lib import keys
@@ -277,7 +300,7 @@ def cmd_pre_cache(args: argparse.Namespace) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    from lib import keys
+    from lib import keys, stats
 
     main = argparse.ArgumentParser(prog='manage.py', description=__doc__.split('\n\n')[0])
     main.add_argument('-v', '--verbose', action='store_true', help='log every step as it runs')
@@ -374,6 +397,17 @@ def parser() -> argparse.ArgumentParser:
         toggle = commands.add_parser(name, help=f'{name.split("-")[1]} an API key')
         toggle.add_argument('name')
         toggle.set_defaults(func=cmd_key_disable, disabled=disabled)
+
+    commands.add_parser(
+        'key-requests', help='list the trial key requests from the landing page',
+        description='Answer each with `key-add <name> --customer <organisation> --trial`, send '
+                    'the link to the e-mail address, then `key-request-done <id>`; a request '
+                    f'is deleted after {stats.MAX_RETENTION_DAYS} days in any case.',
+    ).set_defaults(func=cmd_key_requests)
+    done = commands.add_parser('key-request-done',
+                               help='delete a trial key request once dealt with')
+    done.add_argument('id', type=int)
+    done.set_defaults(func=cmd_key_request_done)
 
     usage = commands.add_parser(
         'usage-export', help='export a month\'s requests per key as CSV',
