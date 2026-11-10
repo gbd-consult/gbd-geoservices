@@ -358,6 +358,8 @@ def test_the_landing_page_does_not_link_the_devtools(client):
 def stored(monkeypatch):
     """The key requests the form stored, with no database."""
     from lib import keys
+    from web import meta
+    meta._key_request_times.clear()
     calls = []
 
     def add(email, organisation, limit):
@@ -382,6 +384,17 @@ def test_the_key_request_form(client, stored, form, outcome, stored_as):
     lang = form.get('lang', 'de')
     assert response.headers['location'] == f'/?lang={lang}&key_request={outcome}#key-request'
     assert stored == stored_as
+
+
+def test_one_ip_fills_no_more_than_its_share_of_key_requests(client, stored):
+    """A script that gets past the honeypot would otherwise take every open
+    place within seconds and close the form to everyone else."""
+    from web import meta
+    outcomes = [client.post('/key-request', data={'email': f'{n}@example.org'},
+                            follow_redirects=False).headers['location']
+                for n in range(meta.KEY_REQUESTS_PER_IP + 1)]
+    assert len(stored) == meta.KEY_REQUESTS_PER_IP
+    assert outcomes[-1].endswith('key_request=full#key-request')
 
 
 def test_the_landing_page_has_the_key_request_form_and_its_outcome(client):

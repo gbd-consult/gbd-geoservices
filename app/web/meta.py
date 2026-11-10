@@ -37,7 +37,9 @@ The trial key form only stores a request (`lib/keys.py`): the e-mail
 address and organisation, for the operator to issue a key by hand. Two
 guards against a bot: a honeypot field, answered as a success so the bot
 learns nothing, and `MAX_KEY_REQUESTS` open requests, past which the form
-refuses rather than let the table fill.
+refuses rather than let the table fill. One client fills it no faster
+than `KEY_REQUESTS_PER_IP` an hour: the IPs are counted in memory only, so
+the form stores no IP and needs no retention period of its own.
 
 The legal texts -- imprint, privacy policy, terms of use -- come from the
 operator's management and lawyer, not from this repository: they are HTML
@@ -96,12 +98,17 @@ LEGAL_PAGES = ('impressum', 'datenschutz', 'nutzungsbedingungen')
 
 #: Open trial key requests past which the form refuses.
 MAX_KEY_REQUESTS = 100
+#: Trial key requests one IP may make in `KEY_REQUEST_WINDOW_S`.
+KEY_REQUESTS_PER_IP = 3
+KEY_REQUEST_WINDOW_S = 3600.0
 #: The form's hidden field: a person leaves it empty, a form-filling bot does not.
 HONEYPOT = 'website'
 #: Enough to catch a typo, no more: whether the address works shows when the key is sent.
 EMAIL = re.compile(r'[^@\s]+@[^@\s]+\.[^@\s]+')
 
 _cache: dict[str, Any] = {}
+#: IP -> the times of its recent key requests. Per process, gone with it.
+_key_request_times: dict[str, list[float]] = {}
 
 
 def _cached(key: str, build) -> Any:
@@ -395,6 +402,8 @@ async def key_request(request: Request) -> RedirectResponse:
         outcome = 'sent'
     elif len(email) > 254 or not EMAIL.fullmatch(email):
         outcome = 'invalid'
+    elif not _key_request_allowed(request.client.host if request.client else ''):
+        outcome = 'full'
     else:
         request_id = await run_in_threadpool(keys.request_add, email,
                                              field('organisation')[:200] or None, MAX_KEY_REQUESTS)
@@ -403,6 +412,18 @@ async def key_request(request: Request) -> RedirectResponse:
                   'waiting, see manage.sh key-requests' if request_id else 'refused, too many open')
     lang = i18n.pick(field('lang') or None)
     return RedirectResponse(f'/?lang={lang}&key_request={outcome}#key-request', status_code=303)
+
+
+def _key_request_allowed(ip: str) -> bool:
+    """Count a key request for `ip`; False past `KEY_REQUESTS_PER_IP` in the window."""
+    now = time.monotonic()
+    for other in [k for k, times in _key_request_times.items() if times[-1] < now - KEY_REQUEST_WINDOW_S]:
+        del _key_request_times[other]         # an hour quiet: forgotten
+    times = [t for t in _key_request_times.get(ip, []) if t >= now - KEY_REQUEST_WINDOW_S]
+    if len(times) >= KEY_REQUESTS_PER_IP:
+        return False
+    _key_request_times[ip] = times + [now]
+    return True
 
 
 @router.get('/', response_class=HTMLResponse)
