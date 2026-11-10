@@ -239,6 +239,16 @@ def test_status_is_not_served_stale_across_a_key_change(client, configured_keys)
     assert client.get('/status', params={'key': 'k-something'}).json()['auth'] == 'keys'
 
 
+def test_no_page_loads_from_another_server(client):
+    """IT6: Swagger UI and ReDoc load their code from cdn.jsdelivr.net, so
+    they are off; the API description stays, as JSON, linked instead."""
+    assert client.get('/docs').status_code == 404
+    assert client.get('/redoc').status_code == 404
+    assert client.get('/openapi.json').json()['info']['title'] == 'gbd-geoservices'
+    page = client.get('/').text
+    assert 'href="/openapi.json"' in page and 'href="/docs"' not in page
+
+
 def test_the_replaced_routes_are_gone(client):
     for path in ('/version', '/themes', '/search/categories'):
         assert client.get(path).status_code == 404

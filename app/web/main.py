@@ -139,6 +139,10 @@ def create_app() -> FastAPI:
         version=__version__,
         description='OSM tiles and search.',
         lifespan=lifespan,
+        # Swagger UI and ReDoc load their code from cdn.jsdelivr.net, and the
+        # pages this server serves make no request to anyone else's.
+        docs_url=None,
+        redoc_url=None,
     )
 
     origins = list(config.opt('cors_origins') or ['*'])
