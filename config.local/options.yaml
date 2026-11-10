@@ -2,7 +2,7 @@
 # git; the dev database's password is in postgres.env next to it. Production's is config/,
 # git-ignored (config.example/README.md).
 host: localhost
-serve_area: de_nrw
+serve_area: de_sh
 devtools: true
 devtools_watch: true
 # Compile and serve fewer themes: every one is loaded at each restart, ~0.06 s per Map.
