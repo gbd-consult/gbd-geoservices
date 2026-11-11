@@ -120,8 +120,6 @@ import:
   copy_batch: 10000        # rows per COPY flush; also the batch the geometry is projected in
   index_workers: 4          # parallel connections for the index build
   progress_s: 10            # a pass, or the index build, logs its progress this often
-  location_store: flex_mem  # pyosmium node cache; 'sparse_file_array,/data/tmp/nodes.idx' bounds
-                            # RAM for an area too large to hold in memory (de_sh measures 365 MB)
   # The report against the previous import (importer/changes.py): a count is listed when it
   # moved by more than `report_change_pct` percent and by at least `report_min_rows` rows --
   # the second keeps a class of 3 rows turning 4 out of it. One that appeared or vanished is

@@ -51,8 +51,7 @@ Each section is sorted by importance, most important first. Items are numbered a
 27. **Categories no rule assigns** (e.g. `cat_built_transport_stop_platform_buspoint` since the hand-written platform rules). Children that share a name with their parent but are different tags (Kiosk/Convenience store, Memorial/Monument, Fuel Shop/Fuel) are left in place.
 28. **Unnamed categorised objects are not searchable** (a nameless playground), so a category browse returns named things only.
 29. **Named objects no rule matches** have NULL importance and are still searchable. Decided without asking.
-30. **Memory.** The areas pass ignores `location_store` (`with_areas()` without `with_locations(...)`), `with_areas()` buffers every relation's member ways with no filter, one worker process runs all passes and keeps its freed memory, `location_store` is a parameter and not a deployment option, and per-pass peak RSS is not logged. The memory prefix of the log lines reads `/proc/meminfo`, which is the host's, not a container limit's.
-31. **Areas larger than `de`** (Europe): not feasible without the memory work above, file-backed location stores, and a chunked or SQL street merge. Estimated, not measured.
+31. **Areas larger than `de`** (Europe): not feasible without a file-backed node cache (`location_store`, tried on `li` only) and a chunked or SQL street merge. Estimated, not measured.
 32. **The versioned default `serve_area: sh`** names an area that no longer exists (`app/config/options.yaml`).
 33. **Unread settings**: `model/parameters.yaml`'s `precache` section (the depths are the `precache` option) and `streets.merge_by` (the merge is hard-coded); the `db.pool_size`, `db.pool_overflow` and `db.pool_timeout` options.
 34. **`cls_ocean` is a literal in three places** (`renderer/styles.py`, `tools/gen_classifier.py`, `importer/postprocess.py`). Proposed: a hand-written rule for it.

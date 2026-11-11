@@ -53,7 +53,7 @@ class Progress:
         self.kept += 1
 
     def done(self) -> None:
-        self._log(time.monotonic(), ', done')
+        self._log(time.monotonic(), f', done, peak {peak_rss_gb():.2f}g')
 
     def _log(self, now: float, suffix: str = '') -> None:
         log.info('  %s: %s read, %s kept, %.0f s%s', self.name, f'{self.read:,}',
@@ -63,8 +63,9 @@ class Progress:
 class Formatter(logging.Formatter):
     """Prefixes a record's first line with elapsed seconds and available memory.
 
-    The pass workers are forked, so they inherit this formatter and its
-    start time along with the handler.
+    The pass workers are spawned and build their own from `log_target()`;
+    `time.monotonic()` is the system's clock, so their seconds count from
+    the same start.
     """
 
     def __init__(self, started: float):
@@ -74,6 +75,28 @@ class Formatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         elapsed = int(time.monotonic() - self.started)
         return f'{elapsed:5d}s {available_gb():6.2f}g :: {super().format(record)}'
+
+
+def log_target() -> tuple[str, float] | None:
+    """The import log's file and start time, for a pass worker to log there too.
+
+    The passes run in spawned processes, which inherit no handler: they get
+    these as their initializer's arguments. None outside an import.
+    """
+    for handler in logging.getLogger().handlers:
+        if isinstance(handler, logging.FileHandler) and isinstance(handler.formatter, Formatter):
+            return handler.baseFilename, handler.formatter.started
+    return None
+
+
+def log_to(target: tuple[str, float] | None) -> None:
+    """In a pass worker: log to the import log, as the import process does."""
+    logging.getLogger('importer').setLevel(logging.INFO)
+    if target is not None:
+        path, started = target
+        handler = logging.FileHandler(path)
+        handler.setFormatter(Formatter(started))
+        logging.getLogger().handlers = [handler]
 
 
 class ImportRunning(RuntimeError):
@@ -128,16 +151,52 @@ def import_run(area: str, started: float):
 
 
 def available_gb() -> float:
-    """`MemAvailable`: what can be allocated without swapping, page cache included.
+    """What can be allocated without swapping, page cache included.
 
-    Not `MemFree`, which the page cache drives towards zero during the
-    passes. NaN where there is no /proc/meminfo.
+    The host's `MemAvailable`, not `MemFree`, which the page cache drives
+    towards zero during the passes; and under a container memory limit
+    (cgroup v2) the less of that and the limit's headroom, since /proc/meminfo
+    is the host's and the limit is what the OOM killer goes by. NaN where
+    there is no /proc/meminfo.
     """
+    available = _field('/proc/meminfo', 'MemAvailable:') * 1024
+    limit = _cgroup('memory.max')
+    if limit is not None:
+        # Usage includes page cache; its inactive part is reclaimed before the limit bites.
+        used = (_cgroup('memory.current') or 0) - _field(f'{CGROUP}/memory.stat', 'inactive_file')
+        available = min(available, limit - used)
+    return available / 1024 ** 3
+
+
+def peak_rss_gb() -> float:
+    """This process's peak resident memory, `VmHWM`.
+
+    Each pass runs in a process of its own (`passes.run`), so for a pass
+    this is that pass's peak. NaN where there is no /proc.
+    """
+    return _field('/proc/self/status', 'VmHWM:') * 1024 / 1024 ** 3
+
+
+CGROUP = '/sys/fs/cgroup'
+
+
+def _cgroup(name: str) -> int | None:
+    """A cgroup v2 memory file as bytes; None without one, or for `max`, no limit."""
     try:
-        with open('/proc/meminfo') as meminfo:
-            for line in meminfo:
-                if line.startswith('MemAvailable:'):
-                    return int(line.split()[1]) / 1024 / 1024
+        with open(f'{CGROUP}/{name}') as f:
+            value = f.read().strip()
+    except OSError:
+        return None
+    return None if value == 'max' else int(value)
+
+
+def _field(path: str, name: str) -> float:
+    """The number after `name` in a `name value` file, NaN without it."""
+    try:
+        with open(path) as f:
+            for line in f:
+                if line.startswith(name):
+                    return int(line.split()[1])
     except OSError:
         pass
     return math.nan

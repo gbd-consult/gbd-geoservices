@@ -35,3 +35,14 @@ def test_a_closed_road_is_not_also_an_area(classifier, tags):
 def test_a_real_area_stays(classifier, tags):
     bits, result = area_result(classifier, tags)
     assert not passes.drawn_as_line(classifier, bits, tags, result)
+
+
+@pytest.mark.parametrize('option, ways', [
+    ('flex_mem', 'flex_mem'),
+    # Two passes may run at once; one file would be written by both.
+    ('sparse_file_array,/data/tmp/nodes', 'sparse_file_array,/data/tmp/nodes.ways'),
+])
+def test_a_file_node_cache_is_a_file_per_pass(monkeypatch, option, ways):
+    monkeypatch.setattr(passes.config, 'opt', lambda path, default=None: option)
+    assert passes.location_store('ways') == ways
+    assert passes.location_store('areas') == ways.replace('.ways', '.areas')

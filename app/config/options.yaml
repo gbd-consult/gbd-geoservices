@@ -53,6 +53,8 @@ log_level: info
 slow_log_ms: 1000            # a tile or search slower than this logs its steps as a warning; at log_level debug every one does
 
 data_dir: /data             # downloads/, styles/<schema>/, cache/<area>/, import.log, import.status
+location_store: flex_mem    # the import's node cache, per ways and areas pass; 'sparse_file_array,/data/tmp/nodes'
+                            # keeps it on disk (<path>.ways, <path>.areas, deleted after) for an area too large for RAM; de_sh: 365 MB
 geofabrik_base: https://download.geofabrik.de/
 areas:                      # what `manage.py import <area>` imports: area name -> path under geofabrik_base
   li: europe/liechtenstein-latest.osm.pbf
