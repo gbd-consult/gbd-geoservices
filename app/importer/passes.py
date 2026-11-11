@@ -196,7 +196,7 @@ class RenderSink:
         centre = geom.label_anchor(plain)
         if ends is not None:
             self.writers['street_ends'].add(
-                features.street_ends_row(osm_id, result, tags, *ends))
+                features.street_ends_row(osm_id, result, self._params, tags, *ends))
         elif name and result.importance != 0:
             # Importance 0 is "never found", whatever the name. An object
             # without a category (None) is still found by its name.
@@ -413,9 +413,11 @@ def run_ways(extract: Path, schema: str, model_dir: Path, styles_dir: Path,
                 # A named street's search row is the merged street, so it
                 # goes to the merge input instead. The end nodes are the
                 # whole of what the merge needs: it joins ways that share
-                # one and a normalized name.
+                # one and a normalized name. Importance 0 (a crossing that
+                # carries the street's name) is never found, so it stays out:
+                # in the merge it would join the street's pieces anyway.
                 ends = None
-                if (search and tags.get('name') and result.cls
+                if (search and tags.get('name') and result.cls and result.importance != 0
                         and params.is_merge_class(result.cls)):
                     ends = (way.nodes[0].ref, way.nodes[-1].ref)
                 sink.add(way.id, result, tags, geometry, 'line', ends, search=search)

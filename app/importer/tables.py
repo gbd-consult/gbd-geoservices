@@ -360,6 +360,7 @@ STREET_ENDS = Table('_street_ends', (
     ('phon_name', 'text'),
     ('class', 'text not null'),
     ('category', 'text'),        # carried so the merged row needs no reclassification
+    ('rank', 'smallint not null'),  # z_order's class rank, the tie-break between ways of a street
     ('n1', 'bigint not null'),
     ('n2', 'bigint not null'),
 ))

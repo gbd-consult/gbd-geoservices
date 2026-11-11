@@ -230,16 +230,26 @@ def merge_streets(conn, schema: str, classifier) -> int:
             expanded = '{' + ','.join(f'"{c}"' for c in classifier.categories.expand([category])) + '}'
             copy.write(f'{category}\t{expanded}\t{classifier.categories.importance[category]}\n')
 
+    # The street takes the class and category of its most important way, the
+    # carriageway rather than a named sidepath merged with it. min() would take
+    # the alphabetically first: a street with a cycleway of its name would be
+    # a path and fall out of osm_street. Among equals it still decides: the
+    # plain class before its _bridge, the general category before a special
+    # one. Both orderings are the same, so class and category come from one way.
     cursor = conn.execute(sql.SQL("""
         with merged as (
             select c.component, e.search_name,
                    array_agg(distinct e.osm_id) ids,
                    min(e.name) name, min(e.phon_name) phon_name,
-                   min(e.category) category, min(e.class) class,
+                   (array_agg(e.category order by w.importance desc nulls last, e.rank desc,
+                              e.class, e.category, e.osm_id))[1] category,
+                   (array_agg(e.class order by w.importance desc nulls last, e.rank desc,
+                              e.class, e.category, e.osm_id))[1] class,
                    st_multi(st_linemerge(st_collect(st_transform(l.geom, 4326)))) geom
             from {component} c
             join {ends} e using (osm_id)
             join {lines} l on l.osm_id = e.osm_id
+            left join {expanded} w on w.category = e.category
             group by c.component, e.search_name
         )
         insert into {target}
