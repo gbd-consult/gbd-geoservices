@@ -34,7 +34,7 @@ from importer import geometry as geom
 from importer import params as params_module
 from importer import rules as rules_module
 from importer import tables as t
-from importer.progress import Progress
+from importer.progress import Progress, log
 from importer.writer import TableWriter
 from lib import db
 
@@ -109,6 +109,10 @@ def boundary_levels(extract: Path, progress_s: float) -> dict[int, int]:
     once, as the most important boundary it carries.
     """
     levels: dict[int, int] = {}
+    # The relations come last in the file, and libosmium reads past every node
+    # and way to reach them while holding the GIL, so neither a tick nor a
+    # timer thread can report until then: a few seconds on NRW, longer on de.
+    log.info('  relations: reading past the nodes and ways first, no progress until then')
     progress = Progress('relations', progress_s)
     for relation in osmium.FileProcessor(extract, E.RELATION):
         progress.tick()

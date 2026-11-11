@@ -338,7 +338,9 @@ def test_the_summary_counts_the_features_of_the_three_passes(tmp_path):
               'counts': {'nodes': {'point': 100, 'search': 7},
                          'ways': {'line': 300, 'street_ends': 9},
                          'areas': {'polygon': 400, 'building': 200},
-                         'places': {'objects': 5, 'addresses': 6}}}
+                         # Links to places, not rows: the summary must not report these.
+                         'places': {'objects': 50, 'addresses': 60},
+                         'search': {'objects': 5, 'addresses': 6}}}
     assert run.summary(pbf, result) == (
         '2.5 MB pbf, 1,000 features (point 100, line 300, polygon 400, building 200), '
         '5 search objects, 6 addresses, 100 features/s')

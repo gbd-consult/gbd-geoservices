@@ -346,6 +346,12 @@ def _terms(classifier, node_id: str, language: str) -> list[str]:
     return [v for v in values if v]
 
 
+def search_counts(conn, schema: str) -> dict[str, int]:
+    """The rows search reads: objects (merged streets and places included) and addresses."""
+    return {name: conn.execute(sql.SQL('select count(*) from {}').format(_table(schema, table))).fetchone()[0]
+            for name, table in (('objects', 'osm_search_object'), ('addresses', 'osm_search_address'))}
+
+
 def drop_working_tables(conn, schema: str) -> None:
     for name in ('_street_ends', '_street_component', '_category_expanded'):
         conn.execute(sql.SQL('drop table if exists {}').format(_table(schema, name)))
