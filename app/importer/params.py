@@ -113,7 +113,6 @@ class Params:
         self.copy_batch = int(values['import']['copy_batch'])
         self.index_workers = int(values['import']['index_workers'])
         self.progress_s = float(values['import']['progress_s'])
-        self.location_store = str(values['import']['location_store'])
         self.report_change_pct = float(values['import']['report_change_pct'])
         self.report_min_rows = int(values['import']['report_min_rows'])
 

@@ -24,19 +24,20 @@ no tags of their own.
 
 from __future__ import annotations
 
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import osmium
 
-from importer import features
+from importer import features, progress
 from importer import geometry as geom
 from importer import params as params_module
 from importer import rules as rules_module
 from importer import tables as t
 from importer.progress import Progress, log
 from importer.writer import TableWriter
-from lib import db
+from lib import config, db
 
 E = osmium.osm
 
@@ -388,7 +389,7 @@ def run_ways(extract: Path, schema: str, model_dir: Path, styles_dir: Path,
     classifier, params, keys = _setup(model_dir, styles_dir)
     wkb = osmium.geom.WKBFactory()
     processor = (osmium.FileProcessor(extract, E.NODE | E.WAY)
-                 .with_locations(params.location_store)
+                 .with_locations(location_store('ways'))
                  .with_filter(osmium.filter.EntityFilter(E.WAY)))
 
     admin = admin_classes(classifier)
@@ -434,7 +435,11 @@ def run_ways(extract: Path, schema: str, model_dir: Path, styles_dir: Path,
 def run_areas(extract: Path, schema: str, model_dir: Path, styles_dir: Path) -> dict[str, int]:
     classifier, params, keys = _setup(model_dir, styles_dir)
     wkb = osmium.geom.WKBFactory()
+    # No filter on the relations assembled: a KeyFilter in with_areas() gave
+    # the same areas and the same 0.85 GB peak on de_sh, since nearly every
+    # multipolygon relation carries a key the classifier reads.
     processor = (osmium.FileProcessor(extract, E.NODE | E.WAY | E.RELATION | E.AREA)
+                 .with_locations(location_store('areas'))
                  .with_areas()
                  .with_filter(osmium.filter.EntityFilter(E.AREA))
                  .with_filter(osmium.filter.EmptyTagFilter())
@@ -467,6 +472,17 @@ def run_areas(extract: Path, schema: str, model_dir: Path, styles_dir: Path) -> 
     return counts
 
 
+def location_store(name: str) -> str:
+    """The node cache of the ways or areas pass: the `location_store` option.
+
+    A file store (`sparse_file_array,<path>`) gets a file per pass, `<path>.<name>`,
+    since two passes may run at once; `run` deletes it.
+    """
+    store = str(config.opt('location_store', 'flex_mem'))
+    kind, sep, path = store.partition(',')
+    return f'{kind},{path}.{name}' if sep else store
+
+
 def run(extract: Path, schema: str, model_dir: Path, styles_dir: Path,
         pass_workers: int = 1) -> dict[str, dict]:
     """Pass 0, then the three passes, `pass_workers` of them at a time.
@@ -475,15 +491,32 @@ def run(extract: Path, schema: str, model_dir: Path, styles_dir: Path,
     store over every node of the file, and on Germany two of them at once
     outgrew 15 GB of RAM and 16 GB of swap. The nodes pass holds none, so 2
     runs it beside the ways pass and the areas pass after them.
+
+    Each pass in a process of its own (`max_tasks_per_child=1`): a process
+    keeps the memory it freed, so with one worker the areas pass would start
+    on top of what the ways pass left, and its peak in the log would be
+    theirs together. That needs `spawn`, which takes no handler along, so
+    the workers open the import log themselves.
     """
     params = params_module.load(model_dir, styles_dir)
     boundaries = boundary_levels(extract, params.progress_s)
 
-    with ProcessPoolExecutor(max_workers=pass_workers) as pool:
-        jobs = {
-            'nodes': pool.submit(run_nodes, extract, schema, model_dir, styles_dir),
-            'ways': pool.submit(run_ways, extract, schema, model_dir, styles_dir, boundaries),
-            'areas': pool.submit(run_areas, extract, schema, model_dir, styles_dir),
-        }
-        return {'boundary_ways': len(boundaries),
-                **{name: job.result() for name, job in jobs.items()}}
+    files = [Path(store.partition(',')[2]) for store in map(location_store, ('ways', 'areas'))
+             if ',' in store]
+    for file in files:
+        file.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with ProcessPoolExecutor(max_workers=pass_workers, max_tasks_per_child=1,
+                                 mp_context=multiprocessing.get_context('spawn'),
+                                 initializer=progress.log_to,
+                                 initargs=(progress.log_target(),)) as pool:
+            jobs = {
+                'nodes': pool.submit(run_nodes, extract, schema, model_dir, styles_dir),
+                'ways': pool.submit(run_ways, extract, schema, model_dir, styles_dir, boundaries),
+                'areas': pool.submit(run_areas, extract, schema, model_dir, styles_dir),
+            }
+            return {'boundary_ways': len(boundaries),
+                    **{name: job.result() for name, job in jobs.items()}}
+    finally:
+        for file in files:
+            file.unlink(missing_ok=True)
