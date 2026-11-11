@@ -7,7 +7,6 @@ Each section is sorted by importance, most important first. Items are numbered a
 ## Verification
 
 1. **Measurements not taken on `de`:** the point mode's places lookup (12-15 ms for the two point queries on `de_sh`), the `order` step's cost, the import's `icons` step (as a first-start update it ran past the healthcheck's 300 s grace period before it lost its join), the `places` step (90.7 s at import against 55-63 s re-run on `de_sh`, unexplained), and cold z13-16 tiles after the spatial ordering and `map_pool_size: 8` (they took 1-9 s before, from random reads on a slow volume). The constant-view fix for "berlin" over all of Germany was checked with `EXPLAIN` only, not `EXPLAIN ANALYZE`.
-2. **Render profiles on DE_EPSG_25832_ADV have fewer tiles at the coarse levels**: the picks are made per Web Mercator zoom, and at z8 several land in the same tile and are fetched once -- 36 of 60 in the `de_sh` baseline.
 
 ## Rendering
 

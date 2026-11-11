@@ -182,37 +182,49 @@ def building_check(conn, tables: list[tuple[str, str, str]]):
         raise SystemExit('no osm_building table in the layer XML')
     table, geometry, srid = found[0]
 
-    def occupied(z: int, x: int, y: int) -> bool:
+    def occupied(bbox: tuple[float, float, float, float], bbox_srid: int) -> bool:
         with conn.cursor() as cur:
             cur.execute(
                 f'SELECT EXISTS (SELECT 1 FROM {table} WHERE "{geometry}" && '
-                f'ST_Transform(ST_MakeEnvelope(%s, %s, %s, %s, 3857), {srid}))',
-                xyz_bbox(z, x, y),
+                f'ST_Transform(ST_MakeEnvelope(%s, %s, %s, %s, %s), {srid}))',
+                (*bbox, bbox_srid),
             )
             return cur.fetchone()[0]
 
     return occupied
 
 
-def pick_points(box, zooms: list[int], per_zoom: int, seed: int, occupied) -> dict[int, list[tuple[float, float]]]:
+def pick_points(box, zooms: list[int], per_zoom: int, seed: int, occupied, crs: str, tms: TileMatrixSet,
+                projector: Projector) -> dict[int, list[tuple[float, float]]]:
+    """Up to `per_zoom` points per zoom, each in a different tile with buildings of the profiled grid.
+
+    Distinct in the grid's own tiles, not in Web Mercator's: a UTM level covers more ground per tile
+    than the Web Mercator zoom of the same scale, so picks distinct in 3857 would share UTM tiles and
+    be fetched once. A small box may hold fewer such tiles at a coarse level than asked for; then it
+    takes all it finds.
+    """
     rng = random.Random(seed)
     minlon, minlat, maxlon, maxlat = box
+    bbox_srid = int(crs.split(':')[1])
     out: dict[int, list[tuple[float, float]]] = {}
     for z in zooms:
         picked: list[tuple[float, float]] = []
-        seen: set[tuple[int, int]] = set()
+        seen: set[tuple[str, int, int]] = set()
         for _ in range(MAX_PICKS_PER_ZOOM):
             if len(picked) == per_zoom:
                 break
             lon, lat = rng.uniform(minlon, maxlon), rng.uniform(minlat, maxlat)
-            t = lonlat_to_xyz(lon, lat, z)
-            if t in seen:
+            level, col, row = tile_address(crs, tms, projector, lon, lat, z)
+            if (level, col, row) in seen:
                 continue
-            seen.add(t)
-            if occupied(z, *t):
+            seen.add((level, col, row))
+            bbox = xyz_bbox(z, col, row) if crs == 'EPSG:3857' else tms.bbox(level, col, row)
+            if occupied(bbox, bbox_srid):
                 picked.append((lon, lat))
+        if not picked:
+            raise SystemExit(f'z{z}: no tile with buildings found in {box}')
         if len(picked) < per_zoom:
-            raise SystemExit(f'z{z}: only {len(picked)} of {per_zoom} tiles with buildings found in {box}')
+            log(f'z{z}: only {len(picked)} of {per_zoom} tiles with buildings in {box}')
         out[z] = picked
     return out
 
@@ -481,7 +493,7 @@ def write_report(args, env, box, sets, http_rows, layer_results) -> None:
     out(f'- hardware: {env["hardware"]}{note}')
     origin = 'given' if args.bbox else 'inner half of the data extent'
     out(f'- tile box (lon/lat, {origin}): {box[0]:.3f} {box[1]:.3f} -- {box[2]:.3f} {box[3]:.3f}, '
-        f'seed {args.seed}, {args.per_zoom} tiles with buildings per zoom')
+        f'seed {args.seed}, up to {args.per_zoom} tiles with buildings per zoom')
     out(f'- themes: {", ".join(args.themes)}')
     out('- crs: ' + ', '.join(f'{crs} ({sets[crs].identifier})' for crs in args.crs))
     out()
@@ -490,8 +502,8 @@ def write_report(args, env, box, sets, http_rows, layer_results) -> None:
     out()
     out('Render ms are min / median / max over all themes and tiles at that zoom; hit ms and KB are '
         'medians. For a non-3857 CRS "zoom" is the 3857 zoom the tile was picked for; the level actually '
-        'requested is the closest scale of that TileMatrixSet (in parentheses), and two picks that land '
-        'in the same coarse tile are fetched once. The first render after a cache clear is consistently '
+        'requested is the closest scale of that TileMatrixSet (in parentheses). The picks are distinct '
+        'tiles of that grid; where the box holds fewer tiles with buildings at a level, `tiles` is smaller. The first render after a cache clear is consistently '
         'slow, so unreported warm-up tiles per CRS are fetched first.')
     out()
     for crs in args.crs:
@@ -611,9 +623,9 @@ def main() -> None:
         box = tuple(float(v) for v in args.bbox.split(','))
     else:
         box = inner_box(data_extent(conn, tables))
-    points = pick_points(box, sorted(set(args.zooms) | set(layer_zooms)), args.per_zoom, args.seed,
-                         building_check(conn, tables))
     projector = Projector()
+    points = pick_points(box, sorted(set(args.zooms) | set(layer_zooms)), args.per_zoom, args.seed,
+                         building_check(conn, tables), args.crs[0], sets[args.crs[0]], projector)
 
     http_rows = []
     if not args.skip_http:
