@@ -182,6 +182,17 @@ def test_the_real_files_resolve():
     assert len(texts['default']) < len(keys) / 2, 'inheriting categories share their files'
 
 
+def test_the_import_applies_the_mapping_the_style_run_writes(tmp_path):
+    """The import sets the icons from `drawn_keys`, the app's style run checks
+    them against `write`'s mapping. Were the two to differ, every first start
+    after an import would rewrite all icons again -- on de minutes in which
+    the app answers nothing -- and still pass every other test."""
+    from importer.run import MODEL, STYLES
+
+    _, drawn = icons.write(MODEL, STYLES, tmp_path)
+    assert icons.mapping_key(icons.drawn_keys(MODEL, STYLES)) == icons.mapping_key(drawn)
+
+
 # --- the route ---------------------------------------------------------------
 
 def test_the_route_serves_an_icon_with_a_day_of_cache(tmp_path, monkeypatch):

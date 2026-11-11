@@ -24,6 +24,7 @@ from psycopg import sql
 from importer import changes, elevation, meta, passes, places, postprocess, water
 from importer import tables as t
 from lib import config, db
+from renderer import icons
 
 log = logging.getLogger('importer')
 
@@ -49,8 +50,8 @@ class ClassDriftError(RuntimeError):
 
 #: The steps of `import_area`, in order; the two water steps only with water.
 STEPS = ('schema', 'passes', 'water', 'contours', 'merge streets', 'merge places', 'id_object', 'places',
-         'dictionaries', 'bands', 'water bands', 'order', 'indexes', 'cluster', 'drop working tables',
-         'finish')
+         'dictionaries', 'bands', 'water bands', 'icons', 'order', 'indexes', 'cluster',
+         'drop working tables', 'finish')
 WATER_STEPS = ('water', 'water bands')
 
 
@@ -274,6 +275,13 @@ def import_area(extract: Path, area: str, *, params=None, water: bool = True,
                 with step('water bands'):
                     counts['water'].update(load_water_bands(conn, schema, extract, params))
                 conn.commit()
+            with step('icons'):
+                # Here and not at the app's first start: the app answers
+                # nothing until its style run is done, and on de this update
+                # took minutes. Before `order`, whose CLUSTER drops the dead
+                # rows the update leaves and builds no index to maintain.
+                drawn = icons.drawn_keys(MODEL, STYLES)
+                counts['icons'] = icons.update_points(conn, schema, drawn)
             with step('order'):
                 postprocess.order_tables(conn, schema, [*t.RENDER_TABLES, *t.SEARCH_TABLES])
             with step('indexes'):
@@ -308,6 +316,8 @@ def import_area(extract: Path, area: str, *, params=None, water: bool = True,
                        row_counts=counts, duration_s=timings['total'],
                        style_zooms=params.style_zooms(),
                        table_classes=postprocess.table_classes(conn, schema))
+            # The style run then finds the mapping applied and skips its update.
+            meta.update(conn, schema, icons_applied=icons.mapping_key(drawn))
             # Before the rename, while the newest complete schema is still the previous import.
             for line in report_changes(conn, area, schema, params):
                 log.info(line)

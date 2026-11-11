@@ -159,7 +159,7 @@ The table definitions of record are `importer/tables.py`: column list, DDL, `COP
 
 `osm_point`, `osm_line`, `osm_polygon`, `osm_building`, and the band tables share `osm_id` (negative for relations), `class`, `name`, `label` (road ref, house number, elevation), `z_order`, `minzoom`, `minzoom_label`, `geom`.
 
-- `osm_point` -- POIs, place nodes, and one anchor point per area whose class is drawn as a marker, so a restaurant mapped as its building still gets its icon. Adds `category`, `icon` (set by the style run, not the import) and `importance`.
+- `osm_point` -- POIs, place nodes, and one anchor point per area whose class is drawn as a marker, so a restaurant mapped as its building still gets its icon. Adds `category`, `icon` ("Icons") and `importance`.
 - `osm_line` -- roads, railways, waterways, boundaries. Line labels and shields read this table on `minzoom_label`, because Mapnik cannot place text along a line from a point.
 - `osm_polygon` -- landcover, landuse, water, the ocean. A multipolygon is one row per part.
 - `osm_building` -- buildings only, with `height` and `height_src`. Keeping millions of buildings out of `osm_polygon` keeps them out of every low-zoom query.
@@ -260,7 +260,7 @@ Icons are attached to categories, not classes. `renderer/icons.py`, run with eve
 
 - resolves `styles/icons.yaml` (Maki icons, CC0, vendored under `styles/icons/maki/`, and a generic POI icon of our own);
 - writes one SVG per (icon, color) pair actually used and per palette, from `styles/icons/template.svg`: a white disc, a colored disc, the icon in white. The color is baked into the file, because a marker's `fill` would recolor the white parts too. The set goes into a directory named by its content hash, so a reloaded Map is never served a stale SVG from Mapnik's marker cache;
-- sets `osm_point.icon` and `osm_label.icon` to the pair's key for every row whose category is drawn, NULL for the rest. The marker query skips NULL, so an undrawn category is never fetched. The update is skipped when the mapping has not changed since the last compile (`import_meta.icons_applied`).
+- sets `osm_point.icon` and `osm_label.icon` to the pair's key for every row whose category is drawn, NULL for the rest. The marker query skips NULL, so an undrawn category is never fetched. The import sets them too, before its `order` step, and records the mapping in `import_meta.icons_applied`; a compile updates them only when the mapping differs from that, so the app's first start after an import, which serves nothing until its style run is done, does not spend minutes on `de` rewriting them.
 
 Changing an icon, a color or whether a category is drawn is therefore a style run, never a re-import.
 
