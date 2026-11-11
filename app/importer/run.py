@@ -306,6 +306,7 @@ def import_area(extract: Path, area: str, *, params=None, water: bool = True,
         # VACUUM cannot run inside a transaction block.
         with db.connection(autocommit=True) as conn, step('finish'):
             postprocess.finish(conn, schema, [*render_tables(params), *t.SEARCH_TABLES])
+            counts['search'] = postprocess.search_counts(conn, schema)
 
         timings['total'] = time.monotonic() - started
 
@@ -341,9 +342,9 @@ def summary(extract: Path, result: dict) -> str:
                 for name in FEATURES}
     total = sum(features.values())
     seconds = result['timings']['total']
-    places = counts.get('places', {})
+    search = counts.get('search', {})
     return (f'{extract.stat().st_size / 1e6:,.1f} MB pbf, {total:,} features ('
             + ', '.join(f'{name} {count:,}' for name, count in features.items())
-            + f'), {places.get("objects", 0):,} search objects, '
-            f'{places.get("addresses", 0):,} addresses, '
+            + f'), {search.get("objects", 0):,} search objects, '
+            f'{search.get("addresses", 0):,} addresses, '
             f'{total / seconds if seconds else 0:,.0f} features/s')

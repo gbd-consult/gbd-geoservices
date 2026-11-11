@@ -56,8 +56,6 @@ Each section is sorted by importance, most important first. Items are numbered a
 32. **The versioned default `serve_area: sh`** names an area that no longer exists (`app/config/options.yaml`).
 33. **Unread settings**: `model/parameters.yaml`'s `precache` section (the depths are the `precache` option) and `streets.merge_by` (the merge is hard-coded); the `db.pool_size`, `db.pool_overflow` and `db.pool_timeout` options.
 34. **`cls_ocean` is a literal in three places** (`renderer/styles.py`, `tools/gen_classifier.py`, `importer/postprocess.py`). Proposed: a hand-written rule for it.
-35. **The import summary mislabels two counts**: `run.summary()` prints the places step's object-area and address-area link counts as search objects and addresses.
-36. **The relation pre-pass logs nothing** until libosmium has skipped past all nodes and ways; on `de` it looks like a hang.
 37. **Resuming an import from a step** (`--from <step>`). Needs a record of finished steps per schema, re-runnable steps, a refusal once `_street_ends` is dropped, and a check against mixed code versions.
 38. **Water runs after the passes**, not beside them.
 39. **An import competes with serving** for CPU, memory and `shared_buffers` on the same host.
