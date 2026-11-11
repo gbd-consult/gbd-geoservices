@@ -373,7 +373,7 @@ def test_the_steps_are_numbered_out_of_the_steps_that_run(caplog):
 
     from importer import run
 
-    for water, total in ((True, 16), (False, 14)):
+    for water, total in ((True, 17), (False, 15)):
         names = run.STEPS if water else tuple(n for n in run.STEPS if n not in run.WATER_STEPS)
         step = run.Steps(names)
         with caplog.at_level(logging.INFO, logger='importer'), step('merge streets'):

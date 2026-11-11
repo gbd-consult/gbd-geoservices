@@ -172,13 +172,14 @@ def _render(name: str, geometry: str, *, extra: tuple[Column, ...] = (),
 
 
 #: `category` is the object's own category, the finest one (Result.category).
-#: `icon` is not the importer's: `manage.py compile-styles` sets it from `category` and
-#: styles/icons.yaml -- the icon file's key, or NULL where the category is not
-#: drawn -- so changing an icon, or whether it is drawn, never needs a
-#: re-import. `importance` is the category's (model/importance.yaml): the
-#: marker query draws a row from the zoom its theme's detail gives that
-#: importance, and orders by it, because markers do not overlap -- the first one
-#: placed keeps its spot and the more important POI has to come first.
+#: `icon` is set from `category` and styles/icons.yaml -- the icon file's key,
+#: or NULL where the category is not drawn -- by the import and again by
+#: `manage.py compile-styles` when the mapping changed, so changing an icon,
+#: or whether it is drawn, never needs a re-import. `importance` is the
+#: category's (model/importance.yaml): the marker query draws a row from the
+#: zoom its theme's detail gives that importance, and orders by it, because
+#: markers do not overlap -- the first one placed keeps its spot and the more
+#: important POI has to come first.
 OSM_POINT = _render('osm_point', 'Point', extra=(
     ('category', 'text'),
     ('icon', 'text'),
@@ -198,7 +199,7 @@ OSM_BUILDING = _render('osm_building', 'Polygon', class_index=False, extra=(
 #:
 #: `category`, `icon` and `importance` as on osm_point: an object that gets
 #: an icon is labelled here only below the zoom its icon starts at, and
-#: from there by the icon. `icon` is set by the style run, like osm_point's.
+#: from there by the icon. `icon` is set like osm_point's.
 OSM_LABEL = Table('osm_label', (
     ('osm_id', 'bigint not null'),
     ('class', 'text not null'),
