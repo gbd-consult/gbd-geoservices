@@ -103,3 +103,69 @@ def test_union_find_handles_repeated_unions():
     for _ in range(3):
         union.union(1, 2)
     assert union.find(1) == union.find(2)
+
+
+# --- the merged row ------------------------------------------------------
+
+@pytest.fixture
+def merge_schema(db, temp_schema):
+    from importer import tables as t
+    for table in (t.OSM_LINE, t.STREET_ENDS, t.OSM_SEARCH_OBJECT):
+        db.execute(t.ddl(temp_schema, table))
+    return temp_schema
+
+
+def add_way(db, schema, params, osm_id, cls, category, n1, n2, name='Kölner Straße'):
+    from lib import text
+    search_name = text.expand_street(name)
+    x = osm_id * 10
+    db.execute(f'insert into {schema}.osm_line (osm_id, class, name, z_order, minzoom, geom) '
+               f"values (%s, %s, %s, 0, 0, st_geomfromtext('LINESTRING({x} 0, {x + 10} 0)', 3857))",
+               (osm_id, cls, name))
+    db.execute(f'insert into {schema}._street_ends values (%s, %s, %s, %s, %s, %s, %s, %s, %s)',
+               (osm_id, name, search_name, text.phonetic(search_name), cls, category,
+                params.rank(cls), n1, n2))
+
+
+def merge(schema, classifier) -> int:
+    # The import's connection: merge_streets reads through a named cursor, which needs a
+    # transaction, and the db fixture's connection is autocommit.
+    from importer import postprocess
+    from lib import db as db_module
+    with db_module.connection() as conn:
+        return postprocess.merge_streets(conn, schema, classifier)
+
+
+def merged(db, schema):
+    return db.execute(
+        f'select category, class, cardinality(osm_ids) from {schema}.osm_search_object').fetchall()
+
+
+def test_a_street_with_a_named_crossing_and_sidepath_keeps_its_road_class(
+        db, merge_schema, classifier, params):
+    """Kölner Straße in Düsseldorf-Oberbilk: the carriageways share end nodes
+    with a crossing way and a cycleway that carry the street's name. Taken by
+    min(), the crossing's category (importance 0) dropped the whole street
+    from search, and without it the cycleway's made it a path."""
+    add_way(db, merge_schema, params, 1, 'cls_road_secondary', 'cat_built_roads_secondary', 10, 20)
+    add_way(db, merge_schema, params, 2, 'cls_road_path',
+            'cat_built_roads_crossing_pathcrossing_bicyclefoot', 20, 30)
+    add_way(db, merge_schema, params, 3, 'cls_road_path', 'cat_built_roads_cycleway', 30, 40)
+    assert merge(merge_schema, classifier) == 1
+    assert merged(db, merge_schema) == [('cat_built_roads_secondary', 'cls_road_secondary', 3)]
+
+
+def test_equal_importance_takes_the_higher_road_class(db, merge_schema, classifier, params):
+    # Both are roads of importance 80; "minor" sorts first, the secondary road ranks higher.
+    add_way(db, merge_schema, params, 1, 'cls_road_minor', 'cat_built_roads_minor', 10, 20)
+    add_way(db, merge_schema, params, 2, 'cls_road_secondary', 'cat_built_roads_secondary', 20, 30)
+    assert merge(merge_schema, classifier) == 1
+    assert merged(db, merge_schema) == [('cat_built_roads_secondary', 'cls_road_secondary', 2)]
+
+
+def test_a_bridge_does_not_give_the_street_its_class(db, merge_schema, classifier, params):
+    """A bridge ranks with its road; the street is the road, not the bridge."""
+    add_way(db, merge_schema, params, 1, 'cls_road_primary_bridge', 'cat_built_roads_primary', 10, 20)
+    add_way(db, merge_schema, params, 2, 'cls_road_primary', 'cat_built_roads_primary', 20, 30)
+    assert merge(merge_schema, classifier) == 1
+    assert merged(db, merge_schema) == [('cat_built_roads_primary', 'cls_road_primary', 2)]

@@ -217,18 +217,19 @@ def address_row(osm_id: int, tags: Mapping[str, str], centre, category: str | No
     )
 
 
-def street_ends_row(osm_id: int, result: Result, tags: Mapping[str, str],
+def street_ends_row(osm_id: int, result: Result, params: Params, tags: Mapping[str, str],
                     first_node: int, last_node: int) -> tuple:
     """A row for the street merge input.
 
     The normalized and phonetic forms are computed here, while the object is
     in hand, so the merged rows post-processing creates carry them without a
-    phonetic function in SQL.
+    phonetic function in SQL. The rank breaks a tie in importance when the
+    merge picks which way's class and category the street gets.
     """
     name = tags['name']
     search_name = text.expand_street(name)
     return (osm_id, name, search_name, text.phonetic(search_name),
-            result.cls, result.category, first_node, last_node)
+            result.cls, result.category, params.rank(result.cls), first_node, last_node)
 
 
 def explode(osm_id: int, result: Result, params: Params, tags: Mapping[str, str],
