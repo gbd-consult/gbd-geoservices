@@ -110,10 +110,9 @@ services:
       net.ipv4.ip_local_port_range: "10000 65535"
       net.ipv4.tcp_tw_reuse: "1"
     environment:
-      # The served area is config.local's `serve_area`, `de_sh`, the test area.
-      # Export GEOSERVICES_SERVE_AREA=li to point the dev server at
-      # Liechtenstein, which imports in under half a minute; unset, this is empty and
-      # changes nothing. (`devtools` is on in config.local and only there.)
+      # The served area is config.local's `serve_area`, `li`, which imports in
+      # under a minute. Export GEOSERVICES_SERVE_AREA=de_sh (or de) to point the
+      # dev server at another area; unset, this is empty and changes nothing. (`devtools` is on in config.local and only there.)
       GEOSERVICES_SERVE_AREA: ${GEOSERVICES_SERVE_AREA:-}
       # The tile cache, off in config.local for style work. Set
       # GEOSERVICES_NOCACHE=false to turn it on, as profile_render.py needs.
