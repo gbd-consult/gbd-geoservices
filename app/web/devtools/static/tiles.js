@@ -18,7 +18,7 @@ import { registerCollector, writeStateToUrl } from './urlstate.js';
 const WEB_MERCATOR = 'GoogleMapsCompatible';
 
 // `detail` as /metadata reports it -> the option value.
-const DETAILS = ['min', 'nav', 'std', 'max', 'topographic', 'vegetation'];
+const DETAILS = ['min', 'nav', 'std', 'max', 'topographic', 'vegetation', 'overlay'];
 
 const colorSelect = document.getElementById('colorTheme');
 const detailSelect = document.getElementById('detailLevel');

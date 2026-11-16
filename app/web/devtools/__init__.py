@@ -114,7 +114,7 @@ def start_watcher() -> watcher.Watcher | None:
 #: The choices of the page's radio groups and the sort select, as its
 #: controls carry them; the first of each is what a URL without one gets.
 TABS = ('tiles', 'search', 'status')
-DETAILS = ('std', 'min', 'nav', 'max', 'topographic', 'vegetation')
+DETAILS = ('std', 'min', 'nav', 'max', 'topographic', 'vegetation', 'overlay')
 REQUEST_MODES = ('xyz', 'wmts-rest', 'wmts-kvp', 'wms')
 SEARCH_MODES = ('name', 'address', 'phrase', 'here')
 SORTS = ('score', 'distance', 'name', 'address')
