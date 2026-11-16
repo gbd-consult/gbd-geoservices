@@ -7,7 +7,7 @@ devtools: true
 devtools_watch: true
 # Compile and serve fewer themes: every one is loaded at each restart, ~0.06 s per Map.
 serve_palettes: [default, light, dark, hico, grayscale, sepia, atkis, flora]
-serve_details: [min, nav, std, max, topographic, vegetation]
+serve_details: [min, nav, std, max, topographic, vegetation, overlay]
 serve_grids: [GoogleMapsCompatible, DE_EPSG_25833_ADV]
 nocache: true
 request_log_days: 2

@@ -145,7 +145,7 @@ SYMBOLS = ('icons', 'labels')
 #: What a detail may say. Anything else is refused: a key the generator
 #: does not read -- `icons` where `symbols.icons` is meant -- would leave
 #: the detail with no icons and no error.
-DETAIL_KEYS = frozenset({'classes', 'symbols'})
+DETAIL_KEYS = frozenset({'classes', 'symbols', 'transparent'})
 
 
 def detail_symbols(details: dict, name: str) -> dict[str, dict[int, int]]:
@@ -334,7 +334,9 @@ def build(schema: str, theme: Theme, styles: Styles, layers: list[dict], details
     # The icon set has a directory per palette: the colour is baked in.
     icons = icons / theme.palette if icons is not None else None
     root = ET.Element('Map', {
-        'background-color': palette[BACKGROUND],
+        # An overlay detail leaves the background out, for an image underneath.
+        'background-color': ('transparent' if details[theme.detail].get('transparent')
+                             else palette[BACKGROUND]),
         'srs': SRS,
         'buffer-size': '0',
     })
@@ -523,6 +525,8 @@ def check(styles: Styles, layers: list[dict], details: dict, classifier,
         if unknown:
             errors.append(f'details.yaml {name}: {", ".join(unknown)} is not one of '
                           f'{", ".join(sorted(DETAIL_KEYS))}')
+        if not isinstance(detail.get('transparent', False), bool):
+            errors.append(f'details.yaml {name}: transparent must be true or false')
         errors.extend(_check_symbols(name, detail))
 
     errors.extend(_check_names(styles, details))

@@ -2,7 +2,7 @@
 
 A self-hosted map service built from OpenStreetMap data: raster map tiles and place search for a region, served over HTTP.
 
-- **Map tiles** as XYZ and WMTS, in Web Mercator and in UTM zones 32N and 33N (EPSG:25832, EPSG:25833), and **maps** as WMS in these and EPSG:4326, in eight color schemes (`default`, `light`, `dark`, `hico`, `grayscale`, `sepia`, `atkis` (SK25 colours, for `topographic`), `flora` (for `vegetation`)) and six levels of detail (`min`, `nav`, `std`, `max`, `topographic`, `vegetation`).
+- **Map tiles** as XYZ and WMTS, in Web Mercator and in UTM zones 32N and 33N (EPSG:25832, EPSG:25833), and **maps** as WMS in these and EPSG:4326, in eight color schemes (`default`, `light`, `dark`, `hico`, `grayscale`, `sepia`, `atkis` (SK25 colours, for `topographic`), `flora` (for `vegetation`)) and seven levels of detail (`min`, `nav`, `std`, `max`, `topographic`, `vegetation`, and `overlay`: transparent, only streets, names and house numbers, to lay over an aerial image -- request it as PNG).
 - **Search** by name, by address, by free text ("restaurant Kiel", "Holtenauer Straße 100, Kiel"), and by point ("what is here").
 - **One import** of a Geofabrik extract builds everything, including the sea, which OSM itself does not contain as areas.
 - **Configurable OSM mapping**: which OSM tags become which map class and which search category, which categories get an icon, and from which zoom they appear. The category tree and its search terms are derived from the iD editor's tagging schema.
