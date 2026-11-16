@@ -1,0 +1,305 @@
+[
+ {
+  "id": "city",
+  "mode": "name",
+  "query": "Kiel",
+  "expect": "Kiel"
+ },
+ {
+  "id": "city_lowercase",
+  "mode": "name",
+  "query": "lübeck",
+  "expect": "Lübeck"
+ },
+ {
+  "id": "landmark",
+  "mode": "name",
+  "query": "Holstentor",
+  "expect": "Holstentor"
+ },
+ {
+  "id": "landmark_view",
+  "mode": "name",
+  "query": "Rathaus",
+  "bbox": [
+   10.0,
+   54.25,
+   10.25,
+   54.4
+  ],
+  "expect": "Rathaus"
+ },
+ {
+  "id": "university",
+  "mode": "name",
+  "query": "Christian-Albrechts-Universität zu Kiel",
+  "expect": "Christian-Albrechts"
+ },
+ {
+  "id": "station",
+  "mode": "name",
+  "query": "Hauptbahnhof",
+  "bbox": [
+   10.0,
+   54.25,
+   10.25,
+   54.4
+  ],
+  "expect": "Hauptbahnhof"
+ },
+ {
+  "id": "street_name",
+  "mode": "name",
+  "query": "Holtenauer Straße",
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "street_abbrev",
+  "mode": "name",
+  "query": "Holtenauer Str.",
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "two_words",
+  "mode": "name",
+  "query": "Kieler Förde",
+  "expect": "Kieler Förde"
+ },
+ {
+  "id": "nonsense",
+  "mode": "name",
+  "query": "xqzvw plorp",
+  "expect": null
+ },
+ {
+  "id": "address_full",
+  "mode": "address",
+  "address": {
+   "street": "Holtenauer Straße",
+   "housenumber": "100",
+   "city": "Kiel"
+  },
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "address_short",
+  "mode": "address",
+  "address": {
+   "street": "Breite Straße",
+   "housenumber": "1",
+   "city": "Lübeck"
+  },
+  "expect": "Breite Straße"
+ },
+ {
+  "id": "address_abbrev",
+  "mode": "address",
+  "address": {
+   "street": "Holtenauer Str.",
+   "housenumber": "100"
+  },
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "address_postcode",
+  "mode": "address",
+  "address": {
+   "street": "Sophienblatt",
+   "housenumber": "25",
+   "postcode": "24114"
+  },
+  "expect": "Sophienblatt"
+ },
+ {
+  "id": "address_many",
+  "mode": "address",
+  "address": {
+   "street": "Breite Straße",
+   "housenumber": "1"
+  },
+  "expect": "Breite Straße"
+ },
+ {
+  "id": "address_view",
+  "mode": "address",
+  "address": {
+   "street": "Bahnhofstraße",
+   "housenumber": "1"
+  },
+  "bbox": [
+   10.0,
+   54.25,
+   10.25,
+   54.4
+  ],
+  "expect": "Bahnhofstraße"
+ },
+ {
+  "id": "phrase_cat_place",
+  "mode": "phrase",
+  "query": "Restaurant Kiel",
+  "expect": null
+ },
+ {
+  "id": "phrase_cat_name",
+  "mode": "phrase",
+  "query": "Restaurant Maxim",
+  "expect": "Maxim"
+ },
+ {
+  "id": "phrase_cat_street",
+  "mode": "phrase",
+  "query": "Bäckerei Holtenauer Straße",
+  "expect": "Holtenauer"
+ },
+ {
+  "id": "phrase_cat_only",
+  "mode": "phrase",
+  "query": "Apotheke",
+  "bbox": [
+   10.0,
+   54.25,
+   10.25,
+   54.4
+  ],
+  "expect": "Apotheke"
+ },
+ {
+  "id": "phrase_address",
+  "mode": "phrase",
+  "query": "Holtenauer Straße 100, 24105 Kiel",
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "phrase_address_city_first",
+  "mode": "phrase",
+  "query": "Kiel Holtenauer Straße 100",
+  "expect": "Holtenauer Straße"
+ },
+ {
+  "id": "phrase_name_place",
+  "mode": "phrase",
+  "query": "Universität Kiel",
+  "expect": "Universität"
+ },
+ {
+  "id": "phrase_typo",
+  "mode": "phrase",
+  "query": "Lübek",
+  "expect": "Lübeck"
+ },
+ {
+  "id": "phrase_prefix",
+  "mode": "phrase",
+  "query": "holsten",
+  "expect": "Holsten"
+ },
+ {
+  "id": "phrase_partial",
+  "mode": "phrase",
+  "query": "flensb",
+  "expect": "Flensburg"
+ },
+ {
+  "id": "point_kiel_hbf",
+  "mode": "point",
+  "lon": 10.1319,
+  "lat": 54.3151,
+  "expect": null
+ },
+ {
+  "id": "point_luebeck",
+  "mode": "point",
+  "lon": 10.6866,
+  "lat": 53.8663,
+  "expect": null
+ },
+ {
+  "id": "de_berlin",
+  "mode": "name",
+  "query": "Berlin",
+  "expect": "Berlin"
+ },
+ {
+  "id": "de_berlin_phrase",
+  "mode": "phrase",
+  "query": "berlin",
+  "expect": "Berlin"
+ },
+ {
+  "id": "de_point_berlin",
+  "mode": "point",
+  "lon": 13.4132,
+  "lat": 52.5219,
+  "expect": null
+ },
+ {
+  "id": "de_point_muenchen",
+  "mode": "point",
+  "lon": 11.5755,
+  "lat": 48.1374,
+  "expect": null
+ },
+ {
+  "id": "de_point_koeln",
+  "mode": "point",
+  "lon": 6.9583,
+  "lat": 50.9413,
+  "expect": null
+ },
+ {
+  "id": "de_point_land",
+  "mode": "point",
+  "lon": 10.45,
+  "lat": 51.16,
+  "expect": null
+ },
+ {
+  "id": "de_dom",
+  "mode": "name",
+  "query": "dom",
+  "expect": "Dom"
+ },
+ {
+  "id": "de_dom_phrase",
+  "mode": "phrase",
+  "query": "dom",
+  "expect": "Dom"
+ },
+ {
+  "id": "de_tail_wilstedt",
+  "mode": "phrase",
+  "query": "Restaurant Wilstedt Siedlung",
+  "expect": null
+ },
+ {
+  "id": "de_tail_koenigsallee",
+  "mode": "phrase",
+  "query": "Apotheke Königsallee Düsseldorf",
+  "expect": "Apotheke"
+ },
+ {
+  "id": "de_tail_maxim_koeln",
+  "mode": "phrase",
+  "query": "Restaurant Maxim Köln",
+  "expect": null
+ },
+ {
+  "id": "de_tail_restaurant",
+  "mode": "phrase",
+  "query": "Restaurant",
+  "expect": "Restaurant"
+ },
+ {
+  "id": "de_koelner_strasse",
+  "mode": "name",
+  "query": "Kölner Straße",
+  "bbox": [
+   6.78,
+   51.2,
+   6.82,
+   51.225
+  ],
+  "expect": "Kölner Straße"
+ }
+]
