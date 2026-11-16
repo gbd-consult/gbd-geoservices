@@ -36,7 +36,7 @@ def test_classes_bumps_and_pieces(db, temp_schema):
         (999.9999999, line),                                        # a float on a multiple of 1000
         (0.0000001, line),                                          # sea level: dropped
         (1500, line),                                               # 500, not 1000
-        (1250, line),                                               # 250: not a multiple of 100, still a level
+        (1250, line),                                               # 250: no multiple of 100, still a level
         (1300, line),                                               # 100
         (1350, zigzag),                                             # 50; 30 vertices, cut into pieces
         (1400, 'LINESTRING(0 0, 50 0, 50 50, 0 50, 0 0)'),         # a 200 m ring: a tree, dropped

@@ -124,12 +124,23 @@ def key_rows(records):
     return out
 
 
-@pytest.fixture(autouse=True)
-def no_registered_keys(monkeypatch):
+@pytest.fixture(scope='session', autouse=True)
+def no_registered_keys():
     """Every test runs open unless it installs keys with `keys`: what is
-    registered in the dev database is not the tests' business."""
+    registered in the dev database is not the tests' business. Session-wide,
+    because a module-scoped fixture (the WMS/WMTS capabilities) is set up
+    before any function-scoped one and would otherwise meet the dev keys."""
     from web import auth
-    monkeypatch.setattr(auth, '_records', dict)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(auth, '_records', dict)
+        auth.reset()
+        yield
+        auth.reset()
+
+
+@pytest.fixture(autouse=True)
+def fresh_auth_cache():
+    from web import auth
     auth.reset()
     yield
     auth.reset()

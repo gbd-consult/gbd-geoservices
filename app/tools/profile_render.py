@@ -619,10 +619,7 @@ def main() -> None:
     env = environment(conn)
     layer_xml = args.styles_dir / f'{args.layer_theme}.xml'
     tables = datasource_tables(layer_xml)
-    if args.bbox:
-        box = tuple(float(v) for v in args.bbox.split(','))
-    else:
-        box = inner_box(data_extent(conn, tables))
+    box = tuple(float(v) for v in args.bbox.split(',')) if args.bbox else inner_box(data_extent(conn, tables))
     projector = Projector()
     points = pick_points(box, sorted(set(args.zooms) | set(layer_zooms)), args.per_zoom, args.seed,
                          building_check(conn, tables), args.crs[0], sets[args.crs[0]], projector)

@@ -251,6 +251,6 @@ def load(conn, schema: str, bbox, params) -> int:
         where geometrytype(part.geom) = 'LINESTRING'
     """).format(target=sql.Identifier(schema, t.OSM_CONTOUR.name),
                 source=sql.Identifier(SCHEMA, 'contour'), zooms=zooms),
-        dict(zip(('xmin', 'ymin', 'xmax', 'ymax'), bbox))).rowcount
+        dict(zip(('xmin', 'ymin', 'xmax', 'ymax'), bbox, strict=True))).rowcount
     conn.commit()
     return written
