@@ -1,0 +1,1871 @@
+# Render profile -- 2026-11-16 14:16 UTC
+
+- server http://127.0.0.1:8000, styles `/data/styles/de_20261116_020109/DE_EPSG_25833_ADV`, mapnik 4.3.2, PostgreSQL 17.5 (Debian 17.5-1.pgdg110+1)
+- postgres: effective_cache_size=10GB, jit=off, max_parallel_workers_per_gather=4, random_page_cost=4, shared_buffers=4GB, work_mem=64MB
+- hardware: AMD EPYC-Rome Processor x 8, 15.2 GB RAM, linux 5.15.0-202-generic x86_64 (geoservices server, production stack under live traffic)
+- tile box (lon/lat, inner half of the data extent): 8.160 49.242 -- 12.748 53.220, seed 42, up to 5 tiles with buildings per zoom
+- themes: atkis_max, atkis_min, atkis_nav, atkis_std, atkis_topographic, atkis_vegetation, dark_max, dark_min, dark_nav, dark_std, dark_topographic, dark_vegetation, default_max, default_min, default_nav, default_std, default_topographic, default_vegetation, flora_max, flora_min, flora_nav, flora_std, flora_topographic, flora_vegetation, grayscale_max, grayscale_min, grayscale_nav, grayscale_std, grayscale_topographic, grayscale_vegetation, hico_max, hico_min, hico_nav, hico_std, hico_topographic, hico_vegetation, light_max, light_min, light_nav, light_std, light_topographic, light_vegetation, sepia_max, sepia_min, sepia_nav, sepia_std, sepia_topographic, sepia_vegetation
+- crs: EPSG:25833 (DE_EPSG_25833_ADV)
+
+## 1. HTTP: uncached render vs cache hit
+
+Render ms are min / median / max over all themes and tiles at that zoom; hit ms and KB are medians. For a non-3857 CRS "zoom" is the 3857 zoom the tile was picked for; the level actually requested is the closest scale of that TileMatrixSet (in parentheses). The picks are distinct tiles of that grid; where the box holds fewer tiles with buildings at a level, `tiles` is smaller. The first render after a cache clear is consistently slow, so unreported warm-up tiles per CRS are fetched first.
+
+### EPSG:25833
+
+| zoom | level | tiles | render ms | hit ms | KB |
+|---|---|---|---|---|---|
+| 8 | 03 | 240 | 88 / 548 / 1176 | 8.2 | 37 |
+| 10 | 05 | 240 | 38 / 105 / 164 | 8.4 | 30 |
+| 12 | 07 | 240 | 55 / 114 / 235 | 8.8 | 20 |
+| 13 | 08 | 240 | 39 / 87 / 249 | 9.1 | 15 |
+| 14 | 09 | 240 | 31 / 71 / 601 | 8.8 | 11 |
+| 16 | 11 | 240 | 33 / 60 / 154 | 8.8 | 9 |
+| 18 | 13 | 240 | 27 / 55 / 113 | 8.9 | 4 |
+
+| theme | crs | tiles | render ms | z<=12 render ms | z>12 render ms |
+|---|---|---|---|---|---|
+| atkis_max | EPSG:25833 | 35 | 55 / 154 / 1176 | 112 / 212 / 1176 | 55 / 120 / 601 |
+| atkis_min | EPSG:25833 | 35 | 27 / 54 / 215 | 41 / 86 / 215 | 27 / 37 / 88 |
+| atkis_nav | EPSG:25833 | 35 | 35 / 57 / 198 | 56 / 86 / 198 | 35 / 43 / 89 |
+| atkis_std | EPSG:25833 | 35 | 47 / 98 / 730 | 89 / 140 / 730 | 47 / 67 / 130 |
+| atkis_topographic | EPSG:25833 | 35 | 47 / 83 / 715 | 83 / 127 / 715 | 47 / 58 / 124 |
+| atkis_vegetation | EPSG:25833 | 35 | 42 / 85 / 733 | 91 / 133 / 733 | 42 / 54 / 123 |
+| dark_max | EPSG:25833 | 35 | 49 / 98 / 778 | 95 / 138 / 778 | 49 / 75 / 146 |
+| dark_min | EPSG:25833 | 35 | 32 / 50 / 184 | 39 / 79 / 184 | 32 / 47 / 91 |
+| dark_nav | EPSG:25833 | 35 | 41 / 67 / 197 | 62 / 101 / 197 | 41 / 51 / 110 |
+| dark_std | EPSG:25833 | 35 | 49 / 99 / 788 | 97 / 138 / 788 | 49 / 69 / 143 |
+| dark_topographic | EPSG:25833 | 35 | 64 / 100 / 702 | 96 / 131 / 702 | 64 / 76 / 140 |
+| dark_vegetation | EPSG:25833 | 35 | 40 / 91 / 793 | 85 / 132 / 793 | 40 / 67 / 115 |
+| default_max | EPSG:25833 | 35 | 49 / 108 / 746 | 104 / 154 / 746 | 49 / 74 / 159 |
+| default_min | EPSG:25833 | 35 | 29 / 52 / 176 | 41 / 75 / 176 | 29 / 44 / 86 |
+| default_nav | EPSG:25833 | 35 | 37 / 68 / 214 | 63 / 97 / 214 | 37 / 52 / 99 |
+| default_std | EPSG:25833 | 35 | 45 / 95 / 777 | 93 / 129 / 777 | 45 / 62 / 123 |
+| default_topographic | EPSG:25833 | 35 | 66 / 101 / 696 | 94 / 121 / 696 | 66 / 79 / 142 |
+| default_vegetation | EPSG:25833 | 35 | 43 / 98 / 768 | 107 / 152 / 768 | 43 / 60 / 128 |
+| flora_max | EPSG:25833 | 35 | 61 / 89 / 761 | 85 / 152 / 761 | 61 / 78 / 143 |
+| flora_min | EPSG:25833 | 35 | 30 / 48 / 203 | 43 / 75 / 203 | 30 / 39 / 66 |
+| flora_nav | EPSG:25833 | 35 | 45 / 66 / 203 | 53 / 87 / 203 | 45 / 54 / 110 |
+| flora_std | EPSG:25833 | 35 | 58 / 102 / 765 | 102 / 144 / 765 | 58 / 79 / 143 |
+| flora_topographic | EPSG:25833 | 35 | 59 / 102 / 697 | 102 / 142 / 697 | 59 / 76 / 138 |
+| flora_vegetation | EPSG:25833 | 35 | 47 / 90 / 817 | 111 / 144 / 817 | 47 / 59 / 123 |
+| grayscale_max | EPSG:25833 | 35 | 56 / 98 / 783 | 98 / 152 / 783 | 56 / 72 / 138 |
+| grayscale_min | EPSG:25833 | 35 | 28 / 43 / 205 | 38 / 71 / 205 | 28 / 35 / 84 |
+| grayscale_nav | EPSG:25833 | 35 | 37 / 66 / 174 | 58 / 94 / 174 | 37 / 56 / 106 |
+| grayscale_std | EPSG:25833 | 35 | 56 / 113 / 794 | 102 / 133 / 794 | 56 / 78 / 142 |
+| grayscale_topographic | EPSG:25833 | 35 | 62 / 100 / 712 | 92 / 128 / 712 | 62 / 80 / 140 |
+| grayscale_vegetation | EPSG:25833 | 35 | 45 / 101 / 809 | 104 / 135 / 809 | 45 / 62 / 135 |
+| hico_max | EPSG:25833 | 35 | 67 / 105 / 816 | 97 / 163 / 816 | 67 / 91 / 165 |
+| hico_min | EPSG:25833 | 35 | 39 / 54 / 173 | 42 / 85 / 173 | 39 / 48 / 96 |
+| hico_nav | EPSG:25833 | 35 | 44 / 69 / 204 | 58 / 98 / 204 | 44 / 55 / 97 |
+| hico_std | EPSG:25833 | 35 | 54 / 104 / 816 | 101 / 136 / 816 | 54 / 79 / 138 |
+| hico_topographic | EPSG:25833 | 35 | 62 / 105 / 761 | 104 / 142 / 761 | 62 / 81 / 129 |
+| hico_vegetation | EPSG:25833 | 35 | 44 / 96 / 755 | 110 / 138 / 755 | 44 / 59 / 129 |
+| light_max | EPSG:25833 | 35 | 67 / 98 / 766 | 97 / 148 / 766 | 67 / 83 / 150 |
+| light_min | EPSG:25833 | 35 | 35 / 57 / 220 | 49 / 88 / 220 | 35 / 49 / 89 |
+| light_nav | EPSG:25833 | 35 | 40 / 69 / 201 | 60 / 96 / 201 | 40 / 52 / 108 |
+| light_std | EPSG:25833 | 35 | 58 / 100 / 791 | 100 / 143 / 791 | 58 / 77 / 153 |
+| light_topographic | EPSG:25833 | 35 | 55 / 92 / 732 | 90 / 114 / 732 | 55 / 74 / 137 |
+| light_vegetation | EPSG:25833 | 35 | 43 / 93 / 791 | 104 / 142 / 791 | 43 / 61 / 127 |
+| sepia_max | EPSG:25833 | 35 | 62 / 93 / 820 | 103 / 147 / 820 | 62 / 76 / 152 |
+| sepia_min | EPSG:25833 | 35 | 33 / 55 / 200 | 43 / 70 / 200 | 33 / 46 / 82 |
+| sepia_nav | EPSG:25833 | 35 | 38 / 72 / 203 | 70 / 112 / 203 | 38 / 50 / 89 |
+| sepia_std | EPSG:25833 | 35 | 57 / 100 / 764 | 94 / 145 / 764 | 57 / 75 / 130 |
+| sepia_topographic | EPSG:25833 | 35 | 60 / 92 / 837 | 82 / 133 / 837 | 60 / 74 / 119 |
+| sepia_vegetation | EPSG:25833 | 35 | 36 / 92 / 798 | 95 / 142 / 798 | 36 / 57 / 124 |
+
+Total render time for the 1680 tiles: 234.0 s.
+
+<details><summary>Every tile</summary>
+
+| theme | crs | zoom | level | col | row | render ms | hit ms | KB |
+|---|---|---|---|---|---|---|---|---|
+| atkis_max | EPSG:25833 | 8 | 03 | 4 | 5 | 781 | 9.3 | 45.7 |
+| atkis_max | EPSG:25833 | 8 | 03 | 3 | 4 | 1023 | 8.0 | 43.7 |
+| atkis_max | EPSG:25833 | 8 | 03 | 4 | 3 | 832 | 8.6 | 43.3 |
+| atkis_max | EPSG:25833 | 8 | 03 | 3 | 5 | 949 | 9.0 | 43.8 |
+| atkis_max | EPSG:25833 | 8 | 03 | 3 | 3 | 1176 | 9.0 | 42.2 |
+| atkis_max | EPSG:25833 | 10 | 05 | 12 | 19 | 147 | 8.0 | 33.5 |
+| atkis_max | EPSG:25833 | 10 | 05 | 17 | 15 | 112 | 10.2 | 31.5 |
+| atkis_max | EPSG:25833 | 10 | 05 | 14 | 14 | 164 | 8.4 | 34.9 |
+| atkis_max | EPSG:25833 | 10 | 05 | 18 | 21 | 136 | 8.8 | 34.9 |
+| atkis_max | EPSG:25833 | 10 | 05 | 19 | 13 | 115 | 9.1 | 29.0 |
+| atkis_max | EPSG:25833 | 12 | 07 | 59 | 79 | 212 | 10.9 | 29.5 |
+| atkis_max | EPSG:25833 | 12 | 07 | 80 | 71 | 235 | 8.6 | 33.0 |
+| atkis_max | EPSG:25833 | 12 | 07 | 51 | 81 | 233 | 8.8 | 22.6 |
+| atkis_max | EPSG:25833 | 12 | 07 | 77 | 59 | 129 | 9.5 | 19.4 |
+| atkis_max | EPSG:25833 | 12 | 07 | 76 | 54 | 169 | 8.8 | 20.2 |
+| atkis_max | EPSG:25833 | 13 | 08 | 137 | 85 | 249 | 11.5 | 18.1 |
+| atkis_max | EPSG:25833 | 13 | 08 | 124 | 122 | 157 | 9.2 | 26.0 |
+| atkis_max | EPSG:25833 | 13 | 08 | 154 | 118 | 87 | 9.7 | 12.5 |
+| atkis_max | EPSG:25833 | 13 | 08 | 156 | 121 | 137 | 8.6 | 17.6 |
+| atkis_max | EPSG:25833 | 13 | 08 | 143 | 169 | 120 | 8.6 | 24.8 |
+| atkis_max | EPSG:25833 | 14 | 09 | 226 | 290 | 212 | 8.3 | 18.6 |
+| atkis_max | EPSG:25833 | 14 | 09 | 205 | 299 | 601 | 9.1 | 34.0 |
+| atkis_max | EPSG:25833 | 14 | 09 | 209 | 291 | 165 | 12.1 | 20.7 |
+| atkis_max | EPSG:25833 | 14 | 09 | 281 | 280 | 215 | 9.4 | 18.1 |
+| atkis_max | EPSG:25833 | 14 | 09 | 244 | 306 | 161 | 8.4 | 18.3 |
+| atkis_max | EPSG:25833 | 16 | 11 | 961 | 697 | 96 | 8.2 | 10.5 |
+| atkis_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 120 | 10.1 | 12.0 |
+| atkis_max | EPSG:25833 | 16 | 11 | 900 | 843 | 114 | 9.4 | 12.8 |
+| atkis_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 83 | 8.8 | 10.4 |
+| atkis_max | EPSG:25833 | 16 | 11 | 933 | 690 | 154 | 9.4 | 26.2 |
+| atkis_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 70 | 9.5 | 12.3 |
+| atkis_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 82 | 8.7 | 4.1 |
+| atkis_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 70 | 8.9 | 8.7 |
+| atkis_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 55 | 9.1 | 3.4 |
+| atkis_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 78 | 10.9 | 15.9 |
+| atkis_min | EPSG:25833 | 8 | 03 | 4 | 5 | 104 | 8.3 | 8.1 |
+| atkis_min | EPSG:25833 | 8 | 03 | 3 | 4 | 134 | 9.6 | 11.4 |
+| atkis_min | EPSG:25833 | 8 | 03 | 4 | 3 | 215 | 8.9 | 10.8 |
+| atkis_min | EPSG:25833 | 8 | 03 | 3 | 5 | 139 | 9.7 | 11.7 |
+| atkis_min | EPSG:25833 | 8 | 03 | 3 | 3 | 180 | 7.7 | 11.1 |
+| atkis_min | EPSG:25833 | 10 | 05 | 12 | 19 | 86 | 9.6 | 23.0 |
+| atkis_min | EPSG:25833 | 10 | 05 | 17 | 15 | 54 | 8.4 | 16.1 |
+| atkis_min | EPSG:25833 | 10 | 05 | 14 | 14 | 54 | 7.6 | 16.7 |
+| atkis_min | EPSG:25833 | 10 | 05 | 18 | 21 | 54 | 10.5 | 13.8 |
+| atkis_min | EPSG:25833 | 10 | 05 | 19 | 13 | 41 | 8.0 | 10.4 |
+| atkis_min | EPSG:25833 | 12 | 07 | 59 | 79 | 76 | 11.1 | 10.1 |
+| atkis_min | EPSG:25833 | 12 | 07 | 80 | 71 | 92 | 10.5 | 16.3 |
+| atkis_min | EPSG:25833 | 12 | 07 | 51 | 81 | 122 | 8.6 | 15.9 |
+| atkis_min | EPSG:25833 | 12 | 07 | 77 | 59 | 73 | 9.0 | 11.4 |
+| atkis_min | EPSG:25833 | 12 | 07 | 76 | 54 | 79 | 12.8 | 11.1 |
+| atkis_min | EPSG:25833 | 13 | 08 | 137 | 85 | 50 | 7.8 | 10.5 |
+| atkis_min | EPSG:25833 | 13 | 08 | 124 | 122 | 88 | 8.3 | 14.5 |
+| atkis_min | EPSG:25833 | 13 | 08 | 154 | 118 | 67 | 7.5 | 9.2 |
+| atkis_min | EPSG:25833 | 13 | 08 | 156 | 121 | 67 | 8.0 | 11.2 |
+| atkis_min | EPSG:25833 | 13 | 08 | 143 | 169 | 70 | 9.6 | 14.2 |
+| atkis_min | EPSG:25833 | 14 | 09 | 226 | 290 | 45 | 8.9 | 4.9 |
+| atkis_min | EPSG:25833 | 14 | 09 | 205 | 299 | 61 | 8.6 | 17.7 |
+| atkis_min | EPSG:25833 | 14 | 09 | 209 | 291 | 37 | 8.2 | 2.5 |
+| atkis_min | EPSG:25833 | 14 | 09 | 281 | 280 | 36 | 8.4 | 3.3 |
+| atkis_min | EPSG:25833 | 14 | 09 | 244 | 306 | 31 | 9.6 | 2.5 |
+| atkis_min | EPSG:25833 | 16 | 11 | 961 | 697 | 34 | 9.3 | 5.3 |
+| atkis_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 38 | 8.7 | 4.7 |
+| atkis_min | EPSG:25833 | 16 | 11 | 900 | 843 | 37 | 9.0 | 8.3 |
+| atkis_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 36 | 7.8 | 5.9 |
+| atkis_min | EPSG:25833 | 16 | 11 | 933 | 690 | 38 | 7.7 | 12.7 |
+| atkis_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 34 | 7.9 | 6.7 |
+| atkis_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 27 | 8.1 | 0.1 |
+| atkis_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 33 | 7.6 | 3.5 |
+| atkis_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 30 | 8.1 | 0.6 |
+| atkis_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 36 | 8.2 | 8.0 |
+| atkis_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 114 | 8.6 | 8.1 |
+| atkis_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 133 | 7.5 | 11.4 |
+| atkis_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 198 | 8.1 | 10.8 |
+| atkis_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 128 | 8.6 | 11.7 |
+| atkis_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 173 | 7.3 | 11.1 |
+| atkis_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 89 | 7.1 | 24.9 |
+| atkis_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 56 | 7.8 | 16.9 |
+| atkis_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 58 | 8.3 | 17.7 |
+| atkis_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 57 | 8.7 | 14.2 |
+| atkis_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 56 | 8.7 | 11.9 |
+| atkis_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 73 | 7.7 | 10.4 |
+| atkis_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 84 | 8.3 | 16.4 |
+| atkis_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 96 | 7.2 | 16.6 |
+| atkis_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 86 | 7.7 | 12.0 |
+| atkis_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 62 | 7.5 | 12.1 |
+| atkis_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 42 | 7.7 | 10.6 |
+| atkis_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 89 | 7.3 | 14.9 |
+| atkis_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 54 | 7.0 | 9.4 |
+| atkis_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 58 | 6.9 | 12.0 |
+| atkis_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 68 | 8.3 | 14.3 |
+| atkis_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 53 | 8.9 | 5.2 |
+| atkis_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 87 | 7.9 | 21.6 |
+| atkis_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 41 | 7.9 | 2.5 |
+| atkis_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 36 | 7.5 | 4.2 |
+| atkis_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 38 | 8.3 | 2.5 |
+| atkis_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 42 | 7.9 | 7.1 |
+| atkis_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 43 | 7.5 | 5.0 |
+| atkis_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 44 | 7.8 | 10.2 |
+| atkis_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 43 | 8.1 | 9.2 |
+| atkis_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 67 | 8.0 | 26.4 |
+| atkis_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 43 | 8.2 | 12.2 |
+| atkis_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 37 | 8.0 | 2.2 |
+| atkis_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 38 | 9.4 | 6.6 |
+| atkis_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 35 | 7.7 | 0.7 |
+| atkis_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 56 | 7.9 | 14.5 |
+| atkis_std | EPSG:25833 | 8 | 03 | 4 | 5 | 480 | 9.9 | 45.7 |
+| atkis_std | EPSG:25833 | 8 | 03 | 3 | 4 | 633 | 12.2 | 43.7 |
+| atkis_std | EPSG:25833 | 8 | 03 | 4 | 3 | 730 | 7.6 | 43.3 |
+| atkis_std | EPSG:25833 | 8 | 03 | 3 | 5 | 523 | 9.6 | 43.8 |
+| atkis_std | EPSG:25833 | 8 | 03 | 3 | 3 | 708 | 7.8 | 42.2 |
+| atkis_std | EPSG:25833 | 10 | 05 | 12 | 19 | 134 | 10.7 | 33.5 |
+| atkis_std | EPSG:25833 | 10 | 05 | 17 | 15 | 111 | 8.4 | 31.5 |
+| atkis_std | EPSG:25833 | 10 | 05 | 14 | 14 | 140 | 8.9 | 34.9 |
+| atkis_std | EPSG:25833 | 10 | 05 | 18 | 21 | 116 | 8.1 | 34.9 |
+| atkis_std | EPSG:25833 | 10 | 05 | 19 | 13 | 108 | 9.9 | 29.0 |
+| atkis_std | EPSG:25833 | 12 | 07 | 59 | 79 | 126 | 8.9 | 26.0 |
+| atkis_std | EPSG:25833 | 12 | 07 | 80 | 71 | 147 | 9.8 | 33.5 |
+| atkis_std | EPSG:25833 | 12 | 07 | 51 | 81 | 169 | 8.5 | 21.5 |
+| atkis_std | EPSG:25833 | 12 | 07 | 77 | 59 | 89 | 8.2 | 19.4 |
+| atkis_std | EPSG:25833 | 12 | 07 | 76 | 54 | 107 | 9.9 | 20.2 |
+| atkis_std | EPSG:25833 | 13 | 08 | 137 | 85 | 74 | 7.8 | 18.1 |
+| atkis_std | EPSG:25833 | 13 | 08 | 124 | 122 | 114 | 8.2 | 24.8 |
+| atkis_std | EPSG:25833 | 13 | 08 | 154 | 118 | 69 | 8.5 | 12.4 |
+| atkis_std | EPSG:25833 | 13 | 08 | 156 | 121 | 88 | 9.3 | 16.2 |
+| atkis_std | EPSG:25833 | 13 | 08 | 143 | 169 | 101 | 8.0 | 22.7 |
+| atkis_std | EPSG:25833 | 14 | 09 | 226 | 290 | 78 | 8.9 | 16.2 |
+| atkis_std | EPSG:25833 | 14 | 09 | 205 | 299 | 130 | 8.0 | 32.8 |
+| atkis_std | EPSG:25833 | 14 | 09 | 209 | 291 | 71 | 8.9 | 17.5 |
+| atkis_std | EPSG:25833 | 14 | 09 | 281 | 280 | 62 | 9.6 | 13.4 |
+| atkis_std | EPSG:25833 | 14 | 09 | 244 | 306 | 62 | 7.9 | 15.0 |
+| atkis_std | EPSG:25833 | 16 | 11 | 961 | 697 | 49 | 8.4 | 8.9 |
+| atkis_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 60 | 9.6 | 9.6 |
+| atkis_std | EPSG:25833 | 16 | 11 | 900 | 843 | 64 | 8.0 | 11.9 |
+| atkis_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 65 | 10.9 | 10.4 |
+| atkis_std | EPSG:25833 | 16 | 11 | 933 | 690 | 98 | 10.8 | 26.2 |
+| atkis_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 57 | 8.8 | 12.3 |
+| atkis_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 61 | 10.4 | 4.1 |
+| atkis_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 60 | 8.0 | 7.9 |
+| atkis_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 47 | 9.3 | 3.4 |
+| atkis_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 71 | 8.5 | 15.8 |
+| atkis_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 429 | 8.8 | 45.7 |
+| atkis_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 554 | 7.7 | 43.7 |
+| atkis_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 715 | 7.9 | 43.3 |
+| atkis_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 560 | 7.3 | 43.8 |
+| atkis_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 673 | 9.6 | 42.2 |
+| atkis_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 133 | 8.9 | 32.1 |
+| atkis_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 108 | 7.9 | 31.1 |
+| atkis_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 124 | 9.5 | 34.5 |
+| atkis_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 119 | 7.7 | 34.1 |
+| atkis_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 91 | 7.4 | 28.3 |
+| atkis_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 127 | 9.3 | 28.3 |
+| atkis_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 131 | 7.8 | 29.6 |
+| atkis_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 124 | 9.4 | 21.6 |
+| atkis_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 83 | 6.7 | 18.6 |
+| atkis_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 90 | 6.8 | 19.4 |
+| atkis_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 57 | 6.7 | 17.5 |
+| atkis_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 113 | 7.2 | 25.5 |
+| atkis_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 66 | 7.5 | 12.4 |
+| atkis_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 77 | 7.3 | 17.6 |
+| atkis_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 89 | 6.9 | 24.2 |
+| atkis_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 71 | 7.4 | 12.9 |
+| atkis_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 124 | 7.3 | 29.0 |
+| atkis_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 59 | 6.8 | 11.9 |
+| atkis_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 51 | 6.9 | 11.4 |
+| atkis_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 57 | 7.1 | 15.2 |
+| atkis_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 50 | 7.1 | 10.0 |
+| atkis_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 59 | 6.9 | 8.5 |
+| atkis_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 54 | 7.0 | 12.5 |
+| atkis_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 59 | 6.6 | 10.0 |
+| atkis_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 72 | 6.7 | 25.7 |
+| atkis_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 53 | 7.1 | 12.2 |
+| atkis_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 47 | 6.8 | 3.1 |
+| atkis_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 51 | 6.9 | 8.6 |
+| atkis_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 48 | 6.8 | 2.1 |
+| atkis_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 58 | 7.1 | 14.6 |
+| atkis_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 427 | 7.3 | 45.7 |
+| atkis_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 585 | 12.6 | 43.7 |
+| atkis_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 733 | 8.0 | 43.3 |
+| atkis_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 540 | 24.9 | 43.8 |
+| atkis_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 721 | 8.6 | 42.2 |
+| atkis_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 139 | 8.4 | 32.0 |
+| atkis_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 115 | 9.5 | 31.1 |
+| atkis_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 121 | 9.1 | 34.5 |
+| atkis_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 105 | 8.4 | 34.0 |
+| atkis_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 105 | 7.8 | 28.3 |
+| atkis_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 115 | 7.5 | 25.1 |
+| atkis_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 133 | 7.7 | 32.8 |
+| atkis_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 150 | 7.9 | 20.8 |
+| atkis_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 91 | 7.9 | 18.6 |
+| atkis_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 100 | 7.8 | 19.4 |
+| atkis_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 71 | 7.7 | 15.9 |
+| atkis_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 123 | 7.9 | 23.6 |
+| atkis_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 74 | 8.4 | 10.5 |
+| atkis_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 85 | 8.9 | 14.6 |
+| atkis_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 88 | 8.8 | 19.6 |
+| atkis_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 61 | 8.0 | 8.9 |
+| atkis_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 79 | 8.1 | 20.4 |
+| atkis_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 59 | 8.0 | 8.7 |
+| atkis_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 48 | 8.5 | 5.2 |
+| atkis_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 48 | 8.6 | 9.2 |
+| atkis_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 42 | 9.0 | 5.8 |
+| atkis_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 61 | 10.6 | 6.2 |
+| atkis_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 61 | 8.7 | 6.2 |
+| atkis_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 45 | 8.6 | 5.4 |
+| atkis_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 47 | 10.2 | 5.1 |
+| atkis_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 45 | 7.8 | 2.2 |
+| atkis_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 47 | 8.5 | 1.3 |
+| atkis_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 49 | 8.4 | 2.0 |
+| atkis_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 42 | 8.7 | 2.2 |
+| atkis_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 45 | 7.3 | 1.4 |
+| dark_max | EPSG:25833 | 8 | 03 | 4 | 5 | 449 | 9.0 | 35.2 |
+| dark_max | EPSG:25833 | 8 | 03 | 3 | 4 | 625 | 8.3 | 35.4 |
+| dark_max | EPSG:25833 | 8 | 03 | 4 | 3 | 778 | 9.0 | 41.1 |
+| dark_max | EPSG:25833 | 8 | 03 | 3 | 5 | 559 | 7.4 | 36.4 |
+| dark_max | EPSG:25833 | 8 | 03 | 3 | 3 | 705 | 9.3 | 37.5 |
+| dark_max | EPSG:25833 | 10 | 05 | 12 | 19 | 138 | 8.0 | 37.4 |
+| dark_max | EPSG:25833 | 10 | 05 | 17 | 15 | 104 | 7.9 | 33.5 |
+| dark_max | EPSG:25833 | 10 | 05 | 14 | 14 | 113 | 8.3 | 35.0 |
+| dark_max | EPSG:25833 | 10 | 05 | 18 | 21 | 95 | 7.5 | 30.8 |
+| dark_max | EPSG:25833 | 10 | 05 | 19 | 13 | 107 | 8.2 | 30.4 |
+| dark_max | EPSG:25833 | 12 | 07 | 59 | 79 | 125 | 7.8 | 32.1 |
+| dark_max | EPSG:25833 | 12 | 07 | 80 | 71 | 176 | 7.8 | 34.8 |
+| dark_max | EPSG:25833 | 12 | 07 | 51 | 81 | 167 | 7.7 | 24.8 |
+| dark_max | EPSG:25833 | 12 | 07 | 77 | 59 | 105 | 8.4 | 20.5 |
+| dark_max | EPSG:25833 | 12 | 07 | 76 | 54 | 123 | 8.9 | 21.2 |
+| dark_max | EPSG:25833 | 13 | 08 | 137 | 85 | 65 | 7.9 | 18.6 |
+| dark_max | EPSG:25833 | 13 | 08 | 124 | 122 | 113 | 7.7 | 29.9 |
+| dark_max | EPSG:25833 | 13 | 08 | 154 | 118 | 76 | 9.2 | 13.7 |
+| dark_max | EPSG:25833 | 13 | 08 | 156 | 121 | 91 | 9.9 | 17.8 |
+| dark_max | EPSG:25833 | 13 | 08 | 143 | 169 | 127 | 9.4 | 25.1 |
+| dark_max | EPSG:25833 | 14 | 09 | 226 | 290 | 98 | 9.2 | 19.3 |
+| dark_max | EPSG:25833 | 14 | 09 | 205 | 299 | 146 | 8.4 | 36.6 |
+| dark_max | EPSG:25833 | 14 | 09 | 209 | 291 | 79 | 8.6 | 22.3 |
+| dark_max | EPSG:25833 | 14 | 09 | 281 | 280 | 76 | 8.0 | 19.9 |
+| dark_max | EPSG:25833 | 14 | 09 | 244 | 306 | 74 | 8.7 | 13.8 |
+| dark_max | EPSG:25833 | 16 | 11 | 961 | 697 | 71 | 9.1 | 11.0 |
+| dark_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 76 | 7.8 | 13.1 |
+| dark_max | EPSG:25833 | 16 | 11 | 900 | 843 | 67 | 8.3 | 12.8 |
+| dark_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 55 | 6.6 | 10.6 |
+| dark_max | EPSG:25833 | 16 | 11 | 933 | 690 | 83 | 6.8 | 26.3 |
+| dark_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 69 | 8.2 | 9.2 |
+| dark_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 64 | 6.6 | 4.1 |
+| dark_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 64 | 6.4 | 8.6 |
+| dark_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 49 | 6.7 | 3.1 |
+| dark_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 66 | 6.9 | 15.0 |
+| dark_min | EPSG:25833 | 8 | 03 | 4 | 5 | 89 | 7.4 | 9.2 |
+| dark_min | EPSG:25833 | 8 | 03 | 3 | 4 | 119 | 7.5 | 12.0 |
+| dark_min | EPSG:25833 | 8 | 03 | 4 | 3 | 184 | 7.3 | 11.8 |
+| dark_min | EPSG:25833 | 8 | 03 | 3 | 5 | 113 | 7.4 | 12.4 |
+| dark_min | EPSG:25833 | 8 | 03 | 3 | 3 | 175 | 9.7 | 11.8 |
+| dark_min | EPSG:25833 | 10 | 05 | 12 | 19 | 70 | 6.7 | 24.0 |
+| dark_min | EPSG:25833 | 10 | 05 | 17 | 15 | 39 | 6.6 | 16.2 |
+| dark_min | EPSG:25833 | 10 | 05 | 14 | 14 | 42 | 7.1 | 17.3 |
+| dark_min | EPSG:25833 | 10 | 05 | 18 | 21 | 41 | 7.8 | 13.7 |
+| dark_min | EPSG:25833 | 10 | 05 | 19 | 13 | 39 | 7.2 | 10.8 |
+| dark_min | EPSG:25833 | 12 | 07 | 59 | 79 | 67 | 8.7 | 10.1 |
+| dark_min | EPSG:25833 | 12 | 07 | 80 | 71 | 92 | 10.3 | 15.5 |
+| dark_min | EPSG:25833 | 12 | 07 | 51 | 81 | 97 | 7.1 | 15.7 |
+| dark_min | EPSG:25833 | 12 | 07 | 77 | 59 | 71 | 9.1 | 10.8 |
+| dark_min | EPSG:25833 | 12 | 07 | 76 | 54 | 79 | 11.7 | 10.7 |
+| dark_min | EPSG:25833 | 13 | 08 | 137 | 85 | 57 | 9.5 | 10.7 |
+| dark_min | EPSG:25833 | 13 | 08 | 124 | 122 | 81 | 7.4 | 14.4 |
+| dark_min | EPSG:25833 | 13 | 08 | 154 | 118 | 65 | 11.0 | 8.1 |
+| dark_min | EPSG:25833 | 13 | 08 | 156 | 121 | 81 | 10.8 | 11.2 |
+| dark_min | EPSG:25833 | 13 | 08 | 143 | 169 | 91 | 9.3 | 14.6 |
+| dark_min | EPSG:25833 | 14 | 09 | 226 | 290 | 50 | 8.8 | 3.6 |
+| dark_min | EPSG:25833 | 14 | 09 | 205 | 299 | 72 | 9.9 | 16.6 |
+| dark_min | EPSG:25833 | 14 | 09 | 209 | 291 | 49 | 11.8 | 2.0 |
+| dark_min | EPSG:25833 | 14 | 09 | 281 | 280 | 42 | 8.3 | 2.7 |
+| dark_min | EPSG:25833 | 14 | 09 | 244 | 306 | 37 | 9.8 | 1.7 |
+| dark_min | EPSG:25833 | 16 | 11 | 961 | 697 | 48 | 11.2 | 3.8 |
+| dark_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 48 | 9.8 | 4.5 |
+| dark_min | EPSG:25833 | 16 | 11 | 900 | 843 | 40 | 9.1 | 6.5 |
+| dark_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 44 | 8.9 | 5.5 |
+| dark_min | EPSG:25833 | 16 | 11 | 933 | 690 | 46 | 8.9 | 10.8 |
+| dark_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 41 | 8.9 | 4.7 |
+| dark_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 32 | 9.7 | 0.1 |
+| dark_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 37 | 10.6 | 2.5 |
+| dark_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 41 | 9.4 | 0.8 |
+| dark_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 42 | 8.4 | 6.8 |
+| dark_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 104 | 7.0 | 9.2 |
+| dark_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 136 | 7.0 | 12.0 |
+| dark_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 197 | 9.5 | 11.8 |
+| dark_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 132 | 7.4 | 12.4 |
+| dark_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 188 | 8.1 | 11.8 |
+| dark_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 112 | 8.8 | 26.2 |
+| dark_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 67 | 8.1 | 17.4 |
+| dark_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 67 | 8.0 | 18.5 |
+| dark_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 66 | 8.2 | 14.4 |
+| dark_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 62 | 7.8 | 12.3 |
+| dark_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 75 | 8.4 | 10.3 |
+| dark_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 101 | 9.2 | 15.6 |
+| dark_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 116 | 9.1 | 16.8 |
+| dark_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 80 | 10.3 | 11.7 |
+| dark_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 89 | 10.8 | 11.8 |
+| dark_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 61 | 10.4 | 10.7 |
+| dark_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 108 | 12.2 | 14.8 |
+| dark_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 78 | 10.2 | 8.4 |
+| dark_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 87 | 8.9 | 12.0 |
+| dark_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 84 | 11.3 | 14.6 |
+| dark_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 67 | 11.2 | 4.0 |
+| dark_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 110 | 8.6 | 20.7 |
+| dark_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 47 | 8.7 | 2.0 |
+| dark_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 43 | 8.9 | 3.4 |
+| dark_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 42 | 8.4 | 1.8 |
+| dark_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 44 | 8.6 | 5.5 |
+| dark_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 50 | 9.0 | 5.0 |
+| dark_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 48 | 9.5 | 9.0 |
+| dark_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 52 | 9.7 | 8.8 |
+| dark_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 73 | 8.2 | 24.7 |
+| dark_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 50 | 8.5 | 9.0 |
+| dark_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 41 | 9.0 | 1.7 |
+| dark_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 44 | 9.2 | 4.7 |
+| dark_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 45 | 8.8 | 1.2 |
+| dark_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 61 | 8.9 | 12.7 |
+| dark_std | EPSG:25833 | 8 | 03 | 4 | 5 | 466 | 8.3 | 35.2 |
+| dark_std | EPSG:25833 | 8 | 03 | 3 | 4 | 663 | 9.3 | 35.4 |
+| dark_std | EPSG:25833 | 8 | 03 | 4 | 3 | 788 | 8.6 | 41.1 |
+| dark_std | EPSG:25833 | 8 | 03 | 3 | 5 | 588 | 8.0 | 36.4 |
+| dark_std | EPSG:25833 | 8 | 03 | 3 | 3 | 704 | 7.7 | 37.5 |
+| dark_std | EPSG:25833 | 10 | 05 | 12 | 19 | 138 | 9.2 | 37.4 |
+| dark_std | EPSG:25833 | 10 | 05 | 17 | 15 | 102 | 8.3 | 33.5 |
+| dark_std | EPSG:25833 | 10 | 05 | 14 | 14 | 125 | 8.8 | 35.0 |
+| dark_std | EPSG:25833 | 10 | 05 | 18 | 21 | 97 | 8.6 | 30.8 |
+| dark_std | EPSG:25833 | 10 | 05 | 19 | 13 | 99 | 8.5 | 30.4 |
+| dark_std | EPSG:25833 | 12 | 07 | 59 | 79 | 132 | 8.8 | 28.2 |
+| dark_std | EPSG:25833 | 12 | 07 | 80 | 71 | 149 | 8.0 | 34.0 |
+| dark_std | EPSG:25833 | 12 | 07 | 51 | 81 | 175 | 8.1 | 23.3 |
+| dark_std | EPSG:25833 | 12 | 07 | 77 | 59 | 107 | 7.9 | 20.5 |
+| dark_std | EPSG:25833 | 12 | 07 | 76 | 54 | 108 | 8.5 | 21.2 |
+| dark_std | EPSG:25833 | 13 | 08 | 137 | 85 | 63 | 7.4 | 18.6 |
+| dark_std | EPSG:25833 | 13 | 08 | 124 | 122 | 118 | 8.3 | 26.3 |
+| dark_std | EPSG:25833 | 13 | 08 | 154 | 118 | 65 | 8.2 | 13.2 |
+| dark_std | EPSG:25833 | 13 | 08 | 156 | 121 | 104 | 10.1 | 16.8 |
+| dark_std | EPSG:25833 | 13 | 08 | 143 | 169 | 115 | 8.0 | 22.1 |
+| dark_std | EPSG:25833 | 14 | 09 | 226 | 290 | 84 | 9.2 | 16.3 |
+| dark_std | EPSG:25833 | 14 | 09 | 205 | 299 | 143 | 8.6 | 35.6 |
+| dark_std | EPSG:25833 | 14 | 09 | 209 | 291 | 72 | 9.0 | 18.8 |
+| dark_std | EPSG:25833 | 14 | 09 | 281 | 280 | 64 | 8.1 | 13.9 |
+| dark_std | EPSG:25833 | 14 | 09 | 244 | 306 | 61 | 8.9 | 8.6 |
+| dark_std | EPSG:25833 | 16 | 11 | 961 | 697 | 49 | 7.1 | 9.1 |
+| dark_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 57 | 7.6 | 10.0 |
+| dark_std | EPSG:25833 | 16 | 11 | 900 | 843 | 60 | 8.2 | 11.6 |
+| dark_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 51 | 6.7 | 10.6 |
+| dark_std | EPSG:25833 | 16 | 11 | 933 | 690 | 74 | 7.3 | 26.3 |
+| dark_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 59 | 6.9 | 9.2 |
+| dark_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 78 | 8.8 | 4.1 |
+| dark_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 73 | 8.0 | 6.6 |
+| dark_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 58 | 9.0 | 3.1 |
+| dark_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 79 | 9.7 | 14.7 |
+| dark_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 418 | 8.7 | 35.2 |
+| dark_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 576 | 7.4 | 36.7 |
+| dark_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 685 | 7.6 | 41.4 |
+| dark_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 499 | 7.7 | 38.4 |
+| dark_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 702 | 8.9 | 38.5 |
+| dark_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 130 | 8.4 | 35.8 |
+| dark_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 116 | 9.2 | 33.9 |
+| dark_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 116 | 9.6 | 37.3 |
+| dark_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 96 | 8.9 | 30.2 |
+| dark_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 100 | 8.9 | 30.5 |
+| dark_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 131 | 10.1 | 30.6 |
+| dark_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 151 | 9.0 | 30.3 |
+| dark_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 156 | 9.2 | 24.2 |
+| dark_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 109 | 9.5 | 19.7 |
+| dark_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 114 | 9.9 | 20.7 |
+| dark_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 77 | 12.6 | 18.1 |
+| dark_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 137 | 8.7 | 29.3 |
+| dark_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 86 | 9.4 | 13.4 |
+| dark_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 127 | 9.9 | 17.8 |
+| dark_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 129 | 8.5 | 24.3 |
+| dark_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 100 | 9.9 | 13.4 |
+| dark_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 140 | 8.3 | 31.9 |
+| dark_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 73 | 11.1 | 12.9 |
+| dark_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 70 | 11.1 | 13.3 |
+| dark_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 75 | 10.9 | 9.3 |
+| dark_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 68 | 10.9 | 10.5 |
+| dark_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 82 | 9.1 | 9.2 |
+| dark_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 69 | 8.2 | 12.6 |
+| dark_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 72 | 9.5 | 10.2 |
+| dark_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 92 | 9.1 | 25.9 |
+| dark_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 72 | 12.1 | 9.0 |
+| dark_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 64 | 11.3 | 3.1 |
+| dark_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 76 | 9.9 | 8.3 |
+| dark_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 75 | 9.5 | 2.2 |
+| dark_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 90 | 9.2 | 13.2 |
+| dark_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 445 | 6.8 | 35.2 |
+| dark_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 578 | 26.0 | 35.4 |
+| dark_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 793 | 8.7 | 41.1 |
+| dark_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 571 | 8.0 | 36.4 |
+| dark_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 766 | 8.8 | 37.5 |
+| dark_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 132 | 8.3 | 35.8 |
+| dark_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 98 | 8.2 | 33.1 |
+| dark_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 113 | 9.3 | 34.5 |
+| dark_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 102 | 8.3 | 29.9 |
+| dark_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 108 | 10.9 | 29.9 |
+| dark_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 122 | 8.0 | 27.1 |
+| dark_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 142 | 8.9 | 32.6 |
+| dark_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 146 | 7.9 | 22.4 |
+| dark_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 85 | 7.8 | 19.6 |
+| dark_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 91 | 8.0 | 20.7 |
+| dark_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 64 | 7.6 | 16.3 |
+| dark_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 115 | 8.1 | 24.8 |
+| dark_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 87 | 11.4 | 11.2 |
+| dark_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 95 | 9.3 | 15.2 |
+| dark_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 104 | 9.5 | 19.5 |
+| dark_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 74 | 9.0 | 7.7 |
+| dark_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 94 | 9.6 | 22.2 |
+| dark_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 73 | 9.2 | 8.7 |
+| dark_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 70 | 12.5 | 5.0 |
+| dark_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 67 | 19.6 | 1.3 |
+| dark_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 67 | 12.1 | 5.5 |
+| dark_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 72 | 9.0 | 6.6 |
+| dark_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 64 | 9.5 | 5.3 |
+| dark_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 51 | 7.6 | 5.3 |
+| dark_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 53 | 8.7 | 4.8 |
+| dark_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 40 | 7.7 | 1.3 |
+| dark_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 50 | 10.0 | 1.8 |
+| dark_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 50 | 9.2 | 1.8 |
+| dark_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 44 | 8.8 | 2.1 |
+| dark_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 48 | 10.1 | 1.0 |
+| default_max | EPSG:25833 | 8 | 03 | 4 | 5 | 455 | 8.5 | 44.7 |
+| default_max | EPSG:25833 | 8 | 03 | 3 | 4 | 614 | 7.7 | 45.4 |
+| default_max | EPSG:25833 | 8 | 03 | 4 | 3 | 746 | 7.7 | 46.7 |
+| default_max | EPSG:25833 | 8 | 03 | 3 | 5 | 537 | 10.6 | 45.9 |
+| default_max | EPSG:25833 | 8 | 03 | 3 | 3 | 739 | 8.5 | 45.6 |
+| default_max | EPSG:25833 | 10 | 05 | 12 | 19 | 135 | 8.4 | 35.7 |
+| default_max | EPSG:25833 | 10 | 05 | 17 | 15 | 109 | 7.8 | 34.8 |
+| default_max | EPSG:25833 | 10 | 05 | 14 | 14 | 120 | 8.1 | 37.4 |
+| default_max | EPSG:25833 | 10 | 05 | 18 | 21 | 105 | 8.1 | 35.4 |
+| default_max | EPSG:25833 | 10 | 05 | 19 | 13 | 104 | 8.4 | 31.6 |
+| default_max | EPSG:25833 | 12 | 07 | 59 | 79 | 159 | 7.8 | 31.2 |
+| default_max | EPSG:25833 | 12 | 07 | 80 | 71 | 154 | 8.0 | 34.6 |
+| default_max | EPSG:25833 | 12 | 07 | 51 | 81 | 183 | 8.2 | 22.9 |
+| default_max | EPSG:25833 | 12 | 07 | 77 | 59 | 104 | 8.4 | 20.1 |
+| default_max | EPSG:25833 | 12 | 07 | 76 | 54 | 108 | 7.9 | 21.1 |
+| default_max | EPSG:25833 | 13 | 08 | 137 | 85 | 75 | 8.0 | 17.9 |
+| default_max | EPSG:25833 | 13 | 08 | 124 | 122 | 152 | 18.4 | 28.2 |
+| default_max | EPSG:25833 | 13 | 08 | 154 | 118 | 122 | 11.4 | 13.1 |
+| default_max | EPSG:25833 | 13 | 08 | 156 | 121 | 114 | 13.3 | 17.1 |
+| default_max | EPSG:25833 | 13 | 08 | 143 | 169 | 133 | 9.4 | 24.6 |
+| default_max | EPSG:25833 | 14 | 09 | 226 | 290 | 113 | 8.6 | 18.8 |
+| default_max | EPSG:25833 | 14 | 09 | 205 | 299 | 159 | 9.9 | 34.8 |
+| default_max | EPSG:25833 | 14 | 09 | 209 | 291 | 91 | 8.2 | 21.7 |
+| default_max | EPSG:25833 | 14 | 09 | 281 | 280 | 85 | 8.6 | 18.9 |
+| default_max | EPSG:25833 | 14 | 09 | 244 | 306 | 73 | 8.1 | 13.5 |
+| default_max | EPSG:25833 | 16 | 11 | 961 | 697 | 62 | 7.9 | 10.8 |
+| default_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 66 | 7.8 | 12.6 |
+| default_max | EPSG:25833 | 16 | 11 | 900 | 843 | 68 | 7.9 | 12.4 |
+| default_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 56 | 8.1 | 10.5 |
+| default_max | EPSG:25833 | 16 | 11 | 933 | 690 | 82 | 8.1 | 27.1 |
+| default_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 54 | 6.8 | 10.4 |
+| default_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 58 | 6.9 | 4.2 |
+| default_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 62 | 6.9 | 9.0 |
+| default_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 49 | 7.0 | 3.1 |
+| default_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 64 | 6.8 | 15.3 |
+| default_min | EPSG:25833 | 8 | 03 | 4 | 5 | 88 | 6.7 | 7.9 |
+| default_min | EPSG:25833 | 8 | 03 | 3 | 4 | 120 | 7.4 | 10.9 |
+| default_min | EPSG:25833 | 8 | 03 | 4 | 3 | 176 | 6.7 | 10.8 |
+| default_min | EPSG:25833 | 8 | 03 | 3 | 5 | 119 | 7.3 | 11.8 |
+| default_min | EPSG:25833 | 8 | 03 | 3 | 3 | 168 | 6.8 | 10.7 |
+| default_min | EPSG:25833 | 10 | 05 | 12 | 19 | 64 | 6.7 | 22.0 |
+| default_min | EPSG:25833 | 10 | 05 | 17 | 15 | 41 | 6.8 | 15.7 |
+| default_min | EPSG:25833 | 10 | 05 | 14 | 14 | 43 | 7.0 | 16.2 |
+| default_min | EPSG:25833 | 10 | 05 | 18 | 21 | 42 | 6.8 | 13.1 |
+| default_min | EPSG:25833 | 10 | 05 | 19 | 13 | 66 | 9.0 | 9.0 |
+| default_min | EPSG:25833 | 12 | 07 | 59 | 79 | 75 | 11.1 | 9.8 |
+| default_min | EPSG:25833 | 12 | 07 | 80 | 71 | 79 | 9.1 | 15.3 |
+| default_min | EPSG:25833 | 12 | 07 | 51 | 81 | 97 | 9.8 | 14.5 |
+| default_min | EPSG:25833 | 12 | 07 | 77 | 59 | 68 | 7.9 | 10.0 |
+| default_min | EPSG:25833 | 12 | 07 | 76 | 54 | 67 | 8.8 | 10.5 |
+| default_min | EPSG:25833 | 13 | 08 | 137 | 85 | 43 | 7.6 | 10.1 |
+| default_min | EPSG:25833 | 13 | 08 | 124 | 122 | 71 | 9.0 | 13.6 |
+| default_min | EPSG:25833 | 13 | 08 | 154 | 118 | 69 | 9.1 | 7.6 |
+| default_min | EPSG:25833 | 13 | 08 | 156 | 121 | 80 | 9.4 | 10.5 |
+| default_min | EPSG:25833 | 13 | 08 | 143 | 169 | 86 | 9.2 | 14.0 |
+| default_min | EPSG:25833 | 14 | 09 | 226 | 290 | 52 | 9.1 | 3.7 |
+| default_min | EPSG:25833 | 14 | 09 | 205 | 299 | 75 | 8.4 | 15.3 |
+| default_min | EPSG:25833 | 14 | 09 | 209 | 291 | 46 | 11.0 | 2.2 |
+| default_min | EPSG:25833 | 14 | 09 | 281 | 280 | 41 | 7.7 | 2.6 |
+| default_min | EPSG:25833 | 14 | 09 | 244 | 306 | 41 | 9.9 | 2.2 |
+| default_min | EPSG:25833 | 16 | 11 | 961 | 697 | 45 | 9.2 | 4.3 |
+| default_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 47 | 11.1 | 3.9 |
+| default_min | EPSG:25833 | 16 | 11 | 900 | 843 | 43 | 11.5 | 6.8 |
+| default_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 47 | 9.3 | 5.1 |
+| default_min | EPSG:25833 | 16 | 11 | 933 | 690 | 39 | 8.4 | 10.3 |
+| default_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 36 | 8.4 | 5.1 |
+| default_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 29 | 8.6 | 0.1 |
+| default_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 39 | 7.9 | 3.0 |
+| default_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 34 | 8.5 | 0.8 |
+| default_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 38 | 8.8 | 6.7 |
+| default_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 100 | 8.8 | 7.9 |
+| default_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 138 | 8.6 | 10.9 |
+| default_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 214 | 7.4 | 10.8 |
+| default_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 120 | 7.9 | 11.8 |
+| default_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 185 | 8.4 | 10.7 |
+| default_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 102 | 7.6 | 24.3 |
+| default_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 65 | 7.7 | 16.6 |
+| default_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 68 | 10.7 | 17.2 |
+| default_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 65 | 7.7 | 13.8 |
+| default_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 63 | 8.6 | 11.2 |
+| default_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 87 | 9.3 | 10.0 |
+| default_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 97 | 9.3 | 15.5 |
+| default_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 116 | 8.4 | 15.4 |
+| default_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 70 | 9.3 | 11.2 |
+| default_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 79 | 8.5 | 11.6 |
+| default_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 53 | 9.1 | 10.2 |
+| default_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 89 | 9.3 | 14.0 |
+| default_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 68 | 9.7 | 7.9 |
+| default_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 87 | 9.5 | 11.5 |
+| default_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 84 | 9.5 | 14.1 |
+| default_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 60 | 9.0 | 4.0 |
+| default_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 99 | 10.6 | 20.2 |
+| default_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 48 | 9.0 | 2.2 |
+| default_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 45 | 9.4 | 3.3 |
+| default_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 43 | 8.8 | 2.3 |
+| default_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 48 | 8.7 | 6.0 |
+| default_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 53 | 10.6 | 4.9 |
+| default_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 51 | 8.9 | 9.1 |
+| default_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 54 | 8.9 | 9.1 |
+| default_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 78 | 7.8 | 26.2 |
+| default_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 47 | 7.8 | 10.4 |
+| default_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 44 | 8.3 | 1.9 |
+| default_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 43 | 8.8 | 5.6 |
+| default_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 37 | 8.3 | 0.8 |
+| default_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 50 | 8.1 | 13.3 |
+| default_std | EPSG:25833 | 8 | 03 | 4 | 5 | 503 | 8.0 | 44.7 |
+| default_std | EPSG:25833 | 8 | 03 | 3 | 4 | 599 | 8.2 | 45.4 |
+| default_std | EPSG:25833 | 8 | 03 | 4 | 3 | 777 | 7.4 | 46.7 |
+| default_std | EPSG:25833 | 8 | 03 | 3 | 5 | 542 | 7.8 | 45.9 |
+| default_std | EPSG:25833 | 8 | 03 | 3 | 3 | 702 | 8.9 | 45.6 |
+| default_std | EPSG:25833 | 10 | 05 | 12 | 19 | 129 | 8.6 | 35.7 |
+| default_std | EPSG:25833 | 10 | 05 | 17 | 15 | 97 | 11.3 | 34.8 |
+| default_std | EPSG:25833 | 10 | 05 | 14 | 14 | 118 | 7.9 | 37.4 |
+| default_std | EPSG:25833 | 10 | 05 | 18 | 21 | 96 | 9.2 | 35.4 |
+| default_std | EPSG:25833 | 10 | 05 | 19 | 13 | 95 | 9.1 | 31.6 |
+| default_std | EPSG:25833 | 12 | 07 | 59 | 79 | 121 | 7.3 | 28.0 |
+| default_std | EPSG:25833 | 12 | 07 | 80 | 71 | 131 | 9.3 | 33.9 |
+| default_std | EPSG:25833 | 12 | 07 | 51 | 81 | 168 | 8.1 | 21.8 |
+| default_std | EPSG:25833 | 12 | 07 | 77 | 59 | 93 | 7.5 | 20.1 |
+| default_std | EPSG:25833 | 12 | 07 | 76 | 54 | 100 | 10.9 | 21.1 |
+| default_std | EPSG:25833 | 13 | 08 | 137 | 85 | 68 | 8.9 | 17.9 |
+| default_std | EPSG:25833 | 13 | 08 | 124 | 122 | 123 | 8.0 | 24.9 |
+| default_std | EPSG:25833 | 13 | 08 | 154 | 118 | 75 | 9.4 | 12.7 |
+| default_std | EPSG:25833 | 13 | 08 | 156 | 121 | 97 | 9.4 | 15.8 |
+| default_std | EPSG:25833 | 13 | 08 | 143 | 169 | 105 | 9.4 | 22.0 |
+| default_std | EPSG:25833 | 14 | 09 | 226 | 290 | 92 | 10.7 | 16.4 |
+| default_std | EPSG:25833 | 14 | 09 | 205 | 299 | 123 | 8.5 | 34.0 |
+| default_std | EPSG:25833 | 14 | 09 | 209 | 291 | 66 | 8.3 | 18.2 |
+| default_std | EPSG:25833 | 14 | 09 | 281 | 280 | 59 | 7.8 | 13.5 |
+| default_std | EPSG:25833 | 14 | 09 | 244 | 306 | 61 | 7.1 | 8.6 |
+| default_std | EPSG:25833 | 16 | 11 | 961 | 697 | 45 | 7.4 | 9.2 |
+| default_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 60 | 7.5 | 9.9 |
+| default_std | EPSG:25833 | 16 | 11 | 900 | 843 | 61 | 8.3 | 11.5 |
+| default_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 53 | 8.7 | 10.5 |
+| default_std | EPSG:25833 | 16 | 11 | 933 | 690 | 73 | 10.5 | 27.1 |
+| default_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 52 | 8.5 | 10.4 |
+| default_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 58 | 8.5 | 4.2 |
+| default_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 56 | 8.5 | 7.3 |
+| default_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 48 | 8.5 | 3.1 |
+| default_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 63 | 7.8 | 15.0 |
+| default_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 423 | 7.8 | 43.5 |
+| default_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 573 | 8.4 | 44.5 |
+| default_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 696 | 8.4 | 45.7 |
+| default_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 510 | 7.9 | 45.9 |
+| default_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 665 | 7.9 | 44.8 |
+| default_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 119 | 8.2 | 34.5 |
+| default_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 101 | 8.5 | 34.8 |
+| default_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 109 | 8.4 | 38.9 |
+| default_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 94 | 10.1 | 34.3 |
+| default_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 121 | 11.0 | 32.2 |
+| default_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 114 | 7.7 | 30.5 |
+| default_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 124 | 7.9 | 29.5 |
+| default_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 131 | 8.2 | 22.9 |
+| default_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 102 | 9.2 | 19.7 |
+| default_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 120 | 9.9 | 20.5 |
+| default_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 79 | 9.1 | 17.6 |
+| default_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 138 | 8.1 | 28.0 |
+| default_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 77 | 8.9 | 12.8 |
+| default_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 101 | 10.0 | 17.1 |
+| default_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 107 | 11.8 | 23.8 |
+| default_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 80 | 9.0 | 13.5 |
+| default_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 142 | 9.2 | 30.8 |
+| default_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 75 | 11.6 | 12.3 |
+| default_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 72 | 11.0 | 11.9 |
+| default_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 73 | 8.7 | 8.7 |
+| default_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 66 | 8.3 | 10.3 |
+| default_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 87 | 9.2 | 8.8 |
+| default_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 73 | 9.5 | 12.2 |
+| default_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 78 | 10.2 | 10.2 |
+| default_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 105 | 8.7 | 26.8 |
+| default_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 79 | 9.6 | 10.4 |
+| default_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 70 | 13.8 | 3.1 |
+| default_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 81 | 10.3 | 8.4 |
+| default_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 75 | 10.3 | 2.2 |
+| default_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 80 | 7.9 | 13.6 |
+| default_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 450 | 7.5 | 44.7 |
+| default_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 621 | 13.3 | 45.4 |
+| default_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 759 | 8.6 | 46.7 |
+| default_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 581 | 8.1 | 45.9 |
+| default_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 768 | 9.2 | 45.6 |
+| default_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 155 | 8.4 | 34.6 |
+| default_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 123 | 7.9 | 35.0 |
+| default_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 144 | 8.2 | 37.1 |
+| default_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 107 | 8.1 | 34.6 |
+| default_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 118 | 8.4 | 31.7 |
+| default_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 130 | 7.5 | 27.1 |
+| default_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 152 | 8.7 | 33.0 |
+| default_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 159 | 8.4 | 21.1 |
+| default_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 110 | 9.2 | 19.5 |
+| default_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 110 | 7.8 | 20.5 |
+| default_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 65 | 7.8 | 16.2 |
+| default_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 128 | 7.7 | 23.6 |
+| default_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 97 | 10.8 | 11.4 |
+| default_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 98 | 9.7 | 14.4 |
+| default_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 105 | 8.8 | 18.8 |
+| default_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 72 | 9.4 | 8.4 |
+| default_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 81 | 7.8 | 22.0 |
+| default_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 64 | 9.7 | 8.7 |
+| default_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 57 | 8.1 | 4.6 |
+| default_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 54 | 9.3 | 1.1 |
+| default_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 49 | 9.7 | 5.4 |
+| default_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 62 | 10.0 | 6.4 |
+| default_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 62 | 8.6 | 5.3 |
+| default_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 44 | 7.8 | 5.4 |
+| default_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 44 | 8.6 | 4.9 |
+| default_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 44 | 8.1 | 1.8 |
+| default_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 55 | 9.5 | 1.2 |
+| default_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 53 | 9.3 | 2.4 |
+| default_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 43 | 9.9 | 2.2 |
+| default_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 50 | 9.9 | 1.0 |
+| flora_max | EPSG:25833 | 8 | 03 | 4 | 5 | 502 | 8.2 | 49.0 |
+| flora_max | EPSG:25833 | 8 | 03 | 3 | 4 | 646 | 7.6 | 48.0 |
+| flora_max | EPSG:25833 | 8 | 03 | 4 | 3 | 761 | 7.5 | 48.1 |
+| flora_max | EPSG:25833 | 8 | 03 | 3 | 5 | 559 | 8.6 | 49.4 |
+| flora_max | EPSG:25833 | 8 | 03 | 3 | 3 | 711 | 8.2 | 48.7 |
+| flora_max | EPSG:25833 | 10 | 05 | 12 | 19 | 127 | 8.3 | 36.8 |
+| flora_max | EPSG:25833 | 10 | 05 | 17 | 15 | 107 | 8.5 | 37.5 |
+| flora_max | EPSG:25833 | 10 | 05 | 14 | 14 | 120 | 7.8 | 40.7 |
+| flora_max | EPSG:25833 | 10 | 05 | 18 | 21 | 107 | 9.0 | 36.8 |
+| flora_max | EPSG:25833 | 10 | 05 | 19 | 13 | 105 | 9.0 | 34.6 |
+| flora_max | EPSG:25833 | 12 | 07 | 59 | 79 | 153 | 8.4 | 33.1 |
+| flora_max | EPSG:25833 | 12 | 07 | 80 | 71 | 156 | 7.6 | 37.1 |
+| flora_max | EPSG:25833 | 12 | 07 | 51 | 81 | 152 | 7.9 | 24.5 |
+| flora_max | EPSG:25833 | 12 | 07 | 77 | 59 | 85 | 6.9 | 20.3 |
+| flora_max | EPSG:25833 | 12 | 07 | 76 | 54 | 95 | 7.5 | 22.0 |
+| flora_max | EPSG:25833 | 13 | 08 | 137 | 85 | 61 | 7.0 | 18.6 |
+| flora_max | EPSG:25833 | 13 | 08 | 124 | 122 | 110 | 7.0 | 29.7 |
+| flora_max | EPSG:25833 | 13 | 08 | 154 | 118 | 63 | 7.1 | 13.0 |
+| flora_max | EPSG:25833 | 13 | 08 | 156 | 121 | 76 | 7.1 | 17.9 |
+| flora_max | EPSG:25833 | 13 | 08 | 143 | 169 | 88 | 6.9 | 26.0 |
+| flora_max | EPSG:25833 | 14 | 09 | 226 | 290 | 89 | 7.9 | 19.0 |
+| flora_max | EPSG:25833 | 14 | 09 | 205 | 299 | 143 | 7.9 | 35.8 |
+| flora_max | EPSG:25833 | 14 | 09 | 209 | 291 | 85 | 8.1 | 20.7 |
+| flora_max | EPSG:25833 | 14 | 09 | 281 | 280 | 77 | 8.5 | 18.2 |
+| flora_max | EPSG:25833 | 14 | 09 | 244 | 306 | 67 | 8.4 | 13.1 |
+| flora_max | EPSG:25833 | 16 | 11 | 961 | 697 | 63 | 8.3 | 10.7 |
+| flora_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 72 | 7.7 | 12.5 |
+| flora_max | EPSG:25833 | 16 | 11 | 900 | 843 | 79 | 8.9 | 12.8 |
+| flora_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 69 | 8.4 | 10.5 |
+| flora_max | EPSG:25833 | 16 | 11 | 933 | 690 | 102 | 8.4 | 25.9 |
+| flora_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 72 | 9.9 | 9.8 |
+| flora_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 84 | 11.7 | 4.0 |
+| flora_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 79 | 9.1 | 8.7 |
+| flora_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 68 | 10.8 | 3.1 |
+| flora_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 88 | 9.6 | 14.3 |
+| flora_min | EPSG:25833 | 8 | 03 | 4 | 5 | 126 | 7.6 | 8.0 |
+| flora_min | EPSG:25833 | 8 | 03 | 3 | 4 | 124 | 6.9 | 10.8 |
+| flora_min | EPSG:25833 | 8 | 03 | 4 | 3 | 201 | 6.5 | 10.6 |
+| flora_min | EPSG:25833 | 8 | 03 | 3 | 5 | 117 | 6.6 | 11.1 |
+| flora_min | EPSG:25833 | 8 | 03 | 3 | 3 | 203 | 11.7 | 10.7 |
+| flora_min | EPSG:25833 | 10 | 05 | 12 | 19 | 75 | 7.9 | 22.6 |
+| flora_min | EPSG:25833 | 10 | 05 | 17 | 15 | 57 | 9.2 | 15.3 |
+| flora_min | EPSG:25833 | 10 | 05 | 14 | 14 | 48 | 8.9 | 15.8 |
+| flora_min | EPSG:25833 | 10 | 05 | 18 | 21 | 48 | 8.8 | 12.8 |
+| flora_min | EPSG:25833 | 10 | 05 | 19 | 13 | 43 | 8.1 | 9.2 |
+| flora_min | EPSG:25833 | 12 | 07 | 59 | 79 | 95 | 10.2 | 9.9 |
+| flora_min | EPSG:25833 | 12 | 07 | 80 | 71 | 75 | 6.6 | 15.7 |
+| flora_min | EPSG:25833 | 12 | 07 | 51 | 81 | 86 | 7.9 | 15.5 |
+| flora_min | EPSG:25833 | 12 | 07 | 77 | 59 | 55 | 7.4 | 9.8 |
+| flora_min | EPSG:25833 | 12 | 07 | 76 | 54 | 56 | 6.9 | 10.8 |
+| flora_min | EPSG:25833 | 13 | 08 | 137 | 85 | 39 | 6.9 | 10.0 |
+| flora_min | EPSG:25833 | 13 | 08 | 124 | 122 | 66 | 7.0 | 14.5 |
+| flora_min | EPSG:25833 | 13 | 08 | 154 | 118 | 56 | 7.0 | 7.6 |
+| flora_min | EPSG:25833 | 13 | 08 | 156 | 121 | 58 | 6.7 | 10.4 |
+| flora_min | EPSG:25833 | 13 | 08 | 143 | 169 | 59 | 6.7 | 14.0 |
+| flora_min | EPSG:25833 | 14 | 09 | 226 | 290 | 36 | 6.1 | 3.8 |
+| flora_min | EPSG:25833 | 14 | 09 | 205 | 299 | 65 | 7.1 | 15.3 |
+| flora_min | EPSG:25833 | 14 | 09 | 209 | 291 | 43 | 6.7 | 2.0 |
+| flora_min | EPSG:25833 | 14 | 09 | 281 | 280 | 39 | 6.5 | 2.7 |
+| flora_min | EPSG:25833 | 14 | 09 | 244 | 306 | 38 | 7.6 | 2.3 |
+| flora_min | EPSG:25833 | 16 | 11 | 961 | 697 | 41 | 8.5 | 4.3 |
+| flora_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 45 | 8.0 | 4.0 |
+| flora_min | EPSG:25833 | 16 | 11 | 900 | 843 | 34 | 6.1 | 6.8 |
+| flora_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 36 | 6.5 | 5.2 |
+| flora_min | EPSG:25833 | 16 | 11 | 933 | 690 | 38 | 6.2 | 10.4 |
+| flora_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 36 | 6.4 | 5.2 |
+| flora_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 30 | 6.9 | 0.1 |
+| flora_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 35 | 7.8 | 2.8 |
+| flora_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 34 | 7.3 | 0.6 |
+| flora_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 44 | 7.0 | 6.7 |
+| flora_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 122 | 8.1 | 8.0 |
+| flora_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 123 | 6.9 | 10.8 |
+| flora_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 179 | 6.7 | 10.6 |
+| flora_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 109 | 6.6 | 11.1 |
+| flora_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 203 | 9.3 | 10.7 |
+| flora_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 97 | 8.4 | 25.6 |
+| flora_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 66 | 10.2 | 16.9 |
+| flora_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 64 | 7.5 | 17.4 |
+| flora_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 54 | 7.2 | 14.0 |
+| flora_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 53 | 7.5 | 11.2 |
+| flora_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 72 | 7.0 | 10.2 |
+| flora_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 87 | 10.2 | 15.9 |
+| flora_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 114 | 8.7 | 16.5 |
+| flora_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 73 | 9.4 | 10.9 |
+| flora_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 82 | 8.2 | 12.1 |
+| flora_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 51 | 9.7 | 10.1 |
+| flora_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 110 | 9.5 | 14.9 |
+| flora_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 70 | 8.8 | 8.0 |
+| flora_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 88 | 9.7 | 11.5 |
+| flora_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 82 | 9.4 | 14.1 |
+| flora_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 56 | 9.8 | 4.1 |
+| flora_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 103 | 8.6 | 20.2 |
+| flora_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 51 | 9.3 | 2.1 |
+| flora_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 45 | 8.6 | 3.4 |
+| flora_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 50 | 9.4 | 2.6 |
+| flora_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 48 | 9.7 | 5.8 |
+| flora_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 57 | 9.9 | 4.6 |
+| flora_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 51 | 9.7 | 8.6 |
+| flora_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 57 | 9.0 | 8.7 |
+| flora_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 75 | 7.7 | 23.9 |
+| flora_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 45 | 11.3 | 9.6 |
+| flora_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 45 | 7.6 | 1.8 |
+| flora_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 49 | 9.7 | 5.2 |
+| flora_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 46 | 9.8 | 0.7 |
+| flora_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 61 | 9.2 | 12.2 |
+| flora_std | EPSG:25833 | 8 | 03 | 4 | 5 | 475 | 8.3 | 49.0 |
+| flora_std | EPSG:25833 | 8 | 03 | 3 | 4 | 627 | 8.7 | 48.0 |
+| flora_std | EPSG:25833 | 8 | 03 | 4 | 3 | 765 | 8.0 | 48.1 |
+| flora_std | EPSG:25833 | 8 | 03 | 3 | 5 | 581 | 7.4 | 49.4 |
+| flora_std | EPSG:25833 | 8 | 03 | 3 | 3 | 704 | 6.0 | 48.7 |
+| flora_std | EPSG:25833 | 10 | 05 | 12 | 19 | 144 | 8.5 | 36.8 |
+| flora_std | EPSG:25833 | 10 | 05 | 17 | 15 | 102 | 8.2 | 37.5 |
+| flora_std | EPSG:25833 | 10 | 05 | 14 | 14 | 112 | 8.6 | 40.7 |
+| flora_std | EPSG:25833 | 10 | 05 | 18 | 21 | 106 | 9.3 | 36.8 |
+| flora_std | EPSG:25833 | 10 | 05 | 19 | 13 | 104 | 8.7 | 34.6 |
+| flora_std | EPSG:25833 | 12 | 07 | 59 | 79 | 134 | 8.5 | 30.1 |
+| flora_std | EPSG:25833 | 12 | 07 | 80 | 71 | 155 | 12.9 | 36.9 |
+| flora_std | EPSG:25833 | 12 | 07 | 51 | 81 | 175 | 8.0 | 23.6 |
+| flora_std | EPSG:25833 | 12 | 07 | 77 | 59 | 104 | 8.6 | 20.3 |
+| flora_std | EPSG:25833 | 12 | 07 | 76 | 54 | 127 | 10.9 | 22.0 |
+| flora_std | EPSG:25833 | 13 | 08 | 137 | 85 | 88 | 9.7 | 18.6 |
+| flora_std | EPSG:25833 | 13 | 08 | 124 | 122 | 131 | 8.0 | 26.7 |
+| flora_std | EPSG:25833 | 13 | 08 | 154 | 118 | 86 | 9.6 | 12.7 |
+| flora_std | EPSG:25833 | 13 | 08 | 156 | 121 | 98 | 9.2 | 16.7 |
+| flora_std | EPSG:25833 | 13 | 08 | 143 | 169 | 103 | 8.2 | 23.8 |
+| flora_std | EPSG:25833 | 14 | 09 | 226 | 290 | 81 | 11.8 | 16.4 |
+| flora_std | EPSG:25833 | 14 | 09 | 205 | 299 | 143 | 8.0 | 34.7 |
+| flora_std | EPSG:25833 | 14 | 09 | 209 | 291 | 71 | 8.5 | 17.4 |
+| flora_std | EPSG:25833 | 14 | 09 | 281 | 280 | 64 | 8.4 | 12.9 |
+| flora_std | EPSG:25833 | 14 | 09 | 244 | 306 | 66 | 8.2 | 7.9 |
+| flora_std | EPSG:25833 | 16 | 11 | 961 | 697 | 58 | 9.2 | 9.1 |
+| flora_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 76 | 9.2 | 9.7 |
+| flora_std | EPSG:25833 | 16 | 11 | 900 | 843 | 85 | 8.7 | 11.8 |
+| flora_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 69 | 10.5 | 10.5 |
+| flora_std | EPSG:25833 | 16 | 11 | 933 | 690 | 88 | 9.2 | 25.9 |
+| flora_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 64 | 9.4 | 9.8 |
+| flora_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 81 | 10.4 | 4.0 |
+| flora_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 74 | 9.9 | 6.7 |
+| flora_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 63 | 9.1 | 3.1 |
+| flora_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 78 | 10.0 | 13.9 |
+| flora_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 464 | 8.4 | 49.0 |
+| flora_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 595 | 18.6 | 48.0 |
+| flora_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 697 | 6.8 | 48.1 |
+| flora_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 608 | 9.8 | 49.4 |
+| flora_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 645 | 9.6 | 48.7 |
+| flora_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 132 | 9.8 | 35.7 |
+| flora_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 105 | 8.2 | 37.7 |
+| flora_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 146 | 9.2 | 40.4 |
+| flora_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 102 | 9.3 | 36.8 |
+| flora_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 105 | 9.1 | 35.0 |
+| flora_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 131 | 9.2 | 32.0 |
+| flora_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 151 | 8.8 | 32.3 |
+| flora_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 142 | 8.2 | 24.1 |
+| flora_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 106 | 9.0 | 19.7 |
+| flora_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 112 | 8.7 | 21.6 |
+| flora_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 80 | 8.7 | 18.2 |
+| flora_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 138 | 7.9 | 29.3 |
+| flora_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 83 | 9.1 | 12.7 |
+| flora_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 99 | 9.2 | 17.9 |
+| flora_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 109 | 10.0 | 25.3 |
+| flora_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 78 | 8.3 | 13.9 |
+| flora_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 119 | 9.8 | 31.6 |
+| flora_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 75 | 9.9 | 13.0 |
+| flora_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 75 | 10.9 | 12.2 |
+| flora_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 62 | 8.5 | 8.6 |
+| flora_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 59 | 11.0 | 10.4 |
+| flora_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 83 | 10.2 | 8.7 |
+| flora_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 75 | 12.4 | 12.5 |
+| flora_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 74 | 8.9 | 10.1 |
+| flora_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 89 | 8.0 | 25.5 |
+| flora_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 69 | 9.8 | 9.6 |
+| flora_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 67 | 9.4 | 3.1 |
+| flora_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 74 | 9.0 | 8.3 |
+| flora_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 60 | 11.5 | 2.7 |
+| flora_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 77 | 8.8 | 12.5 |
+| flora_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 474 | 33.5 | 49.0 |
+| flora_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 644 | 9.3 | 48.0 |
+| flora_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 817 | 9.4 | 48.1 |
+| flora_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 608 | 9.1 | 49.4 |
+| flora_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 745 | 8.2 | 48.7 |
+| flora_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 133 | 8.4 | 35.7 |
+| flora_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 112 | 10.3 | 37.7 |
+| flora_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 133 | 8.6 | 40.4 |
+| flora_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 126 | 10.4 | 36.8 |
+| flora_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 116 | 9.1 | 35.0 |
+| flora_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 144 | 9.1 | 29.0 |
+| flora_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 156 | 9.3 | 35.8 |
+| flora_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 170 | 10.6 | 22.8 |
+| flora_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 121 | 10.7 | 19.6 |
+| flora_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 111 | 8.4 | 21.6 |
+| flora_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 74 | 8.2 | 16.7 |
+| flora_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 123 | 9.5 | 25.4 |
+| flora_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 89 | 12.5 | 11.2 |
+| flora_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 88 | 11.4 | 15.2 |
+| flora_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 108 | 9.9 | 20.8 |
+| flora_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 72 | 9.1 | 9.7 |
+| flora_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 90 | 8.2 | 23.1 |
+| flora_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 64 | 9.5 | 9.1 |
+| flora_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 56 | 9.0 | 5.2 |
+| flora_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 54 | 11.2 | 1.3 |
+| flora_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 49 | 7.6 | 5.9 |
+| flora_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 60 | 7.8 | 6.1 |
+| flora_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 62 | 8.2 | 6.7 |
+| flora_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 53 | 9.6 | 5.6 |
+| flora_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 52 | 10.0 | 5.2 |
+| flora_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 47 | 9.1 | 1.8 |
+| flora_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 57 | 9.8 | 1.7 |
+| flora_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 57 | 9.5 | 2.4 |
+| flora_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 52 | 8.6 | 2.6 |
+| flora_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 48 | 9.6 | 1.5 |
+| grayscale_max | EPSG:25833 | 8 | 03 | 4 | 5 | 465 | 8.0 | 28.5 |
+| grayscale_max | EPSG:25833 | 8 | 03 | 3 | 4 | 655 | 7.5 | 29.5 |
+| grayscale_max | EPSG:25833 | 8 | 03 | 4 | 3 | 783 | 8.9 | 26.8 |
+| grayscale_max | EPSG:25833 | 8 | 03 | 3 | 5 | 606 | 9.4 | 28.8 |
+| grayscale_max | EPSG:25833 | 8 | 03 | 3 | 3 | 749 | 9.7 | 27.0 |
+| grayscale_max | EPSG:25833 | 10 | 05 | 12 | 19 | 138 | 9.3 | 24.8 |
+| grayscale_max | EPSG:25833 | 10 | 05 | 17 | 15 | 130 | 8.5 | 20.9 |
+| grayscale_max | EPSG:25833 | 10 | 05 | 14 | 14 | 122 | 9.4 | 22.3 |
+| grayscale_max | EPSG:25833 | 10 | 05 | 18 | 21 | 125 | 8.3 | 23.9 |
+| grayscale_max | EPSG:25833 | 10 | 05 | 19 | 13 | 113 | 7.6 | 18.9 |
+| grayscale_max | EPSG:25833 | 12 | 07 | 59 | 79 | 152 | 11.8 | 22.8 |
+| grayscale_max | EPSG:25833 | 12 | 07 | 80 | 71 | 178 | 11.1 | 28.8 |
+| grayscale_max | EPSG:25833 | 12 | 07 | 51 | 81 | 176 | 8.8 | 18.7 |
+| grayscale_max | EPSG:25833 | 12 | 07 | 77 | 59 | 98 | 8.2 | 14.6 |
+| grayscale_max | EPSG:25833 | 12 | 07 | 76 | 54 | 113 | 7.4 | 14.9 |
+| grayscale_max | EPSG:25833 | 13 | 08 | 137 | 85 | 80 | 8.8 | 13.6 |
+| grayscale_max | EPSG:25833 | 13 | 08 | 124 | 122 | 138 | 9.9 | 23.5 |
+| grayscale_max | EPSG:25833 | 13 | 08 | 154 | 118 | 91 | 8.3 | 9.5 |
+| grayscale_max | EPSG:25833 | 13 | 08 | 156 | 121 | 90 | 8.5 | 13.7 |
+| grayscale_max | EPSG:25833 | 13 | 08 | 143 | 169 | 90 | 9.3 | 20.9 |
+| grayscale_max | EPSG:25833 | 14 | 09 | 226 | 290 | 72 | 8.9 | 15.0 |
+| grayscale_max | EPSG:25833 | 14 | 09 | 205 | 299 | 116 | 9.4 | 28.6 |
+| grayscale_max | EPSG:25833 | 14 | 09 | 209 | 291 | 79 | 12.1 | 17.0 |
+| grayscale_max | EPSG:25833 | 14 | 09 | 281 | 280 | 72 | 11.2 | 14.5 |
+| grayscale_max | EPSG:25833 | 14 | 09 | 244 | 306 | 67 | 10.0 | 10.2 |
+| grayscale_max | EPSG:25833 | 16 | 11 | 961 | 697 | 56 | 8.2 | 7.8 |
+| grayscale_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 66 | 8.0 | 10.2 |
+| grayscale_max | EPSG:25833 | 16 | 11 | 900 | 843 | 74 | 9.0 | 9.6 |
+| grayscale_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 69 | 10.5 | 8.1 |
+| grayscale_max | EPSG:25833 | 16 | 11 | 933 | 690 | 100 | 8.8 | 20.9 |
+| grayscale_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 68 | 8.3 | 8.1 |
+| grayscale_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 69 | 9.1 | 3.2 |
+| grayscale_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 69 | 8.1 | 6.8 |
+| grayscale_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 56 | 8.3 | 2.4 |
+| grayscale_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 71 | 8.3 | 12.1 |
+| grayscale_min | EPSG:25833 | 8 | 03 | 4 | 5 | 98 | 8.1 | 6.8 |
+| grayscale_min | EPSG:25833 | 8 | 03 | 3 | 4 | 123 | 8.4 | 8.9 |
+| grayscale_min | EPSG:25833 | 8 | 03 | 4 | 3 | 205 | 10.4 | 9.3 |
+| grayscale_min | EPSG:25833 | 8 | 03 | 3 | 5 | 119 | 8.3 | 9.0 |
+| grayscale_min | EPSG:25833 | 8 | 03 | 3 | 3 | 171 | 8.7 | 9.3 |
+| grayscale_min | EPSG:25833 | 10 | 05 | 12 | 19 | 67 | 7.4 | 14.6 |
+| grayscale_min | EPSG:25833 | 10 | 05 | 17 | 15 | 43 | 6.9 | 9.7 |
+| grayscale_min | EPSG:25833 | 10 | 05 | 14 | 14 | 45 | 6.9 | 9.2 |
+| grayscale_min | EPSG:25833 | 10 | 05 | 18 | 21 | 43 | 7.3 | 7.8 |
+| grayscale_min | EPSG:25833 | 10 | 05 | 19 | 13 | 38 | 7.1 | 5.5 |
+| grayscale_min | EPSG:25833 | 12 | 07 | 59 | 79 | 69 | 7.5 | 7.7 |
+| grayscale_min | EPSG:25833 | 12 | 07 | 80 | 71 | 81 | 7.7 | 12.9 |
+| grayscale_min | EPSG:25833 | 12 | 07 | 51 | 81 | 98 | 7.8 | 13.3 |
+| grayscale_min | EPSG:25833 | 12 | 07 | 77 | 59 | 67 | 7.9 | 8.2 |
+| grayscale_min | EPSG:25833 | 12 | 07 | 76 | 54 | 71 | 7.6 | 7.9 |
+| grayscale_min | EPSG:25833 | 13 | 08 | 137 | 85 | 42 | 7.3 | 7.9 |
+| grayscale_min | EPSG:25833 | 13 | 08 | 124 | 122 | 84 | 6.7 | 12.1 |
+| grayscale_min | EPSG:25833 | 13 | 08 | 154 | 118 | 60 | 7.0 | 6.3 |
+| grayscale_min | EPSG:25833 | 13 | 08 | 156 | 121 | 71 | 7.7 | 8.6 |
+| grayscale_min | EPSG:25833 | 13 | 08 | 143 | 169 | 65 | 7.0 | 11.6 |
+| grayscale_min | EPSG:25833 | 14 | 09 | 226 | 290 | 35 | 7.3 | 3.0 |
+| grayscale_min | EPSG:25833 | 14 | 09 | 205 | 299 | 54 | 7.6 | 12.9 |
+| grayscale_min | EPSG:25833 | 14 | 09 | 209 | 291 | 34 | 6.9 | 1.8 |
+| grayscale_min | EPSG:25833 | 14 | 09 | 281 | 280 | 31 | 7.2 | 2.2 |
+| grayscale_min | EPSG:25833 | 14 | 09 | 244 | 306 | 31 | 7.5 | 2.0 |
+| grayscale_min | EPSG:25833 | 16 | 11 | 961 | 697 | 33 | 6.8 | 3.6 |
+| grayscale_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 33 | 8.4 | 3.0 |
+| grayscale_min | EPSG:25833 | 16 | 11 | 900 | 843 | 36 | 8.5 | 5.6 |
+| grayscale_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 37 | 8.5 | 4.2 |
+| grayscale_min | EPSG:25833 | 16 | 11 | 933 | 690 | 37 | 7.9 | 8.7 |
+| grayscale_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 32 | 7.8 | 4.3 |
+| grayscale_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 33 | 8.1 | 0.1 |
+| grayscale_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 34 | 7.2 | 2.4 |
+| grayscale_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 28 | 7.6 | 0.8 |
+| grayscale_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 36 | 8.8 | 5.9 |
+| grayscale_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 95 | 7.1 | 6.8 |
+| grayscale_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 117 | 6.1 | 8.9 |
+| grayscale_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 174 | 5.7 | 9.3 |
+| grayscale_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 116 | 6.7 | 9.0 |
+| grayscale_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 164 | 6.7 | 9.3 |
+| grayscale_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 91 | 8.2 | 17.2 |
+| grayscale_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 58 | 8.1 | 11.0 |
+| grayscale_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 60 | 7.9 | 10.6 |
+| grayscale_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 64 | 8.1 | 8.7 |
+| grayscale_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 66 | 9.1 | 7.1 |
+| grayscale_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 94 | 13.9 | 7.9 |
+| grayscale_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 115 | 9.4 | 13.1 |
+| grayscale_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 117 | 8.9 | 14.0 |
+| grayscale_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 74 | 11.2 | 9.1 |
+| grayscale_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 80 | 10.0 | 9.3 |
+| grayscale_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 56 | 9.9 | 8.0 |
+| grayscale_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 99 | 11.1 | 12.4 |
+| grayscale_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 70 | 10.0 | 6.5 |
+| grayscale_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 78 | 9.9 | 9.4 |
+| grayscale_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 86 | 9.2 | 11.7 |
+| grayscale_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 63 | 12.3 | 3.2 |
+| grayscale_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 106 | 8.5 | 16.1 |
+| grayscale_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 48 | 8.8 | 1.8 |
+| grayscale_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 50 | 11.0 | 2.8 |
+| grayscale_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 56 | 12.0 | 2.1 |
+| grayscale_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 56 | 11.4 | 4.9 |
+| grayscale_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 56 | 9.2 | 3.4 |
+| grayscale_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 50 | 9.7 | 7.3 |
+| grayscale_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 55 | 9.1 | 7.1 |
+| grayscale_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 73 | 8.5 | 20.5 |
+| grayscale_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 54 | 10.5 | 8.0 |
+| grayscale_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 45 | 9.3 | 1.3 |
+| grayscale_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 46 | 7.3 | 4.4 |
+| grayscale_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 37 | 8.3 | 0.8 |
+| grayscale_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 54 | 8.2 | 10.8 |
+| grayscale_std | EPSG:25833 | 8 | 03 | 4 | 5 | 455 | 8.0 | 28.5 |
+| grayscale_std | EPSG:25833 | 8 | 03 | 3 | 4 | 662 | 8.1 | 29.5 |
+| grayscale_std | EPSG:25833 | 8 | 03 | 4 | 3 | 794 | 8.9 | 26.8 |
+| grayscale_std | EPSG:25833 | 8 | 03 | 3 | 5 | 577 | 9.4 | 28.8 |
+| grayscale_std | EPSG:25833 | 8 | 03 | 3 | 3 | 743 | 8.3 | 27.0 |
+| grayscale_std | EPSG:25833 | 10 | 05 | 12 | 19 | 131 | 8.2 | 24.8 |
+| grayscale_std | EPSG:25833 | 10 | 05 | 17 | 15 | 131 | 8.0 | 20.9 |
+| grayscale_std | EPSG:25833 | 10 | 05 | 14 | 14 | 131 | 9.7 | 22.3 |
+| grayscale_std | EPSG:25833 | 10 | 05 | 18 | 21 | 103 | 8.8 | 23.9 |
+| grayscale_std | EPSG:25833 | 10 | 05 | 19 | 13 | 115 | 7.8 | 18.9 |
+| grayscale_std | EPSG:25833 | 12 | 07 | 59 | 79 | 133 | 8.6 | 19.4 |
+| grayscale_std | EPSG:25833 | 12 | 07 | 80 | 71 | 148 | 7.3 | 28.2 |
+| grayscale_std | EPSG:25833 | 12 | 07 | 51 | 81 | 187 | 8.9 | 17.6 |
+| grayscale_std | EPSG:25833 | 12 | 07 | 77 | 59 | 102 | 9.3 | 14.6 |
+| grayscale_std | EPSG:25833 | 12 | 07 | 76 | 54 | 128 | 10.5 | 14.9 |
+| grayscale_std | EPSG:25833 | 13 | 08 | 137 | 85 | 87 | 9.3 | 13.6 |
+| grayscale_std | EPSG:25833 | 13 | 08 | 124 | 122 | 132 | 8.6 | 20.5 |
+| grayscale_std | EPSG:25833 | 13 | 08 | 154 | 118 | 80 | 10.4 | 9.1 |
+| grayscale_std | EPSG:25833 | 13 | 08 | 156 | 121 | 97 | 11.6 | 12.4 |
+| grayscale_std | EPSG:25833 | 13 | 08 | 143 | 169 | 116 | 10.1 | 18.5 |
+| grayscale_std | EPSG:25833 | 14 | 09 | 226 | 290 | 95 | 7.9 | 12.8 |
+| grayscale_std | EPSG:25833 | 14 | 09 | 205 | 299 | 142 | 8.5 | 27.7 |
+| grayscale_std | EPSG:25833 | 14 | 09 | 209 | 291 | 78 | 8.3 | 14.2 |
+| grayscale_std | EPSG:25833 | 14 | 09 | 281 | 280 | 70 | 8.5 | 10.3 |
+| grayscale_std | EPSG:25833 | 14 | 09 | 244 | 306 | 61 | 8.6 | 6.8 |
+| grayscale_std | EPSG:25833 | 16 | 11 | 961 | 697 | 58 | 8.7 | 6.4 |
+| grayscale_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 71 | 9.6 | 7.9 |
+| grayscale_std | EPSG:25833 | 16 | 11 | 900 | 843 | 78 | 8.4 | 8.6 |
+| grayscale_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 64 | 9.1 | 8.1 |
+| grayscale_std | EPSG:25833 | 16 | 11 | 933 | 690 | 128 | 9.6 | 20.9 |
+| grayscale_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 63 | 8.9 | 8.1 |
+| grayscale_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 65 | 8.8 | 3.2 |
+| grayscale_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 67 | 8.6 | 5.7 |
+| grayscale_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 56 | 13.2 | 2.4 |
+| grayscale_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 113 | 8.7 | 11.9 |
+| grayscale_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 456 | 7.8 | 29.9 |
+| grayscale_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 582 | 8.3 | 30.9 |
+| grayscale_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 700 | 8.1 | 26.8 |
+| grayscale_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 555 | 7.9 | 30.8 |
+| grayscale_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 712 | 8.0 | 28.1 |
+| grayscale_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 137 | 8.4 | 23.7 |
+| grayscale_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 105 | 8.6 | 20.9 |
+| grayscale_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 126 | 7.7 | 24.4 |
+| grayscale_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 100 | 7.8 | 23.4 |
+| grayscale_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 92 | 7.6 | 18.9 |
+| grayscale_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 117 | 7.3 | 21.5 |
+| grayscale_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 128 | 8.7 | 24.1 |
+| grayscale_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 144 | 7.7 | 18.7 |
+| grayscale_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 97 | 11.4 | 13.7 |
+| grayscale_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 115 | 7.4 | 14.3 |
+| grayscale_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 82 | 8.8 | 13.1 |
+| grayscale_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 140 | 8.7 | 22.8 |
+| grayscale_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 89 | 12.9 | 9.2 |
+| grayscale_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 104 | 11.2 | 13.7 |
+| grayscale_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 112 | 8.1 | 20.2 |
+| grayscale_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 81 | 9.3 | 9.9 |
+| grayscale_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 128 | 8.0 | 24.2 |
+| grayscale_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 72 | 9.9 | 8.9 |
+| grayscale_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 73 | 9.4 | 9.3 |
+| grayscale_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 78 | 9.8 | 7.0 |
+| grayscale_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 73 | 8.6 | 7.7 |
+| grayscale_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 77 | 7.9 | 6.6 |
+| grayscale_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 79 | 16.7 | 9.4 |
+| grayscale_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 84 | 11.5 | 7.7 |
+| grayscale_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 109 | 8.8 | 20.5 |
+| grayscale_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 73 | 11.5 | 8.0 |
+| grayscale_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 65 | 10.6 | 2.2 |
+| grayscale_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 72 | 11.1 | 6.5 |
+| grayscale_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 62 | 9.6 | 1.7 |
+| grayscale_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 84 | 9.1 | 10.9 |
+| grayscale_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 482 | 9.3 | 28.5 |
+| grayscale_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 669 | 8.1 | 29.5 |
+| grayscale_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 809 | 8.2 | 26.8 |
+| grayscale_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 588 | 9.2 | 28.8 |
+| grayscale_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 743 | 9.2 | 27.0 |
+| grayscale_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 133 | 8.5 | 23.5 |
+| grayscale_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 110 | 8.8 | 20.5 |
+| grayscale_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 135 | 9.4 | 21.9 |
+| grayscale_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 109 | 8.9 | 23.3 |
+| grayscale_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 106 | 9.1 | 18.6 |
+| grayscale_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 132 | 8.4 | 18.5 |
+| grayscale_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 154 | 8.8 | 27.4 |
+| grayscale_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 160 | 9.3 | 16.8 |
+| grayscale_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 104 | 10.0 | 13.8 |
+| grayscale_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 107 | 9.9 | 14.3 |
+| grayscale_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 87 | 8.4 | 11.8 |
+| grayscale_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 135 | 12.1 | 19.2 |
+| grayscale_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 80 | 9.4 | 7.6 |
+| grayscale_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 101 | 10.1 | 11.1 |
+| grayscale_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 107 | 10.3 | 15.9 |
+| grayscale_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 71 | 10.2 | 5.8 |
+| grayscale_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 86 | 10.8 | 15.8 |
+| grayscale_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 63 | 9.7 | 6.4 |
+| grayscale_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 62 | 12.4 | 3.4 |
+| grayscale_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 55 | 9.7 | 1.1 |
+| grayscale_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 46 | 9.8 | 3.9 |
+| grayscale_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 64 | 11.3 | 4.8 |
+| grayscale_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 65 | 9.0 | 3.6 |
+| grayscale_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 54 | 9.2 | 3.8 |
+| grayscale_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 49 | 9.2 | 3.4 |
+| grayscale_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 45 | 12.0 | 1.4 |
+| grayscale_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 52 | 10.4 | 1.0 |
+| grayscale_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 55 | 10.2 | 1.6 |
+| grayscale_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 45 | 9.6 | 1.6 |
+| grayscale_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 50 | 10.7 | 0.7 |
+| hico_max | EPSG:25833 | 8 | 03 | 4 | 5 | 434 | 6.4 | 46.0 |
+| hico_max | EPSG:25833 | 8 | 03 | 3 | 4 | 655 | 7.9 | 46.7 |
+| hico_max | EPSG:25833 | 8 | 03 | 4 | 3 | 816 | 8.8 | 46.6 |
+| hico_max | EPSG:25833 | 8 | 03 | 3 | 5 | 604 | 8.0 | 46.7 |
+| hico_max | EPSG:25833 | 8 | 03 | 3 | 3 | 742 | 7.8 | 44.8 |
+| hico_max | EPSG:25833 | 10 | 05 | 12 | 19 | 150 | 8.1 | 34.4 |
+| hico_max | EPSG:25833 | 10 | 05 | 17 | 15 | 114 | 7.9 | 33.2 |
+| hico_max | EPSG:25833 | 10 | 05 | 14 | 14 | 129 | 8.1 | 36.2 |
+| hico_max | EPSG:25833 | 10 | 05 | 18 | 21 | 111 | 7.3 | 35.0 |
+| hico_max | EPSG:25833 | 10 | 05 | 19 | 13 | 104 | 7.5 | 31.1 |
+| hico_max | EPSG:25833 | 12 | 07 | 59 | 79 | 163 | 8.0 | 32.5 |
+| hico_max | EPSG:25833 | 12 | 07 | 80 | 71 | 167 | 7.7 | 34.0 |
+| hico_max | EPSG:25833 | 12 | 07 | 51 | 81 | 187 | 8.3 | 24.3 |
+| hico_max | EPSG:25833 | 12 | 07 | 77 | 59 | 97 | 7.9 | 21.2 |
+| hico_max | EPSG:25833 | 12 | 07 | 76 | 54 | 122 | 9.1 | 22.5 |
+| hico_max | EPSG:25833 | 13 | 08 | 137 | 85 | 83 | 8.8 | 19.3 |
+| hico_max | EPSG:25833 | 13 | 08 | 124 | 122 | 136 | 8.5 | 29.6 |
+| hico_max | EPSG:25833 | 13 | 08 | 154 | 118 | 85 | 9.2 | 13.8 |
+| hico_max | EPSG:25833 | 13 | 08 | 156 | 121 | 114 | 12.1 | 17.8 |
+| hico_max | EPSG:25833 | 13 | 08 | 143 | 169 | 129 | 8.3 | 24.9 |
+| hico_max | EPSG:25833 | 14 | 09 | 226 | 290 | 96 | 7.9 | 19.3 |
+| hico_max | EPSG:25833 | 14 | 09 | 205 | 299 | 165 | 8.9 | 36.2 |
+| hico_max | EPSG:25833 | 14 | 09 | 209 | 291 | 93 | 10.9 | 20.1 |
+| hico_max | EPSG:25833 | 14 | 09 | 281 | 280 | 89 | 9.6 | 18.7 |
+| hico_max | EPSG:25833 | 14 | 09 | 244 | 306 | 90 | 8.9 | 13.6 |
+| hico_max | EPSG:25833 | 16 | 11 | 961 | 697 | 82 | 8.7 | 11.2 |
+| hico_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 93 | 8.9 | 12.1 |
+| hico_max | EPSG:25833 | 16 | 11 | 900 | 843 | 102 | 9.1 | 13.9 |
+| hico_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 77 | 8.8 | 11.4 |
+| hico_max | EPSG:25833 | 16 | 11 | 933 | 690 | 105 | 9.2 | 29.4 |
+| hico_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 78 | 9.3 | 10.5 |
+| hico_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 90 | 9.7 | 5.1 |
+| hico_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 93 | 8.6 | 9.7 |
+| hico_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 67 | 9.2 | 3.7 |
+| hico_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 80 | 8.0 | 15.7 |
+| hico_min | EPSG:25833 | 8 | 03 | 4 | 5 | 99 | 7.5 | 9.3 |
+| hico_min | EPSG:25833 | 8 | 03 | 3 | 4 | 121 | 6.7 | 11.7 |
+| hico_min | EPSG:25833 | 8 | 03 | 4 | 3 | 173 | 6.5 | 12.0 |
+| hico_min | EPSG:25833 | 8 | 03 | 3 | 5 | 108 | 6.6 | 12.0 |
+| hico_min | EPSG:25833 | 8 | 03 | 3 | 3 | 161 | 6.6 | 11.8 |
+| hico_min | EPSG:25833 | 10 | 05 | 12 | 19 | 71 | 7.5 | 22.1 |
+| hico_min | EPSG:25833 | 10 | 05 | 17 | 15 | 42 | 7.3 | 15.7 |
+| hico_min | EPSG:25833 | 10 | 05 | 14 | 14 | 43 | 6.6 | 16.6 |
+| hico_min | EPSG:25833 | 10 | 05 | 18 | 21 | 43 | 7.3 | 13.4 |
+| hico_min | EPSG:25833 | 10 | 05 | 19 | 13 | 45 | 7.5 | 10.6 |
+| hico_min | EPSG:25833 | 12 | 07 | 59 | 79 | 72 | 6.7 | 11.0 |
+| hico_min | EPSG:25833 | 12 | 07 | 80 | 71 | 88 | 8.9 | 16.5 |
+| hico_min | EPSG:25833 | 12 | 07 | 51 | 81 | 121 | 9.8 | 16.0 |
+| hico_min | EPSG:25833 | 12 | 07 | 77 | 59 | 85 | 9.4 | 12.0 |
+| hico_min | EPSG:25833 | 12 | 07 | 76 | 54 | 82 | 9.2 | 12.0 |
+| hico_min | EPSG:25833 | 13 | 08 | 137 | 85 | 54 | 9.3 | 10.6 |
+| hico_min | EPSG:25833 | 13 | 08 | 124 | 122 | 96 | 9.7 | 15.2 |
+| hico_min | EPSG:25833 | 13 | 08 | 154 | 118 | 68 | 10.1 | 8.3 |
+| hico_min | EPSG:25833 | 13 | 08 | 156 | 121 | 79 | 11.1 | 11.0 |
+| hico_min | EPSG:25833 | 13 | 08 | 143 | 169 | 86 | 9.1 | 14.8 |
+| hico_min | EPSG:25833 | 14 | 09 | 226 | 290 | 58 | 8.6 | 4.8 |
+| hico_min | EPSG:25833 | 14 | 09 | 205 | 299 | 78 | 9.6 | 19.0 |
+| hico_min | EPSG:25833 | 14 | 09 | 209 | 291 | 47 | 7.9 | 2.9 |
+| hico_min | EPSG:25833 | 14 | 09 | 281 | 280 | 44 | 8.0 | 3.5 |
+| hico_min | EPSG:25833 | 14 | 09 | 244 | 306 | 39 | 9.3 | 2.7 |
+| hico_min | EPSG:25833 | 16 | 11 | 961 | 697 | 43 | 10.1 | 4.3 |
+| hico_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 45 | 10.2 | 5.0 |
+| hico_min | EPSG:25833 | 16 | 11 | 900 | 843 | 42 | 8.6 | 8.0 |
+| hico_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 47 | 8.7 | 6.2 |
+| hico_min | EPSG:25833 | 16 | 11 | 933 | 690 | 51 | 8.1 | 12.8 |
+| hico_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 43 | 7.4 | 5.1 |
+| hico_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 39 | 9.0 | 0.1 |
+| hico_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 49 | 9.0 | 2.5 |
+| hico_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 44 | 8.6 | 1.3 |
+| hico_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 48 | 8.8 | 6.9 |
+| hico_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 98 | 8.1 | 9.3 |
+| hico_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 141 | 8.3 | 11.7 |
+| hico_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 204 | 7.0 | 12.0 |
+| hico_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 117 | 6.6 | 12.0 |
+| hico_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 159 | 7.2 | 11.8 |
+| hico_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 99 | 7.9 | 23.9 |
+| hico_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 63 | 7.8 | 16.3 |
+| hico_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 62 | 7.1 | 17.5 |
+| hico_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 66 | 8.5 | 13.9 |
+| hico_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 58 | 8.6 | 11.8 |
+| hico_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 78 | 10.3 | 11.3 |
+| hico_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 101 | 8.7 | 17.0 |
+| hico_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 112 | 8.6 | 17.0 |
+| hico_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 70 | 8.8 | 13.0 |
+| hico_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 80 | 9.8 | 13.1 |
+| hico_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 52 | 9.1 | 10.6 |
+| hico_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 88 | 6.6 | 15.6 |
+| hico_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 69 | 7.6 | 8.6 |
+| hico_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 83 | 10.0 | 12.2 |
+| hico_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 87 | 11.5 | 14.8 |
+| hico_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 75 | 8.6 | 5.0 |
+| hico_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 97 | 9.0 | 23.0 |
+| hico_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 55 | 10.7 | 2.9 |
+| hico_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 46 | 10.0 | 4.2 |
+| hico_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 47 | 12.4 | 2.8 |
+| hico_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 53 | 11.4 | 5.9 |
+| hico_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 55 | 9.3 | 5.3 |
+| hico_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 55 | 10.1 | 9.9 |
+| hico_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 54 | 10.4 | 10.0 |
+| hico_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 81 | 9.4 | 26.8 |
+| hico_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 48 | 8.6 | 10.4 |
+| hico_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 45 | 11.9 | 2.3 |
+| hico_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 44 | 10.1 | 5.6 |
+| hico_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 48 | 10.4 | 1.3 |
+| hico_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 59 | 8.5 | 13.2 |
+| hico_std | EPSG:25833 | 8 | 03 | 4 | 5 | 463 | 8.8 | 46.0 |
+| hico_std | EPSG:25833 | 8 | 03 | 3 | 4 | 693 | 8.5 | 46.7 |
+| hico_std | EPSG:25833 | 8 | 03 | 4 | 3 | 816 | 7.6 | 46.6 |
+| hico_std | EPSG:25833 | 8 | 03 | 3 | 5 | 583 | 8.5 | 46.7 |
+| hico_std | EPSG:25833 | 8 | 03 | 3 | 3 | 739 | 7.7 | 44.8 |
+| hico_std | EPSG:25833 | 10 | 05 | 12 | 19 | 132 | 7.4 | 34.4 |
+| hico_std | EPSG:25833 | 10 | 05 | 17 | 15 | 114 | 8.5 | 33.2 |
+| hico_std | EPSG:25833 | 10 | 05 | 14 | 14 | 122 | 8.5 | 36.2 |
+| hico_std | EPSG:25833 | 10 | 05 | 18 | 21 | 120 | 10.6 | 35.0 |
+| hico_std | EPSG:25833 | 10 | 05 | 19 | 13 | 105 | 7.9 | 31.1 |
+| hico_std | EPSG:25833 | 12 | 07 | 59 | 79 | 136 | 10.9 | 29.1 |
+| hico_std | EPSG:25833 | 12 | 07 | 80 | 71 | 147 | 8.5 | 33.7 |
+| hico_std | EPSG:25833 | 12 | 07 | 51 | 81 | 178 | 8.2 | 23.2 |
+| hico_std | EPSG:25833 | 12 | 07 | 77 | 59 | 101 | 9.8 | 21.2 |
+| hico_std | EPSG:25833 | 12 | 07 | 76 | 54 | 120 | 20.1 | 22.5 |
+| hico_std | EPSG:25833 | 13 | 08 | 137 | 85 | 104 | 9.4 | 19.3 |
+| hico_std | EPSG:25833 | 13 | 08 | 124 | 122 | 132 | 7.7 | 26.5 |
+| hico_std | EPSG:25833 | 13 | 08 | 154 | 118 | 81 | 9.2 | 13.5 |
+| hico_std | EPSG:25833 | 13 | 08 | 156 | 121 | 101 | 9.3 | 17.0 |
+| hico_std | EPSG:25833 | 13 | 08 | 143 | 169 | 108 | 9.3 | 22.8 |
+| hico_std | EPSG:25833 | 14 | 09 | 226 | 290 | 86 | 7.7 | 16.7 |
+| hico_std | EPSG:25833 | 14 | 09 | 205 | 299 | 138 | 7.6 | 35.1 |
+| hico_std | EPSG:25833 | 14 | 09 | 209 | 291 | 80 | 7.6 | 17.0 |
+| hico_std | EPSG:25833 | 14 | 09 | 281 | 280 | 65 | 9.2 | 13.6 |
+| hico_std | EPSG:25833 | 14 | 09 | 244 | 306 | 67 | 8.6 | 9.2 |
+| hico_std | EPSG:25833 | 16 | 11 | 961 | 697 | 56 | 10.0 | 9.6 |
+| hico_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 72 | 9.9 | 9.5 |
+| hico_std | EPSG:25833 | 16 | 11 | 900 | 843 | 79 | 9.0 | 13.0 |
+| hico_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 66 | 9.1 | 11.4 |
+| hico_std | EPSG:25833 | 16 | 11 | 933 | 690 | 88 | 8.9 | 29.4 |
+| hico_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 66 | 9.6 | 10.5 |
+| hico_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 74 | 10.5 | 5.1 |
+| hico_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 84 | 8.0 | 7.9 |
+| hico_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 54 | 9.3 | 3.7 |
+| hico_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 77 | 8.0 | 15.6 |
+| hico_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 441 | 7.8 | 45.9 |
+| hico_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 581 | 8.5 | 47.2 |
+| hico_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 729 | 7.6 | 47.2 |
+| hico_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 513 | 8.2 | 47.8 |
+| hico_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 761 | 8.8 | 44.4 |
+| hico_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 137 | 10.6 | 33.8 |
+| hico_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 120 | 8.4 | 33.3 |
+| hico_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 112 | 8.4 | 37.7 |
+| hico_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 104 | 9.4 | 34.7 |
+| hico_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 137 | 11.4 | 30.9 |
+| hico_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 159 | 34.7 | 31.2 |
+| hico_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 142 | 9.0 | 32.8 |
+| hico_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 148 | 10.0 | 24.5 |
+| hico_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 123 | 13.4 | 20.7 |
+| hico_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 135 | 7.9 | 21.8 |
+| hico_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 76 | 7.7 | 18.7 |
+| hico_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 129 | 7.7 | 29.5 |
+| hico_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 88 | 9.4 | 13.5 |
+| hico_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 105 | 10.8 | 17.7 |
+| hico_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 115 | 8.4 | 24.2 |
+| hico_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 81 | 8.6 | 14.1 |
+| hico_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 126 | 9.0 | 33.0 |
+| hico_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 83 | 8.3 | 12.4 |
+| hico_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 70 | 8.8 | 11.8 |
+| hico_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 78 | 10.8 | 9.9 |
+| hico_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 76 | 10.7 | 10.7 |
+| hico_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 91 | 8.9 | 8.9 |
+| hico_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 87 | 9.2 | 13.5 |
+| hico_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 78 | 9.4 | 11.1 |
+| hico_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 105 | 7.7 | 29.2 |
+| hico_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 80 | 8.8 | 10.4 |
+| hico_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 62 | 8.9 | 4.0 |
+| hico_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 74 | 8.7 | 9.3 |
+| hico_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 66 | 9.5 | 3.1 |
+| hico_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 80 | 8.3 | 13.7 |
+| hico_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 492 | 10.3 | 46.0 |
+| hico_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 670 | 7.0 | 46.7 |
+| hico_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 754 | 7.8 | 46.6 |
+| hico_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 574 | 8.3 | 46.7 |
+| hico_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 755 | 7.5 | 44.8 |
+| hico_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 138 | 8.1 | 33.4 |
+| hico_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 124 | 7.9 | 32.8 |
+| hico_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 122 | 9.1 | 35.9 |
+| hico_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 110 | 7.8 | 34.7 |
+| hico_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 120 | 7.8 | 30.9 |
+| hico_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 130 | 8.3 | 28.5 |
+| hico_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 139 | 9.3 | 33.9 |
+| hico_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 154 | 8.9 | 22.5 |
+| hico_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 114 | 11.7 | 20.6 |
+| hico_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 116 | 9.0 | 21.8 |
+| hico_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 74 | 9.3 | 17.3 |
+| hico_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 129 | 8.4 | 25.2 |
+| hico_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 86 | 10.4 | 11.9 |
+| hico_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 96 | 9.7 | 15.7 |
+| hico_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 109 | 9.8 | 20.4 |
+| hico_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 77 | 8.7 | 9.7 |
+| hico_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 89 | 8.7 | 22.7 |
+| hico_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 68 | 10.0 | 8.9 |
+| hico_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 59 | 10.5 | 5.4 |
+| hico_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 57 | 9.7 | 1.3 |
+| hico_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 47 | 11.2 | 6.4 |
+| hico_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 60 | 10.0 | 6.4 |
+| hico_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 59 | 8.1 | 7.0 |
+| hico_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 48 | 10.3 | 6.1 |
+| hico_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 51 | 9.0 | 5.6 |
+| hico_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 44 | 9.2 | 1.4 |
+| hico_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 56 | 8.4 | 2.2 |
+| hico_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 56 | 10.0 | 2.6 |
+| hico_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 52 | 10.7 | 3.1 |
+| hico_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 54 | 8.9 | 1.4 |
+| light_max | EPSG:25833 | 8 | 03 | 4 | 5 | 461 | 16.5 | 36.2 |
+| light_max | EPSG:25833 | 8 | 03 | 3 | 4 | 644 | 6.9 | 38.3 |
+| light_max | EPSG:25833 | 8 | 03 | 4 | 3 | 766 | 7.0 | 38.0 |
+| light_max | EPSG:25833 | 8 | 03 | 3 | 5 | 513 | 8.4 | 37.9 |
+| light_max | EPSG:25833 | 8 | 03 | 3 | 3 | 664 | 8.5 | 36.5 |
+| light_max | EPSG:25833 | 10 | 05 | 12 | 19 | 115 | 8.9 | 34.5 |
+| light_max | EPSG:25833 | 10 | 05 | 17 | 15 | 98 | 11.0 | 31.3 |
+| light_max | EPSG:25833 | 10 | 05 | 14 | 14 | 109 | 9.8 | 33.9 |
+| light_max | EPSG:25833 | 10 | 05 | 18 | 21 | 110 | 10.7 | 31.9 |
+| light_max | EPSG:25833 | 10 | 05 | 19 | 13 | 98 | 7.6 | 28.6 |
+| light_max | EPSG:25833 | 12 | 07 | 59 | 79 | 148 | 7.8 | 29.7 |
+| light_max | EPSG:25833 | 12 | 07 | 80 | 71 | 169 | 7.4 | 34.2 |
+| light_max | EPSG:25833 | 12 | 07 | 51 | 81 | 207 | 8.8 | 23.1 |
+| light_max | EPSG:25833 | 12 | 07 | 77 | 59 | 97 | 8.0 | 18.8 |
+| light_max | EPSG:25833 | 12 | 07 | 76 | 54 | 129 | 9.6 | 19.7 |
+| light_max | EPSG:25833 | 13 | 08 | 137 | 85 | 79 | 8.3 | 15.8 |
+| light_max | EPSG:25833 | 13 | 08 | 124 | 122 | 147 | 9.0 | 28.0 |
+| light_max | EPSG:25833 | 13 | 08 | 154 | 118 | 93 | 8.8 | 10.8 |
+| light_max | EPSG:25833 | 13 | 08 | 156 | 121 | 115 | 11.1 | 16.6 |
+| light_max | EPSG:25833 | 13 | 08 | 143 | 169 | 125 | 8.7 | 23.6 |
+| light_max | EPSG:25833 | 14 | 09 | 226 | 290 | 98 | 7.5 | 18.6 |
+| light_max | EPSG:25833 | 14 | 09 | 205 | 299 | 150 | 7.9 | 34.0 |
+| light_max | EPSG:25833 | 14 | 09 | 209 | 291 | 83 | 7.6 | 20.9 |
+| light_max | EPSG:25833 | 14 | 09 | 281 | 280 | 82 | 13.6 | 18.4 |
+| light_max | EPSG:25833 | 14 | 09 | 244 | 306 | 80 | 12.1 | 11.5 |
+| light_max | EPSG:25833 | 16 | 11 | 961 | 697 | 67 | 7.4 | 9.4 |
+| light_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 70 | 7.4 | 12.4 |
+| light_max | EPSG:25833 | 16 | 11 | 900 | 843 | 83 | 7.5 | 11.3 |
+| light_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 71 | 8.2 | 9.2 |
+| light_max | EPSG:25833 | 16 | 11 | 933 | 690 | 95 | 7.5 | 22.5 |
+| light_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 80 | 8.5 | 7.9 |
+| light_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 86 | 8.7 | 3.1 |
+| light_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 83 | 8.4 | 7.3 |
+| light_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 68 | 11.0 | 2.6 |
+| light_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 103 | 8.7 | 12.2 |
+| light_min | EPSG:25833 | 8 | 03 | 4 | 5 | 124 | 10.1 | 6.8 |
+| light_min | EPSG:25833 | 8 | 03 | 3 | 4 | 160 | 8.1 | 9.6 |
+| light_min | EPSG:25833 | 8 | 03 | 4 | 3 | 220 | 8.8 | 8.8 |
+| light_min | EPSG:25833 | 8 | 03 | 3 | 5 | 145 | 8.6 | 10.1 |
+| light_min | EPSG:25833 | 8 | 03 | 3 | 3 | 203 | 9.6 | 9.2 |
+| light_min | EPSG:25833 | 10 | 05 | 12 | 19 | 82 | 7.8 | 20.0 |
+| light_min | EPSG:25833 | 10 | 05 | 17 | 15 | 55 | 8.5 | 13.6 |
+| light_min | EPSG:25833 | 10 | 05 | 14 | 14 | 57 | 8.3 | 14.3 |
+| light_min | EPSG:25833 | 10 | 05 | 18 | 21 | 52 | 8.1 | 10.6 |
+| light_min | EPSG:25833 | 10 | 05 | 19 | 13 | 49 | 8.7 | 8.0 |
+| light_min | EPSG:25833 | 12 | 07 | 59 | 79 | 88 | 12.3 | 8.6 |
+| light_min | EPSG:25833 | 12 | 07 | 80 | 71 | 109 | 9.8 | 14.1 |
+| light_min | EPSG:25833 | 12 | 07 | 51 | 81 | 117 | 9.4 | 14.4 |
+| light_min | EPSG:25833 | 12 | 07 | 77 | 59 | 79 | 8.3 | 8.2 |
+| light_min | EPSG:25833 | 12 | 07 | 76 | 54 | 87 | 9.6 | 9.1 |
+| light_min | EPSG:25833 | 13 | 08 | 137 | 85 | 54 | 9.1 | 8.6 |
+| light_min | EPSG:25833 | 13 | 08 | 124 | 122 | 87 | 9.1 | 13.1 |
+| light_min | EPSG:25833 | 13 | 08 | 154 | 118 | 64 | 9.0 | 6.4 |
+| light_min | EPSG:25833 | 13 | 08 | 156 | 121 | 74 | 9.6 | 8.8 |
+| light_min | EPSG:25833 | 13 | 08 | 143 | 169 | 89 | 10.9 | 12.0 |
+| light_min | EPSG:25833 | 14 | 09 | 226 | 290 | 59 | 11.0 | 3.3 |
+| light_min | EPSG:25833 | 14 | 09 | 205 | 299 | 87 | 9.4 | 13.4 |
+| light_min | EPSG:25833 | 14 | 09 | 209 | 291 | 51 | 8.6 | 1.9 |
+| light_min | EPSG:25833 | 14 | 09 | 281 | 280 | 46 | 11.5 | 2.4 |
+| light_min | EPSG:25833 | 14 | 09 | 244 | 306 | 48 | 11.4 | 2.0 |
+| light_min | EPSG:25833 | 16 | 11 | 961 | 697 | 51 | 10.7 | 3.8 |
+| light_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 50 | 9.0 | 3.5 |
+| light_min | EPSG:25833 | 16 | 11 | 900 | 843 | 41 | 9.0 | 5.9 |
+| light_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 44 | 9.6 | 4.5 |
+| light_min | EPSG:25833 | 16 | 11 | 933 | 690 | 46 | 9.2 | 8.1 |
+| light_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 42 | 8.6 | 4.2 |
+| light_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 35 | 8.4 | 0.1 |
+| light_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 48 | 8.8 | 2.4 |
+| light_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 42 | 11.7 | 0.3 |
+| light_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 47 | 8.8 | 6.0 |
+| light_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 104 | 7.5 | 6.8 |
+| light_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 134 | 8.1 | 9.6 |
+| light_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 201 | 17.4 | 8.8 |
+| light_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 125 | 7.3 | 10.1 |
+| light_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 188 | 7.6 | 9.2 |
+| light_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 103 | 7.6 | 23.1 |
+| light_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 60 | 8.1 | 15.5 |
+| light_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 66 | 8.1 | 16.1 |
+| light_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 60 | 7.9 | 11.8 |
+| light_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 71 | 7.6 | 9.8 |
+| light_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 69 | 10.8 | 9.1 |
+| light_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 96 | 9.5 | 14.3 |
+| light_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 124 | 9.3 | 15.4 |
+| light_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 74 | 10.3 | 9.2 |
+| light_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 77 | 8.4 | 10.4 |
+| light_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 53 | 9.1 | 8.7 |
+| light_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 91 | 8.3 | 13.6 |
+| light_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 71 | 10.8 | 6.6 |
+| light_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 79 | 9.6 | 10.0 |
+| light_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 78 | 9.0 | 12.2 |
+| light_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 61 | 9.3 | 3.5 |
+| light_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 108 | 8.0 | 18.0 |
+| light_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 51 | 10.7 | 1.9 |
+| light_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 43 | 9.0 | 3.0 |
+| light_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 44 | 9.4 | 2.0 |
+| light_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 44 | 8.4 | 5.0 |
+| light_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 49 | 8.9 | 3.7 |
+| light_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 50 | 10.0 | 7.5 |
+| light_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 58 | 9.5 | 7.5 |
+| light_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 76 | 8.8 | 20.9 |
+| light_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 46 | 7.3 | 7.8 |
+| light_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 40 | 9.5 | 1.2 |
+| light_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 49 | 8.6 | 4.3 |
+| light_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 43 | 8.9 | 0.4 |
+| light_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 56 | 9.2 | 10.6 |
+| light_std | EPSG:25833 | 8 | 03 | 4 | 5 | 445 | 10.7 | 36.2 |
+| light_std | EPSG:25833 | 8 | 03 | 3 | 4 | 613 | 8.1 | 38.3 |
+| light_std | EPSG:25833 | 8 | 03 | 4 | 3 | 791 | 10.8 | 38.0 |
+| light_std | EPSG:25833 | 8 | 03 | 3 | 5 | 566 | 8.0 | 37.9 |
+| light_std | EPSG:25833 | 8 | 03 | 3 | 3 | 740 | 10.5 | 36.5 |
+| light_std | EPSG:25833 | 10 | 05 | 12 | 19 | 148 | 7.7 | 34.5 |
+| light_std | EPSG:25833 | 10 | 05 | 17 | 15 | 116 | 8.6 | 31.3 |
+| light_std | EPSG:25833 | 10 | 05 | 14 | 14 | 126 | 8.0 | 33.9 |
+| light_std | EPSG:25833 | 10 | 05 | 18 | 21 | 108 | 7.8 | 31.9 |
+| light_std | EPSG:25833 | 10 | 05 | 19 | 13 | 103 | 8.4 | 28.6 |
+| light_std | EPSG:25833 | 12 | 07 | 59 | 79 | 132 | 9.7 | 26.1 |
+| light_std | EPSG:25833 | 12 | 07 | 80 | 71 | 143 | 8.9 | 33.8 |
+| light_std | EPSG:25833 | 12 | 07 | 51 | 81 | 181 | 9.4 | 21.9 |
+| light_std | EPSG:25833 | 12 | 07 | 77 | 59 | 100 | 9.3 | 18.8 |
+| light_std | EPSG:25833 | 12 | 07 | 76 | 54 | 109 | 10.1 | 19.7 |
+| light_std | EPSG:25833 | 13 | 08 | 137 | 85 | 81 | 9.8 | 15.8 |
+| light_std | EPSG:25833 | 13 | 08 | 124 | 122 | 143 | 9.4 | 24.7 |
+| light_std | EPSG:25833 | 13 | 08 | 154 | 118 | 81 | 11.2 | 10.0 |
+| light_std | EPSG:25833 | 13 | 08 | 156 | 121 | 89 | 10.1 | 15.2 |
+| light_std | EPSG:25833 | 13 | 08 | 143 | 169 | 113 | 9.0 | 21.2 |
+| light_std | EPSG:25833 | 14 | 09 | 226 | 290 | 97 | 11.2 | 16.1 |
+| light_std | EPSG:25833 | 14 | 09 | 205 | 299 | 153 | 8.1 | 32.7 |
+| light_std | EPSG:25833 | 14 | 09 | 209 | 291 | 83 | 11.5 | 17.4 |
+| light_std | EPSG:25833 | 14 | 09 | 281 | 280 | 72 | 9.1 | 12.7 |
+| light_std | EPSG:25833 | 14 | 09 | 244 | 306 | 72 | 9.9 | 7.3 |
+| light_std | EPSG:25833 | 16 | 11 | 961 | 697 | 60 | 9.1 | 7.3 |
+| light_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 69 | 9.1 | 9.5 |
+| light_std | EPSG:25833 | 16 | 11 | 900 | 843 | 85 | 8.0 | 9.6 |
+| light_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 68 | 10.6 | 9.2 |
+| light_std | EPSG:25833 | 16 | 11 | 933 | 690 | 90 | 8.3 | 22.5 |
+| light_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 61 | 9.7 | 7.9 |
+| light_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 70 | 9.2 | 3.1 |
+| light_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 71 | 9.2 | 5.9 |
+| light_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 58 | 8.8 | 2.6 |
+| light_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 73 | 11.3 | 12.0 |
+| light_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 416 | 8.5 | 36.1 |
+| light_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 571 | 8.6 | 38.6 |
+| light_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 732 | 8.8 | 36.8 |
+| light_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 572 | 12.8 | 38.2 |
+| light_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 702 | 8.9 | 36.0 |
+| light_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 122 | 8.0 | 32.8 |
+| light_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 101 | 8.5 | 30.7 |
+| light_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 113 | 10.1 | 34.7 |
+| light_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 92 | 8.0 | 30.3 |
+| light_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 103 | 9.5 | 27.9 |
+| light_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 115 | 8.4 | 28.4 |
+| light_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 111 | 7.7 | 29.2 |
+| light_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 114 | 8.2 | 22.4 |
+| light_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 90 | 8.3 | 17.8 |
+| light_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 99 | 8.8 | 19.2 |
+| light_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 74 | 8.7 | 15.1 |
+| light_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 133 | 8.9 | 27.3 |
+| light_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 82 | 10.1 | 10.2 |
+| light_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 113 | 9.4 | 16.6 |
+| light_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 113 | 8.5 | 22.9 |
+| light_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 85 | 9.2 | 12.5 |
+| light_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 137 | 8.7 | 30.5 |
+| light_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 73 | 7.9 | 11.0 |
+| light_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 72 | 9.6 | 11.3 |
+| light_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 77 | 8.0 | 7.4 |
+| light_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 73 | 8.2 | 8.8 |
+| light_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 72 | 8.1 | 8.1 |
+| light_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 57 | 8.1 | 11.0 |
+| light_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 61 | 7.6 | 8.6 |
+| light_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 84 | 7.9 | 21.8 |
+| light_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 59 | 8.2 | 7.8 |
+| light_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 55 | 11.3 | 2.1 |
+| light_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 71 | 10.7 | 6.8 |
+| light_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 65 | 10.5 | 2.2 |
+| light_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 87 | 9.8 | 10.8 |
+| light_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 486 | 8.7 | 36.2 |
+| light_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 596 | 8.1 | 38.3 |
+| light_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 791 | 9.6 | 38.0 |
+| light_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 561 | 8.5 | 37.9 |
+| light_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 782 | 8.5 | 36.5 |
+| light_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 158 | 7.4 | 33.6 |
+| light_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 120 | 9.1 | 30.9 |
+| light_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 128 | 9.2 | 33.5 |
+| light_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 106 | 7.8 | 30.8 |
+| light_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 110 | 8.5 | 28.2 |
+| light_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 133 | 9.5 | 24.9 |
+| light_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 148 | 8.7 | 32.6 |
+| light_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 142 | 8.5 | 21.1 |
+| light_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 104 | 12.2 | 18.0 |
+| light_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 112 | 9.4 | 19.2 |
+| light_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 76 | 9.0 | 13.7 |
+| light_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 127 | 10.3 | 23.4 |
+| light_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 81 | 10.4 | 8.3 |
+| light_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 93 | 9.6 | 14.1 |
+| light_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 103 | 8.5 | 18.4 |
+| light_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 67 | 8.7 | 7.3 |
+| light_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 90 | 9.4 | 21.2 |
+| light_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 66 | 9.0 | 7.3 |
+| light_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 59 | 9.8 | 3.6 |
+| light_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 65 | 12.1 | 1.1 |
+| light_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 50 | 11.4 | 4.2 |
+| light_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 57 | 9.7 | 5.7 |
+| light_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 63 | 8.4 | 4.7 |
+| light_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 48 | 12.1 | 4.4 |
+| light_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 56 | 7.9 | 4.0 |
+| light_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 43 | 10.7 | 1.3 |
+| light_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 48 | 8.6 | 1.1 |
+| light_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 56 | 8.8 | 1.8 |
+| light_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 47 | 8.4 | 2.1 |
+| light_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 48 | 9.6 | 0.9 |
+| sepia_max | EPSG:25833 | 8 | 03 | 4 | 5 | 452 | 8.2 | 39.4 |
+| sepia_max | EPSG:25833 | 8 | 03 | 3 | 4 | 629 | 8.1 | 40.8 |
+| sepia_max | EPSG:25833 | 8 | 03 | 4 | 3 | 820 | 8.1 | 37.3 |
+| sepia_max | EPSG:25833 | 8 | 03 | 3 | 5 | 560 | 8.3 | 40.2 |
+| sepia_max | EPSG:25833 | 8 | 03 | 3 | 3 | 712 | 8.1 | 38.1 |
+| sepia_max | EPSG:25833 | 10 | 05 | 12 | 19 | 132 | 8.5 | 32.8 |
+| sepia_max | EPSG:25833 | 10 | 05 | 17 | 15 | 105 | 7.9 | 30.4 |
+| sepia_max | EPSG:25833 | 10 | 05 | 14 | 14 | 119 | 8.7 | 33.6 |
+| sepia_max | EPSG:25833 | 10 | 05 | 18 | 21 | 114 | 8.3 | 31.6 |
+| sepia_max | EPSG:25833 | 10 | 05 | 19 | 13 | 107 | 8.3 | 26.1 |
+| sepia_max | EPSG:25833 | 12 | 07 | 59 | 79 | 147 | 7.9 | 27.7 |
+| sepia_max | EPSG:25833 | 12 | 07 | 80 | 71 | 155 | 8.1 | 36.8 |
+| sepia_max | EPSG:25833 | 12 | 07 | 51 | 81 | 180 | 9.6 | 23.9 |
+| sepia_max | EPSG:25833 | 12 | 07 | 77 | 59 | 103 | 9.0 | 17.6 |
+| sepia_max | EPSG:25833 | 12 | 07 | 76 | 54 | 113 | 9.9 | 18.6 |
+| sepia_max | EPSG:25833 | 13 | 08 | 137 | 85 | 83 | 9.3 | 16.1 |
+| sepia_max | EPSG:25833 | 13 | 08 | 124 | 122 | 152 | 8.6 | 30.5 |
+| sepia_max | EPSG:25833 | 13 | 08 | 154 | 118 | 90 | 8.0 | 11.6 |
+| sepia_max | EPSG:25833 | 13 | 08 | 156 | 121 | 87 | 7.5 | 16.5 |
+| sepia_max | EPSG:25833 | 13 | 08 | 143 | 169 | 93 | 7.8 | 26.0 |
+| sepia_max | EPSG:25833 | 14 | 09 | 226 | 290 | 75 | 9.3 | 18.5 |
+| sepia_max | EPSG:25833 | 14 | 09 | 205 | 299 | 115 | 7.7 | 36.2 |
+| sepia_max | EPSG:25833 | 14 | 09 | 209 | 291 | 68 | 7.8 | 21.0 |
+| sepia_max | EPSG:25833 | 14 | 09 | 281 | 280 | 64 | 7.8 | 17.1 |
+| sepia_max | EPSG:25833 | 14 | 09 | 244 | 306 | 69 | 7.7 | 12.2 |
+| sepia_max | EPSG:25833 | 16 | 11 | 961 | 697 | 62 | 7.4 | 10.1 |
+| sepia_max | EPSG:25833 | 16 | 11 | 1140 | 947 | 79 | 7.4 | 12.4 |
+| sepia_max | EPSG:25833 | 16 | 11 | 900 | 843 | 76 | 6.8 | 12.1 |
+| sepia_max | EPSG:25833 | 16 | 11 | 1096 | 890 | 62 | 7.7 | 10.4 |
+| sepia_max | EPSG:25833 | 16 | 11 | 933 | 690 | 80 | 8.3 | 27.4 |
+| sepia_max | EPSG:25833 | 18 | 13 | 5003 | 4662 | 67 | 9.8 | 10.8 |
+| sepia_max | EPSG:25833 | 18 | 13 | 3265 | 5331 | 72 | 9.0 | 3.7 |
+| sepia_max | EPSG:25833 | 18 | 13 | 3450 | 3658 | 77 | 10.0 | 8.7 |
+| sepia_max | EPSG:25833 | 18 | 13 | 5277 | 4051 | 69 | 10.1 | 2.5 |
+| sepia_max | EPSG:25833 | 18 | 13 | 3272 | 3370 | 75 | 9.2 | 14.9 |
+| sepia_min | EPSG:25833 | 8 | 03 | 4 | 5 | 90 | 9.1 | 7.9 |
+| sepia_min | EPSG:25833 | 8 | 03 | 3 | 4 | 135 | 8.8 | 10.5 |
+| sepia_min | EPSG:25833 | 8 | 03 | 4 | 3 | 200 | 9.6 | 11.2 |
+| sepia_min | EPSG:25833 | 8 | 03 | 3 | 5 | 116 | 9.4 | 11.4 |
+| sepia_min | EPSG:25833 | 8 | 03 | 3 | 3 | 175 | 8.4 | 11.1 |
+| sepia_min | EPSG:25833 | 10 | 05 | 12 | 19 | 69 | 8.9 | 19.9 |
+| sepia_min | EPSG:25833 | 10 | 05 | 17 | 15 | 43 | 8.0 | 13.1 |
+| sepia_min | EPSG:25833 | 10 | 05 | 14 | 14 | 45 | 8.4 | 13.1 |
+| sepia_min | EPSG:25833 | 10 | 05 | 18 | 21 | 45 | 8.6 | 10.7 |
+| sepia_min | EPSG:25833 | 10 | 05 | 19 | 13 | 44 | 8.9 | 7.9 |
+| sepia_min | EPSG:25833 | 12 | 07 | 59 | 79 | 70 | 9.5 | 9.6 |
+| sepia_min | EPSG:25833 | 12 | 07 | 80 | 71 | 81 | 8.4 | 16.2 |
+| sepia_min | EPSG:25833 | 12 | 07 | 51 | 81 | 95 | 7.8 | 16.7 |
+| sepia_min | EPSG:25833 | 12 | 07 | 77 | 59 | 67 | 7.3 | 10.4 |
+| sepia_min | EPSG:25833 | 12 | 07 | 76 | 54 | 61 | 8.1 | 10.7 |
+| sepia_min | EPSG:25833 | 13 | 08 | 137 | 85 | 40 | 7.5 | 10.0 |
+| sepia_min | EPSG:25833 | 13 | 08 | 124 | 122 | 72 | 8.8 | 15.3 |
+| sepia_min | EPSG:25833 | 13 | 08 | 154 | 118 | 61 | 9.6 | 7.8 |
+| sepia_min | EPSG:25833 | 13 | 08 | 156 | 121 | 72 | 10.6 | 10.9 |
+| sepia_min | EPSG:25833 | 13 | 08 | 143 | 169 | 82 | 10.8 | 14.8 |
+| sepia_min | EPSG:25833 | 14 | 09 | 226 | 290 | 50 | 10.4 | 3.5 |
+| sepia_min | EPSG:25833 | 14 | 09 | 205 | 299 | 71 | 7.9 | 16.2 |
+| sepia_min | EPSG:25833 | 14 | 09 | 209 | 291 | 40 | 8.1 | 1.9 |
+| sepia_min | EPSG:25833 | 14 | 09 | 281 | 280 | 36 | 8.6 | 2.5 |
+| sepia_min | EPSG:25833 | 14 | 09 | 244 | 306 | 47 | 11.3 | 2.3 |
+| sepia_min | EPSG:25833 | 16 | 11 | 961 | 697 | 58 | 10.7 | 4.4 |
+| sepia_min | EPSG:25833 | 16 | 11 | 1140 | 947 | 55 | 10.1 | 3.8 |
+| sepia_min | EPSG:25833 | 16 | 11 | 900 | 843 | 48 | 9.4 | 7.1 |
+| sepia_min | EPSG:25833 | 16 | 11 | 1096 | 890 | 46 | 8.8 | 5.0 |
+| sepia_min | EPSG:25833 | 16 | 11 | 933 | 690 | 42 | 8.8 | 10.9 |
+| sepia_min | EPSG:25833 | 18 | 13 | 5003 | 4662 | 39 | 8.4 | 5.7 |
+| sepia_min | EPSG:25833 | 18 | 13 | 3265 | 5331 | 33 | 9.0 | 0.1 |
+| sepia_min | EPSG:25833 | 18 | 13 | 3450 | 3658 | 39 | 8.5 | 2.8 |
+| sepia_min | EPSG:25833 | 18 | 13 | 5277 | 4051 | 41 | 8.0 | 1.2 |
+| sepia_min | EPSG:25833 | 18 | 13 | 3272 | 3370 | 42 | 7.4 | 7.1 |
+| sepia_nav | EPSG:25833 | 8 | 03 | 4 | 5 | 112 | 7.9 | 7.9 |
+| sepia_nav | EPSG:25833 | 8 | 03 | 3 | 4 | 148 | 9.9 | 10.5 |
+| sepia_nav | EPSG:25833 | 8 | 03 | 4 | 3 | 203 | 8.3 | 11.2 |
+| sepia_nav | EPSG:25833 | 8 | 03 | 3 | 5 | 132 | 7.4 | 11.4 |
+| sepia_nav | EPSG:25833 | 8 | 03 | 3 | 3 | 189 | 8.4 | 11.1 |
+| sepia_nav | EPSG:25833 | 10 | 05 | 12 | 19 | 115 | 7.9 | 22.5 |
+| sepia_nav | EPSG:25833 | 10 | 05 | 17 | 15 | 96 | 9.6 | 14.4 |
+| sepia_nav | EPSG:25833 | 10 | 05 | 14 | 14 | 86 | 10.5 | 14.5 |
+| sepia_nav | EPSG:25833 | 10 | 05 | 18 | 21 | 70 | 9.1 | 11.7 |
+| sepia_nav | EPSG:25833 | 10 | 05 | 19 | 13 | 70 | 9.0 | 9.6 |
+| sepia_nav | EPSG:25833 | 12 | 07 | 59 | 79 | 86 | 8.5 | 9.8 |
+| sepia_nav | EPSG:25833 | 12 | 07 | 80 | 71 | 112 | 8.7 | 16.4 |
+| sepia_nav | EPSG:25833 | 12 | 07 | 51 | 81 | 117 | 8.3 | 17.5 |
+| sepia_nav | EPSG:25833 | 12 | 07 | 77 | 59 | 72 | 9.8 | 11.4 |
+| sepia_nav | EPSG:25833 | 12 | 07 | 76 | 54 | 77 | 8.9 | 11.9 |
+| sepia_nav | EPSG:25833 | 13 | 08 | 137 | 85 | 55 | 8.5 | 10.1 |
+| sepia_nav | EPSG:25833 | 13 | 08 | 124 | 122 | 82 | 8.1 | 15.7 |
+| sepia_nav | EPSG:25833 | 13 | 08 | 154 | 118 | 65 | 9.3 | 8.1 |
+| sepia_nav | EPSG:25833 | 13 | 08 | 156 | 121 | 89 | 10.0 | 11.9 |
+| sepia_nav | EPSG:25833 | 13 | 08 | 143 | 169 | 88 | 9.6 | 14.8 |
+| sepia_nav | EPSG:25833 | 14 | 09 | 226 | 290 | 53 | 9.0 | 3.8 |
+| sepia_nav | EPSG:25833 | 14 | 09 | 205 | 299 | 89 | 8.2 | 20.2 |
+| sepia_nav | EPSG:25833 | 14 | 09 | 209 | 291 | 44 | 7.9 | 1.9 |
+| sepia_nav | EPSG:25833 | 14 | 09 | 281 | 280 | 38 | 9.1 | 3.3 |
+| sepia_nav | EPSG:25833 | 14 | 09 | 244 | 306 | 41 | 9.5 | 2.3 |
+| sepia_nav | EPSG:25833 | 16 | 11 | 961 | 697 | 47 | 9.2 | 6.0 |
+| sepia_nav | EPSG:25833 | 16 | 11 | 1140 | 947 | 45 | 10.0 | 4.1 |
+| sepia_nav | EPSG:25833 | 16 | 11 | 900 | 843 | 45 | 8.7 | 9.2 |
+| sepia_nav | EPSG:25833 | 16 | 11 | 1096 | 890 | 50 | 7.9 | 8.4 |
+| sepia_nav | EPSG:25833 | 16 | 11 | 933 | 690 | 78 | 7.7 | 25.7 |
+| sepia_nav | EPSG:25833 | 18 | 13 | 5003 | 4662 | 48 | 7.9 | 10.8 |
+| sepia_nav | EPSG:25833 | 18 | 13 | 3265 | 5331 | 40 | 9.1 | 2.1 |
+| sepia_nav | EPSG:25833 | 18 | 13 | 3450 | 3658 | 46 | 10.4 | 5.4 |
+| sepia_nav | EPSG:25833 | 18 | 13 | 5277 | 4051 | 49 | 9.7 | 1.2 |
+| sepia_nav | EPSG:25833 | 18 | 13 | 3272 | 3370 | 60 | 9.4 | 13.4 |
+| sepia_std | EPSG:25833 | 8 | 03 | 4 | 5 | 506 | 7.9 | 39.4 |
+| sepia_std | EPSG:25833 | 8 | 03 | 3 | 4 | 576 | 7.4 | 40.8 |
+| sepia_std | EPSG:25833 | 8 | 03 | 4 | 3 | 764 | 8.5 | 37.3 |
+| sepia_std | EPSG:25833 | 8 | 03 | 3 | 5 | 564 | 7.9 | 40.2 |
+| sepia_std | EPSG:25833 | 8 | 03 | 3 | 3 | 715 | 10.7 | 38.1 |
+| sepia_std | EPSG:25833 | 10 | 05 | 12 | 19 | 145 | 8.6 | 32.8 |
+| sepia_std | EPSG:25833 | 10 | 05 | 17 | 15 | 112 | 8.3 | 30.4 |
+| sepia_std | EPSG:25833 | 10 | 05 | 14 | 14 | 123 | 8.7 | 33.6 |
+| sepia_std | EPSG:25833 | 10 | 05 | 18 | 21 | 110 | 8.9 | 31.6 |
+| sepia_std | EPSG:25833 | 10 | 05 | 19 | 13 | 100 | 7.6 | 26.1 |
+| sepia_std | EPSG:25833 | 12 | 07 | 59 | 79 | 132 | 7.6 | 23.8 |
+| sepia_std | EPSG:25833 | 12 | 07 | 80 | 71 | 153 | 8.8 | 36.1 |
+| sepia_std | EPSG:25833 | 12 | 07 | 51 | 81 | 161 | 8.5 | 24.2 |
+| sepia_std | EPSG:25833 | 12 | 07 | 77 | 59 | 94 | 10.9 | 17.6 |
+| sepia_std | EPSG:25833 | 12 | 07 | 76 | 54 | 112 | 9.5 | 18.6 |
+| sepia_std | EPSG:25833 | 13 | 08 | 137 | 85 | 73 | 7.8 | 16.1 |
+| sepia_std | EPSG:25833 | 13 | 08 | 124 | 122 | 128 | 8.9 | 26.9 |
+| sepia_std | EPSG:25833 | 13 | 08 | 154 | 118 | 75 | 9.4 | 10.9 |
+| sepia_std | EPSG:25833 | 13 | 08 | 156 | 121 | 100 | 10.4 | 15.0 |
+| sepia_std | EPSG:25833 | 13 | 08 | 143 | 169 | 110 | 8.7 | 23.1 |
+| sepia_std | EPSG:25833 | 14 | 09 | 226 | 290 | 85 | 7.9 | 15.8 |
+| sepia_std | EPSG:25833 | 14 | 09 | 205 | 299 | 130 | 7.5 | 35.1 |
+| sepia_std | EPSG:25833 | 14 | 09 | 209 | 291 | 78 | 8.0 | 17.5 |
+| sepia_std | EPSG:25833 | 14 | 09 | 281 | 280 | 62 | 8.3 | 12.1 |
+| sepia_std | EPSG:25833 | 14 | 09 | 244 | 306 | 61 | 9.6 | 8.0 |
+| sepia_std | EPSG:25833 | 16 | 11 | 961 | 697 | 65 | 9.2 | 8.3 |
+| sepia_std | EPSG:25833 | 16 | 11 | 1140 | 947 | 70 | 9.0 | 9.5 |
+| sepia_std | EPSG:25833 | 16 | 11 | 900 | 843 | 76 | 7.7 | 10.9 |
+| sepia_std | EPSG:25833 | 16 | 11 | 1096 | 890 | 60 | 8.7 | 10.4 |
+| sepia_std | EPSG:25833 | 16 | 11 | 933 | 690 | 94 | 8.6 | 27.4 |
+| sepia_std | EPSG:25833 | 18 | 13 | 5003 | 4662 | 58 | 7.8 | 10.8 |
+| sepia_std | EPSG:25833 | 18 | 13 | 3265 | 5331 | 77 | 8.8 | 3.7 |
+| sepia_std | EPSG:25833 | 18 | 13 | 3450 | 3658 | 70 | 9.6 | 7.4 |
+| sepia_std | EPSG:25833 | 18 | 13 | 5277 | 4051 | 57 | 8.0 | 2.5 |
+| sepia_std | EPSG:25833 | 18 | 13 | 3272 | 3370 | 74 | 9.0 | 14.5 |
+| sepia_topographic | EPSG:25833 | 8 | 03 | 4 | 5 | 481 | 8.2 | 39.2 |
+| sepia_topographic | EPSG:25833 | 8 | 03 | 3 | 4 | 595 | 7.8 | 40.3 |
+| sepia_topographic | EPSG:25833 | 8 | 03 | 4 | 3 | 837 | 28.6 | 36.8 |
+| sepia_topographic | EPSG:25833 | 8 | 03 | 3 | 5 | 483 | 7.6 | 40.3 |
+| sepia_topographic | EPSG:25833 | 8 | 03 | 3 | 3 | 676 | 7.2 | 37.4 |
+| sepia_topographic | EPSG:25833 | 10 | 05 | 12 | 19 | 133 | 11.4 | 30.5 |
+| sepia_topographic | EPSG:25833 | 10 | 05 | 17 | 15 | 113 | 7.5 | 29.3 |
+| sepia_topographic | EPSG:25833 | 10 | 05 | 14 | 14 | 95 | 7.1 | 33.0 |
+| sepia_topographic | EPSG:25833 | 10 | 05 | 18 | 21 | 82 | 7.2 | 30.2 |
+| sepia_topographic | EPSG:25833 | 10 | 05 | 19 | 13 | 92 | 9.4 | 24.8 |
+| sepia_topographic | EPSG:25833 | 12 | 07 | 59 | 79 | 125 | 11.3 | 26.1 |
+| sepia_topographic | EPSG:25833 | 12 | 07 | 80 | 71 | 134 | 7.8 | 30.3 |
+| sepia_topographic | EPSG:25833 | 12 | 07 | 51 | 81 | 144 | 8.9 | 23.7 |
+| sepia_topographic | EPSG:25833 | 12 | 07 | 77 | 59 | 97 | 8.1 | 16.4 |
+| sepia_topographic | EPSG:25833 | 12 | 07 | 76 | 54 | 99 | 8.9 | 17.9 |
+| sepia_topographic | EPSG:25833 | 13 | 08 | 137 | 85 | 60 | 8.2 | 15.5 |
+| sepia_topographic | EPSG:25833 | 13 | 08 | 124 | 122 | 108 | 8.0 | 28.4 |
+| sepia_topographic | EPSG:25833 | 13 | 08 | 154 | 118 | 78 | 8.6 | 11.2 |
+| sepia_topographic | EPSG:25833 | 13 | 08 | 156 | 121 | 92 | 8.8 | 16.5 |
+| sepia_topographic | EPSG:25833 | 13 | 08 | 143 | 169 | 98 | 8.1 | 25.2 |
+| sepia_topographic | EPSG:25833 | 14 | 09 | 226 | 290 | 75 | 7.5 | 12.3 |
+| sepia_topographic | EPSG:25833 | 14 | 09 | 205 | 299 | 119 | 8.0 | 30.7 |
+| sepia_topographic | EPSG:25833 | 14 | 09 | 209 | 291 | 71 | 8.1 | 11.1 |
+| sepia_topographic | EPSG:25833 | 14 | 09 | 281 | 280 | 64 | 8.2 | 11.3 |
+| sepia_topographic | EPSG:25833 | 14 | 09 | 244 | 306 | 82 | 8.9 | 8.3 |
+| sepia_topographic | EPSG:25833 | 16 | 11 | 961 | 697 | 62 | 8.7 | 9.6 |
+| sepia_topographic | EPSG:25833 | 16 | 11 | 1140 | 947 | 74 | 7.4 | 8.2 |
+| sepia_topographic | EPSG:25833 | 16 | 11 | 900 | 843 | 70 | 12.3 | 11.9 |
+| sepia_topographic | EPSG:25833 | 16 | 11 | 1096 | 890 | 77 | 10.4 | 9.9 |
+| sepia_topographic | EPSG:25833 | 16 | 11 | 933 | 690 | 99 | 8.0 | 26.9 |
+| sepia_topographic | EPSG:25833 | 18 | 13 | 5003 | 4662 | 71 | 9.7 | 10.8 |
+| sepia_topographic | EPSG:25833 | 18 | 13 | 3265 | 5331 | 64 | 10.2 | 2.7 |
+| sepia_topographic | EPSG:25833 | 18 | 13 | 3450 | 3658 | 67 | 9.7 | 8.4 |
+| sepia_topographic | EPSG:25833 | 18 | 13 | 5277 | 4051 | 63 | 9.7 | 1.6 |
+| sepia_topographic | EPSG:25833 | 18 | 13 | 3272 | 3370 | 79 | 10.1 | 13.4 |
+| sepia_vegetation | EPSG:25833 | 8 | 03 | 4 | 5 | 430 | 9.0 | 39.4 |
+| sepia_vegetation | EPSG:25833 | 8 | 03 | 3 | 4 | 598 | 8.6 | 40.8 |
+| sepia_vegetation | EPSG:25833 | 8 | 03 | 4 | 3 | 798 | 7.9 | 37.3 |
+| sepia_vegetation | EPSG:25833 | 8 | 03 | 3 | 5 | 567 | 8.9 | 40.2 |
+| sepia_vegetation | EPSG:25833 | 8 | 03 | 3 | 3 | 739 | 8.0 | 38.1 |
+| sepia_vegetation | EPSG:25833 | 10 | 05 | 12 | 19 | 142 | 7.8 | 31.4 |
+| sepia_vegetation | EPSG:25833 | 10 | 05 | 17 | 15 | 122 | 7.5 | 29.9 |
+| sepia_vegetation | EPSG:25833 | 10 | 05 | 14 | 14 | 123 | 8.4 | 33.3 |
+| sepia_vegetation | EPSG:25833 | 10 | 05 | 18 | 21 | 109 | 8.7 | 30.7 |
+| sepia_vegetation | EPSG:25833 | 10 | 05 | 19 | 13 | 114 | 8.2 | 25.7 |
+| sepia_vegetation | EPSG:25833 | 12 | 07 | 59 | 79 | 123 | 7.5 | 22.5 |
+| sepia_vegetation | EPSG:25833 | 12 | 07 | 80 | 71 | 145 | 9.0 | 35.2 |
+| sepia_vegetation | EPSG:25833 | 12 | 07 | 51 | 81 | 168 | 9.1 | 23.5 |
+| sepia_vegetation | EPSG:25833 | 12 | 07 | 77 | 59 | 95 | 9.3 | 16.5 |
+| sepia_vegetation | EPSG:25833 | 12 | 07 | 76 | 54 | 118 | 9.3 | 17.9 |
+| sepia_vegetation | EPSG:25833 | 13 | 08 | 137 | 85 | 67 | 8.1 | 14.0 |
+| sepia_vegetation | EPSG:25833 | 13 | 08 | 124 | 122 | 124 | 8.3 | 25.3 |
+| sepia_vegetation | EPSG:25833 | 13 | 08 | 154 | 118 | 76 | 9.4 | 9.0 |
+| sepia_vegetation | EPSG:25833 | 13 | 08 | 156 | 121 | 92 | 8.6 | 13.3 |
+| sepia_vegetation | EPSG:25833 | 13 | 08 | 143 | 169 | 96 | 8.9 | 19.7 |
+| sepia_vegetation | EPSG:25833 | 14 | 09 | 226 | 290 | 67 | 8.8 | 6.7 |
+| sepia_vegetation | EPSG:25833 | 14 | 09 | 205 | 299 | 82 | 8.6 | 20.3 |
+| sepia_vegetation | EPSG:25833 | 14 | 09 | 209 | 291 | 63 | 8.9 | 7.8 |
+| sepia_vegetation | EPSG:25833 | 14 | 09 | 281 | 280 | 50 | 8.2 | 4.0 |
+| sepia_vegetation | EPSG:25833 | 14 | 09 | 244 | 306 | 51 | 8.7 | 1.3 |
+| sepia_vegetation | EPSG:25833 | 16 | 11 | 961 | 697 | 43 | 8.2 | 4.6 |
+| sepia_vegetation | EPSG:25833 | 16 | 11 | 1140 | 947 | 52 | 8.6 | 5.8 |
+| sepia_vegetation | EPSG:25833 | 16 | 11 | 900 | 843 | 53 | 8.0 | 4.8 |
+| sepia_vegetation | EPSG:25833 | 16 | 11 | 1096 | 890 | 38 | 8.3 | 4.8 |
+| sepia_vegetation | EPSG:25833 | 16 | 11 | 933 | 690 | 38 | 8.3 | 4.6 |
+| sepia_vegetation | EPSG:25833 | 18 | 13 | 5003 | 4662 | 36 | 7.6 | 2.3 |
+| sepia_vegetation | EPSG:25833 | 18 | 13 | 3265 | 5331 | 55 | 9.5 | 1.1 |
+| sepia_vegetation | EPSG:25833 | 18 | 13 | 3450 | 3658 | 58 | 8.8 | 2.1 |
+| sepia_vegetation | EPSG:25833 | 18 | 13 | 5277 | 4051 | 50 | 10.5 | 1.6 |
+| sepia_vegetation | EPSG:25833 | 18 | 13 | 3272 | 3370 | 62 | 12.1 | 0.7 |
+
+</details>
+
+## 2. Per layer, theme `default_std`, in-process
+
+One tile per zoom and CRS, rendered with a single Mapnik layer active at a time; layers Mapnik does not query at that scale are left out. `render` is the wall time of that render (query + draw); `db` is planning + execution of the same query under EXPLAIN ANALYZE; `rows` is what the query returns; `scans` are the plan's scan nodes. Layers sorted by render time.
+
+### EPSG:25833 z8 (03) 4/5: render 436 ms, encode 16.0 ms, 45 KB, 6 layers, db sum 126 ms
+
+| layer | render ms | db ms | rows | scans |
+|---|---|---|---|---|
+| landcover_osm_polygon_z9 | 301 | 49 | 21966 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| roads_fill_osm_line_z9 | 45 | 17 | 5994 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+| protected_osm_polygon_z9 | 37 | 16 | 477 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| water_osm_polygon_z9 | 27 | 16 | 146 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| ocean_osm_polygon_z9 | 19 | 20 | 0 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| boundaries_osm_line_z9 | 14 | 9 | 19 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+
+### EPSG:25833 z10 (05) 12/19: render 101 ms, encode 17.0 ms, 36 KB, 10 layers, db sum 47 ms
+
+| layer | render ms | db ms | rows | scans |
+|---|---|---|---|---|
+| landcover_osm_polygon_z9 | 38 | 4 | 1887 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| roads_fill_osm_line_z9 | 24 | 8 | 3685 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+| rail_osm_line_z9 | 19 | 7 | 2423 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+| landuse_osm_polygon_z9 | 12 | 3 | 910 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| protected_osm_polygon_z9 | 8 | 2 | 127 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| boundaries_osm_line_z9 | 7 | 5 | 48 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+| places_osm_label | 7 | 10 | 5 | Index Scan osm_label_places_idx |
+| waterways_osm_line_z9 | 6 | 3 | 40 | Bitmap Heap Scan osm_line_z9; Bitmap Index Scan osm_line_z9_geom_idx |
+| water_osm_polygon_z9 | 6 | 2 | 28 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+| ocean_osm_polygon_z9 | 5 | 3 | 0 | Bitmap Heap Scan osm_polygon_z9; Bitmap Index Scan osm_polygon_z9_geom_idx |
+
+### EPSG:25833 z12 (07) 59/79: render 117 ms, encode 15.0 ms, 28 KB, 15 layers, db sum 65 ms
+
+| layer | render ms | db ms | rows | scans |
+|---|---|---|---|---|
+| shields_osm_line_z12 | 29 | 30 | 18 | Bitmap Heap Scan osm_line_z12; Bitmap Index Scan osm_line_z12_geom_idx |
+| landcover_osm_polygon_z12 | 25 | 5 | 2511 | Index Scan osm_polygon_z12_geom_idx |
+| roads_casing_osm_line_z12 | 9 | 2 | 652 | Index Scan osm_line_z12_geom_idx |
+| protected_osm_polygon_z12 | 8 | 3 | 12 | Index Scan osm_polygon_z12_geom_idx |
+| landuse_osm_polygon_z12 | 7 | 3 | 96 | Index Scan osm_polygon_z12_geom_idx |
+| roads_fill_osm_line_z12 | 6 | 2 | 652 | Index Scan osm_line_z12_geom_idx |
+| labels_area_osm_label | 6 | 4 | 0 | Index Scan osm_label_geom_idx |
+| ocean_osm_polygon_z12 | 6 | 4 | 0 | Index Scan osm_polygon_z12_geom_idx |
+| water_osm_polygon_z12 | 5 | 3 | 7 | Index Scan osm_polygon_z12_geom_idx |
+| places_osm_label | 5 | 1 | 1 | Index Scan osm_label_places_idx |
+| landuse_osm_line_z12 | 4 | 2 | 0 | Index Scan osm_line_z12_geom_idx |
+| boundaries_osm_line_z12 | 4 | 1 | 75 | Index Scan osm_line_z12_geom_idx |
+| aeroways_osm_line_z12 | 4 | 3 | 0 | Index Scan osm_line_z12_geom_idx |
+| waterways_osm_line_z12 | 3 | 2 | 7 | Index Scan osm_line_z12_geom_idx |
+| rail_osm_line_z12 | 3 | 1 | 0 | Index Scan osm_line_z12_geom_idx |
+
+### EPSG:25833 z14 (09) 226/290: render 57 ms, encode 7.4 ms, 16 KB, 23 layers, db sum 28 ms
+
+| layer | render ms | db ms | rows | scans |
+|---|---|---|---|---|
+| protected_osm_polygon | 10 | 1 | 1 | Index Scan osm_polygon_protected_idx |
+| roads_fill_osm_line | 9 | 2 | 678 | Index Scan osm_line_geom_idx |
+| buildings_osm_building | 8 | 3 | 625 | Index Scan osm_building_geom_idx |
+| shields_osm_line | 6 | 4 | 4 | Bitmap Heap Scan osm_line; Bitmap Index Scan osm_line_shields_idx |
+| roads_casing_osm_line | 5 | 1 | 250 | Index Scan osm_line_roads_casing_idx |
+| landcover_osm_polygon | 5 | 2 | 68 | Index Scan osm_polygon_geom_idx |
+| labels_area_osm_label | 4 | 2 | 0 | Index Scan osm_label_geom_idx |
+| places_osm_label | 4 | 1 | 2 | Index Scan osm_label_places_idx |
+| landuse_osm_polygon | 4 | 2 | 48 | Index Scan osm_polygon_landuse_idx |
+| labels_line_osm_line | 4 | 1 | 3 | Index Scan osm_line_labels_idx |
+| waterways_osm_line | 4 | 1 | 80 | Index Scan osm_line_waterways_idx |
+| water_osm_polygon | 3 | 1 | 6 | Index Scan osm_polygon_water_idx |
+| ocean_osm_polygon | 3 | 1 | 0 | Index Scan osm_polygon_ocean_idx |
+| bridges_fill_osm_line | 3 | 1 | 16 | Index Scan osm_line_bridges_casing_idx |
+| places_osm_line | 3 | 1 | 0 | Index Scan osm_line_places_idx |
+| tunnels_casing_osm_line | 3 | 1 | 0 | Index Scan osm_line_tunnels_casing_idx |
+| bridges_casing_osm_line | 3 | 1 | 9 | Index Scan osm_line_bridges_casing_idx |
+| rail_osm_line | 3 | 1 | 0 | Index Scan osm_line_rail_idx |
+| aeroways_osm_line | 3 | 1 | 0 | Index Scan osm_line_aeroways_idx |
+| tunnels_fill_osm_line | 3 | 1 | 0 | Index Scan osm_line_tunnels_casing_idx |
+| roads_fill_osm_polygon | 2 | 1 | 0 | Index Scan osm_polygon_roads_fill_idx |
+| boundaries_osm_line | 2 | 1 | 0 | Index Scan osm_line_boundaries_idx |
+| landuse_osm_line | 2 | 1 | 0 | Index Scan osm_line_landuse_idx |
+
+### EPSG:25833 z16 (11) 961/697: render 33 ms, encode 5.4 ms, 9 KB, 23 layers, db sum 22 ms
+
+| layer | render ms | db ms | rows | scans |
+|---|---|---|---|---|
+| labels_line_osm_line | 6 | 1 | 9 | Index Scan osm_line_labels_idx |
+| labels_area_osm_label | 5 | 2 | 0 | Index Scan osm_label_geom_idx |
+| landcover_osm_polygon | 4 | 1 | 32 | Index Scan osm_polygon_geom_idx |
+| shields_osm_line | 4 | 2 | 0 | Index Scan osm_line_shields_idx |
+| roads_fill_osm_line | 3 | 1 | 21 | Index Scan osm_line_geom_idx |
+| places_osm_line | 3 | 1 | 0 | Index Scan osm_line_places_idx |
+| landuse_osm_polygon | 3 | 1 | 4 | Index Scan osm_polygon_landuse_idx |
+| rail_osm_line | 3 | 1 | 1 | Index Scan osm_line_rail_idx |
+| ocean_osm_polygon | 3 | 1 | 0 | Index Scan osm_polygon_ocean_idx |
+| places_osm_label | 3 | 1 | 1 | Index Scan osm_label_places_idx |
+| buildings_osm_building | 3 | 1 | 52 | Index Scan osm_building_geom_idx |
+| roads_casing_osm_line | 3 | 1 | 11 | Index Scan osm_line_roads_casing_idx |
+| bridges_fill_osm_line | 3 | 1 | 0 | Index Scan osm_line_bridges_casing_idx |
+| water_osm_polygon | 3 | 1 | 0 | Index Scan osm_polygon_water_idx |
+| landuse_osm_line | 3 | 1 | 0 | Index Scan osm_line_landuse_idx |
+| bridges_casing_osm_line | 2 | 1 | 0 | Index Scan osm_line_bridges_casing_idx |
+| boundaries_osm_line | 2 | 1 | 0 | Index Scan osm_line_boundaries_idx |
+| roads_fill_osm_polygon | 2 | 1 | 0 | Index Scan osm_polygon_roads_fill_idx |
+| tunnels_fill_osm_line | 2 | 1 | 0 | Index Scan osm_line_tunnels_casing_idx |
+| waterways_osm_line | 2 | 1 | 3 | Index Scan osm_line_waterways_idx |
+| protected_osm_polygon | 2 | 1 | 0 | Index Scan osm_polygon_protected_idx |
+| tunnels_casing_osm_line | 2 | 1 | 0 | Index Scan osm_line_tunnels_casing_idx |
+| aeroways_osm_line | 2 | 1 | 0 | Index Scan osm_line_aeroways_idx |
+
