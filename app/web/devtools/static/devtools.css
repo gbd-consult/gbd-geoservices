@@ -1042,7 +1042,9 @@ button.secondary:disabled {
 
 /* The search panel in "what's here" mode: the radius, and none of the
    query controls; in address mode the address fields instead of the query
-   and the category. */
+   and the category; in reverse mode x and y, and none of the query controls. */
+#panel-search.mode-reverse .not-here,
+#panel-search:not(.mode-reverse) .only-reverse,
 #panel-search.mode-here .not-here,
 #panel-search:not(.mode-here) .only-here,
 #panel-search.mode-address .not-address,

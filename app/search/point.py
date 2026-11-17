@@ -143,13 +143,15 @@ _radii: dict[str, float] | None = None
 
 
 def radii(model_dir: Path | None = None) -> dict[str, float]:
-    """`whats_here` from parameters.yaml: the two radii, in metres."""
+    """`whats_here` and `reverse` from parameters.yaml: the radii, in metres."""
     global _radii
     if _radii is None or model_dir is not None:
         directory = model_dir or _model_dir()
-        values = yaml.safe_load((directory / 'parameters.yaml').read_text())['whats_here']
+        parameters = yaml.safe_load((directory / 'parameters.yaml').read_text())
+        values = parameters['whats_here']
         loaded = {'point_radius_m': float(values['point_radius_m']),
-                  'line_radius_m': float(values['line_radius_m'])}
+                  'line_radius_m': float(values['line_radius_m']),
+                  'reverse_max_m': float(parameters['reverse']['max_distance_m'])}
         if model_dir is None:
             _radii = loaded
         return loaded
@@ -159,6 +161,13 @@ def radii(model_dir: Path | None = None) -> dict[str, float]:
 def _model_dir() -> Path:
     from importer.run import MODEL
     return MODEL
+
+
+def address_params(lon: float, lat: float, radius: float) -> dict:
+    """`ADDRESS_SQL`'s bind parameters: the nearest address within `radius` metres."""
+    degrees_lon, degrees_lat = degrees_for(radius, lat)
+    return {'lon': lon, 'lat': lat, 'address_radius': radius,
+            'address_degrees_lon': degrees_lon, 'address_degrees_lat': degrees_lat}
 
 
 def sql(categories: bool = False) -> str:
@@ -176,18 +185,13 @@ def params(lon: float, lat: float, radius: float | None = None,
     configured = radii()
     point_radius = radius if radius is not None else configured['point_radius_m']
     line_radius = radius if radius is not None else configured['line_radius_m']
-    address_radius = max(point_radius, line_radius) * 2
     line_lon, line_lat = degrees_for(line_radius, lat)
-    address_lon, address_lat = degrees_for(address_radius, lat)
     return {
-        'lon': lon, 'lat': lat,
+        **address_params(lon, lat, max(point_radius, line_radius) * 2),
         'point_radius': point_radius,
         'line_radius': line_radius,
         'line_degrees_lon': line_lon,
         'line_degrees_lat': line_lat,
-        'address_radius': address_radius,
-        'address_degrees_lon': address_lon,
-        'address_degrees_lat': address_lat,
         'part_limit': PART_LIMIT,
         'categories': list(categories),
         'limit': limit,

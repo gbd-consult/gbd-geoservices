@@ -13,6 +13,7 @@ half that has to hold however the call arrived.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, replace
 
 from lib import text
@@ -53,6 +54,13 @@ MAX_RADIUS = 10_000
 #: What the point mode refuses: a point has no text to match, no ranking
 #: to tune and no pages, and its spatial filter is the radius.
 NOT_POINT = ('text', 'bbox', 'area', 'within', 'sort', 'similarity', 'relevance', 'page')
+
+#: What `/search/reverse` takes its coordinate in: the CRS the WMS serves,
+#: so a client can send a point in the CRS its map is in.
+REVERSE_CRS = ('EPSG:4326', 'EPSG:3857', 'EPSG:25832', 'EPSG:25833')
+
+#: The reverse search's fields; anything else is refused, as in the modes.
+REVERSE_FIELDS = ('x', 'y', 'crs', 'lang')
 
 
 class RequestError(ValueError):
@@ -111,6 +119,9 @@ class Request:
     #: radii, and whether the nearest address is looked up.
     radius: float | None = None
     with_address: bool = True
+    #: The reverse search's: the CRS `near` is in. Every other request's
+    #: `near` is EPSG:4326.
+    crs: str = 'EPSG:4326'
 
     @property
     def offset(self) -> int:
@@ -153,7 +164,7 @@ class Request:
             repr(self.near), self.sort, str(self.similarity),
             str(self.page), str(self.limit), self.lang, str(self.relevance),
             self.street or '', self.housenumber or '', self.postcode or '', self.city or '',
-            repr(self.radius), str(self.with_address),
+            repr(self.radius), str(self.with_address), self.crs,
         )
         return '\x1f'.join(parts)
 
@@ -235,6 +246,41 @@ def _point(body: dict) -> Request:
         radius=_radius(body.get('radius')),
         with_address=_bool(body.get('address'), default=True),
     )
+
+
+def parse_reverse(body: dict) -> Request:
+    """The reverse search, `/search/reverse`: the address nearest `x`, `y`.
+
+    Its own body rather than a mode of `/search`: it takes a coordinate in
+    any of `REVERSE_CRS`, has no fields in common with the modes but `lang`,
+    and answers with one address. `near` is (x, y) in `crs`; it is checked
+    against EPSG:4326's range only when that is the CRS, the others after
+    the database has transformed them (`api.reverse`).
+    """
+    unknown = sorted(name for name in body if name not in REVERSE_FIELDS)
+    if unknown:
+        raise RequestError(f'{", ".join(unknown)}: not in the reverse search')
+    coords = []
+    for name in ('x', 'y'):
+        value = body.get(name)
+        if value is None:
+            raise RequestError(f'{name} is required')
+        if isinstance(value, bool):
+            raise RequestError(f'{name} must be a number, got {value!r}')
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise RequestError(f'{name} must be a number, got {value!r}') from exc
+        if not math.isfinite(number):
+            raise RequestError(f'{name} must be a finite number, got {value!r}')
+        coords.append(number)
+    crs = (_string(body, 'crs') or 'EPSG:4326').strip().upper()
+    if crs not in REVERSE_CRS:
+        raise RequestError(f'crs must be one of {", ".join(REVERSE_CRS)}, got {crs!r}')
+    if crs == 'EPSG:4326':
+        check_range(*coords)
+    return Request(mode='reverse', near=(coords[0], coords[1]), crs=crs, limit=1,
+                   lang=_string(body, 'lang') or 'de')
 
 
 # --- field validation ----------------------------------------------------
@@ -333,8 +379,8 @@ def _bbox(value) -> tuple[float, float, float, float] | None:
     # either way.
     lon1, lon2 = min(lon1, lon2), max(lon1, lon2)
     lat1, lat2 = min(lat1, lat2), max(lat1, lat2)
-    _in_range(lon1, lat1)
-    _in_range(lon2, lat2)
+    check_range(lon1, lat1)
+    check_range(lon2, lat2)
     if lon1 == lon2 or lat1 == lat2:
         raise RequestError('bbox has zero width or height')
     return (lon1, lat1, lon2, lat2)
@@ -351,11 +397,11 @@ def _near(value) -> tuple[float, float] | None:
         lon, lat = float(value[0]), float(value[1])
     except (TypeError, ValueError) as exc:
         raise RequestError(f'near must be two numbers: {exc}') from exc
-    _in_range(lon, lat)
+    check_range(lon, lat)
     return (lon, lat)
 
 
-def _in_range(lon: float, lat: float) -> None:
+def check_range(lon: float, lat: float) -> None:
     if not (-180.0 <= lon <= 180.0 and -90.0 <= lat <= 90.0):
         raise RequestError(f'coordinates out of range: {lon}, {lat} (EPSG:4326 is lon, lat)')
 

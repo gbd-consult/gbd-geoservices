@@ -40,7 +40,8 @@ def parts(body):
 # --- configuration (no database) -----------------------------------------
 
 def test_the_radii_come_from_parameters_yaml():
-    assert point.radii() == {'point_radius_m': 50.0, 'line_radius_m': 25.0}
+    assert point.radii() == {'point_radius_m': 50.0, 'line_radius_m': 25.0,
+                            'reverse_max_m': 500.0}
 
 
 def test_one_radius_overrides_both():

@@ -171,6 +171,12 @@ devtools.smode_phrase:
 devtools.smode_here:
   de: Was ist hier
   en: What's here
+devtools.smode_reverse:
+  de: Adresse an Koordinate
+  en: Address at a point
+devtools.reverse_hint:
+  de: Koordinate eingeben oder in die Karte klicken
+  en: enter a coordinate or click the map
 devtools.radius_placeholder:
   de: 'leer: die Standardwerte des Servers'
   en: 'empty: the server''s defaults'
@@ -400,6 +406,12 @@ devtools.js.summary:
 devtools.js.here_summary:
   de: 'was ist hier: {count} Treffer'
   en: 'what''s here: {count} results'
+devtools.js.reverse_summary:
+  de: 'nächste Adresse: {count} Treffer · {ms} ms Antwortzeit'
+  en: 'nearest address: {count} results · {ms} ms round trip'
+devtools.js.enter_coordinate:
+  de: X und Y als Zahlen eingeben
+  en: enter X and Y as numbers
 devtools.js.read_text:
   de: Text „{value}“
   en: text “{value}”
