@@ -187,6 +187,7 @@ Search needs a key with the `search` scope. Both endpoints take the same JSON bo
 | `POST /search` | one page of results, as GeoJSON |
 | `POST /search/count` | `{"total": n}`: the number of results for the same body |
 | `POST /search/fuzzy`, `POST /search/fuzzy/count` | the fuzzy name search alone, for a name-mode body with `text`; its total |
+| `POST /search/reverse` | the address nearest a coordinate; its own body, below |
 
 The `mode` field chooses how the request is read:
 
@@ -227,6 +228,12 @@ Examples:
 {"mode": "address", "street": "Holtenauer Straße", "housenumber": "100", "city": "Kiel"}
 {"mode": "phrase", "text": "restaurant Kiel"}
 {"mode": "point", "near": [10.1395, 54.3233], "radius": 30}
+```
+
+`/search/reverse` takes `x` and `y`, `crs` (`EPSG:4326`, the default, where `x` is lon and `y` lat; `EPSG:3857`, `EPSG:25832` or `EPSG:25833`) and `lang`, and nothing else. It answers like `/search`, with the nearest address within 500 m (`reverse.max_distance_m`) or no result:
+
+```json
+{"x": 573715.53, "y": 6020486.09, "crs": "EPSG:25832"}
 ```
 
 Response fields:

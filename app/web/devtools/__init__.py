@@ -116,7 +116,7 @@ def start_watcher() -> watcher.Watcher | None:
 TABS = ('tiles', 'search', 'status')
 DETAILS = ('std', 'min', 'nav', 'max', 'topographic', 'vegetation', 'overlay')
 REQUEST_MODES = ('xyz', 'wmts-rest', 'wmts-kvp', 'wms')
-SEARCH_MODES = ('name', 'address', 'phrase', 'here')
+SEARCH_MODES = ('name', 'address', 'phrase', 'here', 'reverse')
 SORTS = ('score', 'distance', 'name', 'address')
 
 
@@ -186,7 +186,8 @@ def controls(params, lang: str) -> dict:
         'format': _choice(params.get('format'), formats.RASTER),
         'debug': params.get('debug') == '1',
         'smode': _choice(params.get('smode'), SEARCH_MODES),
-        'text': {key: params.get(key, '') for key in ('q', 'street', 'hn', 'pc', 'city', 'radius')},
+        'text': {key: params.get(key, '')
+                 for key in ('q', 'street', 'hn', 'pc', 'city', 'radius', 'rx', 'ry')},
         'category': _category_name(params.get('cat'), lang),
         'geom': bool(params.get('geom')),
         'inview': params.get('inview') == '1',

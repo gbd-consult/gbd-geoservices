@@ -2,6 +2,7 @@
 
     POST /search              the four modes, one body
     POST /search/count        the same body, {"total": n}
+    POST /search/reverse      the address nearest a coordinate, in any served CRS
     POST /search/fuzzy        the fuzzy name search alone, a name-mode body
     POST /search/fuzzy/count  its total
 
@@ -27,7 +28,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 
 from search import api as search_api
-from search.request import RequestError, parse
+from search.request import RequestError, parse, parse_reverse
 from web import auth, stats
 from web import icons as icon_routes
 
@@ -49,6 +50,12 @@ EXAMPLES = {
                        'value': {'mode': 'phrase', 'text': 'Holtenauer Straße 12, 24105 Kiel'}},
     'point': {'summary': 'what is at a point: near first, then the containing areas',
                 'value': {'mode': 'point', 'near': [10.1335, 54.3269], 'radius': 25}},
+}
+
+REVERSE_EXAMPLES = {
+    'wgs84': {'summary': 'lon, lat', 'value': {'x': 10.1335, 'y': 54.3269}},
+    'utm': {'summary': 'UTM zone 32',
+            'value': {'x': 573715.53, 'y': 6020486.09, 'crs': 'EPSG:25832'}},
 }
 
 
@@ -115,6 +122,25 @@ def find(body: Annotated[dict, Body(openapi_examples=EXAMPLES)], request: Reques
     the containing areas smallest first, unpaged and unscored.
     """
     return with_icons(search_api.find(request_from(body, request)), str(request.base_url))
+
+
+@router.post('/reverse')
+def reverse(body: Annotated[dict, Body(openapi_examples=REVERSE_EXAMPLES)],
+            request: Request) -> dict:
+    """The address nearest a coordinate.
+
+    The body is `x`, `y`, optionally `crs` (`EPSG:4326` by default, where
+    x is lon and y lat; `EPSG:3857`, `EPSG:25832`, `EPSG:25833`) and
+    `lang`. The response is `/search`'s with one address feature, its
+    `match_distance` in metres, or none when no address lies within
+    `reverse.max_distance_m`.
+    """
+    request.state.search_terms = stats.terms_of(body)
+    try:
+        req = parse_reverse(body)
+        return with_icons(search_api.reverse(req), str(request.base_url))
+    except RequestError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
 
 @router.post('/count')

@@ -86,6 +86,10 @@ whats_here:
   point_radius_m: 50
   line_radius_m: 25
 
+reverse:                    # /search/reverse, the address nearest a coordinate
+  max_distance_m: 500       # a farm outside the village still gets its address,
+                            # a field between two villages gets none rather than the next village's
+
 search:
   polygon_simplify_m: 5          # tolerance for osm_search_object.geom_polygon, the highlight geometry
   merge_classes: [cls_road_*]    # line classes merged into one search object; a river split into 40 ways

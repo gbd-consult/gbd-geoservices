@@ -301,6 +301,24 @@ def test_an_out_of_range_point_or_radius_is_422(served, over):
     assert post(served, body).status_code == 422
 
 
+def test_reverse_returns_the_nearest_address_as_a_page(served):
+    response = post(served, {'x': 9.5215, 'y': 47.1410}, '/search/reverse')
+    assert response.status_code == 200
+    body = response.json()
+    assert set(body) == PAGE_FIELDS
+    [address] = features(body)
+    assert tuple(address['properties']) == FEATURE_PROPERTIES
+    assert address['properties']['icon']
+
+
+@pytest.mark.parametrize('body', [
+    {'x': 9.5}, {'x': 9.5, 'y': 47.1, 'crs': 'EPSG:31467'}, {'x': 574000, 'y': 6020000},
+    {'x': 9.5, 'y': 47.1, 'mode': 'point'}, {'x': 1e9, 'y': 1e9, 'crs': 'EPSG:25832'},
+])
+def test_a_bad_reverse_body_is_422(served, body):
+    assert post(served, body, '/search/reverse').status_code == 422
+
+
 def test_there_is_no_get_route_for_a_point(served):
     assert served.get('/search/here', params={'lon': 9.5215, 'lat': 47.1410}).status_code \
         in (404, 405)

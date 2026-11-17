@@ -1,5 +1,6 @@
-// The Search tab: the three text modes, and "what's here" -- the point
-// mode, whose request is a click on the map.
+// The Search tab: the three text modes, "what's here" -- the point mode,
+// whose request is a click on the map -- and the reverse search, the
+// address nearest an x/y typed or clicked in the picked grid's CRS.
 //
 // `/search` takes `mode` + `text`, has a free-form phrase mode that reports
 // how it read the query, filters by category, and answers a point with the
@@ -11,6 +12,7 @@ import * as api from './api.js';
 import * as catpicker from './catpicker.js';
 import { lang, t } from './i18n.js';
 import * as mapview from './mapview.js';
+import * as tiles from './tiles.js';
 import { registerCollector, writeStateToUrl } from './urlstate.js';
 
 const PAGE_SIZE = 20;
@@ -38,6 +40,12 @@ const addressInputs = {
   postcode: document.getElementById('addrPostcode'),
   city: document.getElementById('addrCity'),
 };
+const reverseInputs = {
+  x: document.getElementById('reverseX'),
+  y: document.getElementById('reverseY'),
+};
+const reverseCrsLabel = document.getElementById('reverseCrs');
+const reverseSubmit = document.getElementById('reverseSubmit');
 const panel = document.getElementById('panel-search');
 const geomNote = document.getElementById('searchGeomNote');
 const errorBox = document.getElementById('searchError');
@@ -530,7 +538,8 @@ function showError(text) {
 
 function syncClearButton() {
   clearButton.disabled = state.features.length === 0 && !queryInput.value
-    && Object.values(addressInputs).every((input) => !input.value);
+    && [...Object.values(addressInputs), ...Object.values(reverseInputs)]
+      .every((input) => !input.value);
 }
 
 // A drawn shape and "only in view" are alternatives, like bbox and area in
@@ -542,8 +551,10 @@ function syncGeomNote() {
   withinCheckbox.disabled = !drawn;
 }
 
+// Whether a click on the map is a request: "what's here" and the reverse
+// search both take their point from it.
 function hereMode() {
-  return currentMode() === 'here' && isActive();
+  return (currentMode() === 'here' || currentMode() === 'reverse') && isActive();
 }
 
 // A crosshair while a click on the map is a request -- over the result
@@ -557,9 +568,63 @@ function syncHereCursor() {
 }
 
 function onMapClick(event) {
-  if (hereMode()) {
+  if (!hereMode()) {
+    return;
+  }
+  if (currentMode() === 'reverse') {
+    // The click as x/y in the picked CRS, so the fields show what is sent.
+    const { code, crs } = tiles.pickedCrs();
+    const point = crs.project(event.latlng);
+    const digits = code === 'EPSG:4326' ? 6 : 2;
+    reverseInputs.x.value = point.x.toFixed(digits);
+    reverseInputs.y.value = point.y.toFixed(digits);
+    reverseSearch();
+  } else {
     whatsHere(event.latlng);
   }
+}
+
+// The address nearest x/y, typed in the CRS of the grid picked in the
+// Tiles tab; the server transforms it (`/search/reverse`).
+async function reverseSearch() {
+  const x = Number(reverseInputs.x.value.trim().replace(',', '.'));
+  const y = Number(reverseInputs.y.value.trim().replace(',', '.'));
+  if (!reverseInputs.x.value.trim() || !reverseInputs.y.value.trim()
+      || !Number.isFinite(x) || !Number.isFinite(y)) {
+    showError(t('enter_coordinate'));
+    return;
+  }
+  const { code, crs } = tiles.pickedCrs();
+  startRequest();
+  placeHereMarker(crs.unproject(L.point(x, y)));
+  const seq = ++state.seq;
+  const started = performance.now();
+  try {
+    const body = await api.request('/search/reverse', {
+      method: 'POST', body: { x, y, crs: code, lang },
+    });
+    if (seq !== state.seq) {
+      return;
+    }
+    // 'here': no pager, and the outline style of a point answer.
+    state.kind = 'here';
+    state.searched = false;
+    state.page = 0;
+    state.total = body.count;
+    state.hasMore = false;
+    state.features = body.results.features;
+    summaryBox.textContent = t('reverse_summary', {
+      count: body.count, ms: Math.round(performance.now() - started),
+    });
+    renderResults();
+  } catch (error) {
+    showError(`${error.status ?? ''} ${error.message}`.trim());
+  }
+  if (seq === state.seq) {
+    busyBox.classList.add('hidden');
+  }
+  syncClearButton();
+  writeStateToUrl();
 }
 
 function isActive() {
@@ -589,6 +654,8 @@ async function loadCategories(selected) {
 function syncModeHint() {
   panel.classList.toggle('mode-here', currentMode() === 'here');
   panel.classList.toggle('mode-address', currentMode() === 'address');
+  panel.classList.toggle('mode-reverse', currentMode() === 'reverse');
+  reverseCrsLabel.textContent = tiles.pickedCrs().code;
   queryHint.textContent = HINTS[currentMode()] ?? '';
   fuzzyCheckbox.disabled = currentMode() !== 'name';
   syncHereCursor();
@@ -613,6 +680,8 @@ export function init(urlState) {
     sim: similarityInput.value === similarityInput.dataset.default ? '' : similarityInput.value,
     here: currentMode() === 'here' && state.herePoint
       ? `${state.herePoint.lat.toFixed(6)},${state.herePoint.lng.toFixed(6)}` : '',
+    rx: currentMode() === 'reverse' ? reverseInputs.x.value.trim() : '',
+    ry: currentMode() === 'reverse' ? reverseInputs.y.value.trim() : '',
   }));
 
   // Every control is rendered as the URL sets it; what is typed or ticked
@@ -625,7 +694,7 @@ export function init(urlState) {
     radio.addEventListener('change', () => {
       syncModeHint();
       writeStateToUrl();
-      if (currentMode() !== 'here' && state.searched && hasQuery()) {
+      if (!hereMode() && state.searched && hasQuery()) {
         state.page = 0;
         search();
       }
@@ -657,8 +726,21 @@ export function init(urlState) {
     });
     input.addEventListener('input', syncClearButton);
   }
+  reverseSubmit.addEventListener('click', reverseSearch);
+  for (const input of Object.values(reverseInputs)) {
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        reverseSearch();
+      }
+    });
+    input.addEventListener('input', syncClearButton);
+  }
   clearButton.addEventListener('click', () => {
     queryInput.value = '';
+    for (const input of Object.values(reverseInputs)) {
+      input.value = '';
+    }
     for (const input of Object.values(addressInputs)) {
       input.value = '';
     }
@@ -705,8 +787,13 @@ export function applyUrlHere(urlState) {
   if (currentMode() === 'here' && Number.isFinite(lat) && Number.isFinite(lng)) {
     whatsHere(L.latLng(lat, lng));
   }
+  if (currentMode() === 'reverse' && urlState.rx && urlState.ry) {
+    reverseSearch();
+  }
 }
 
 export function onTabShown() {
+  // The grid, and with it the CRS x/y are in, may have changed in the Tiles tab.
+  reverseCrsLabel.textContent = tiles.pickedCrs().code;
   syncHereCursor();
 }

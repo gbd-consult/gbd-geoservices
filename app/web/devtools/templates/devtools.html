@@ -148,7 +148,7 @@
     </div>
 
     <!-- ---- Search ---- -->
-    <div class="panel-controls{{ ' hidden' if ui.tab != 'search' }}{{ ' mode-' ~ ui.smode if ui.smode in ('here', 'address') }}" id="panel-search">
+    <div class="panel-controls{{ ' hidden' if ui.tab != 'search' }}{{ ' mode-' ~ ui.smode if ui.smode in ('here', 'address', 'reverse') }}" id="panel-search">
       <div class="field">
         <label class="field-label">{{ t('devtools.mode') }}</label>
         <div class="segmented">
@@ -156,7 +156,27 @@
           <label><input type="radio" name="smode" value="address"{{ ' checked' if ui.smode == 'address' }}>{{ t('devtools.smode_address') }}</label>
           <label><input type="radio" name="smode" value="phrase"{{ ' checked' if ui.smode == 'phrase' }}>{{ t('devtools.smode_phrase') }}</label>
           <label><input type="radio" name="smode" value="here"{{ ' checked' if ui.smode == 'here' }}>{{ t('devtools.smode_here') }}</label>
+          <label><input type="radio" name="smode" value="reverse"{{ ' checked' if ui.smode == 'reverse' }}>{{ t('devtools.smode_reverse') }}</label>
         </div>
+      </div>
+
+      <!-- The reverse search: a coordinate in the picked grid's CRS, typed
+           or taken from a click on the map. -->
+      <div class="field-row only-reverse">
+        <div class="field">
+          <label class="field-label" for="reverseX">X</label>
+          <input type="text" id="reverseX" inputmode="decimal" value="{{ ui.text.rx }}" autocomplete="off">
+        </div>
+        <div class="field">
+          <label class="field-label" for="reverseY">Y</label>
+          <input type="text" id="reverseY" inputmode="decimal" value="{{ ui.text.ry }}" autocomplete="off">
+        </div>
+      </div>
+      <div class="field only-reverse">
+        <span class="hint"><span id="reverseCrs"></span> · {{ t('devtools.reverse_hint') }}</span>
+      </div>
+      <div class="button-row only-reverse">
+        <button class="primary" id="reverseSubmit">{{ t('devtools.search') }}</button>
       </div>
 
       <!-- "What's here" has no query: a click on the map is the request,

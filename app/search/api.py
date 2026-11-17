@@ -1,6 +1,6 @@
 """What `web` calls, and what `manage.py` and the profilers call directly.
 
-Three entry points -- `find`, `count`, `categories` -- and no HTTP
+Four entry points -- `find`, `count`, `reverse`, `categories` -- and no HTTP
 anywhere near them. A route translates a request body into `request.parse`
 and a return value into JSON; everything between is here, so the same code
 answers a query whether it arrived over HTTP, from a test, or from
@@ -25,7 +25,7 @@ from search import name as name_mode
 from search import phrase as phrase_mode
 from search import point as point_mode
 from search import rank, shape
-from search.request import Request, RequestError
+from search.request import Request, RequestError, check_range
 
 log = logging.getLogger(__name__)
 
@@ -289,6 +289,46 @@ def _find_point(req: Request, steps: timing.Steps) -> dict:
     return shape.page(features[:req.limit], req=req, total=total)
 
 
+def reverse(req: Request) -> dict:
+    """The reverse search: the address nearest `req.near`, in `req.crs`,
+    within `reverse.max_distance_m` -- one feature or none.
+
+    Not cached: one indexed probe, and a coordinate rarely repeats.
+    """
+    steps = timing.Steps()
+    with _connect() as conn:
+        lon, lat = req.near
+        if req.crs != 'EPSG:4326':
+            with steps.step('transform'):
+                lon, lat = _to_wgs84(conn, lon, lat, req.crs)
+            # PROJ answers Infinity for UTM far off its zone: the client's
+            # mistake, so a 422 rather than a query on nonsense.
+            check_range(lon, lat)
+        params = point_mode.address_params(lon, lat, point_mode.radii()['reverse_max_m'])
+        with steps.step('address'):
+            address = conn.execute(_statement(point_mode.ADDRESS_SQL), params).fetchone()
+        steps.rows(int(address is not None))
+        features = []
+        if address is not None:
+            with steps.step('places'):
+                places = _places(conn, [address], req.lang)
+                objects = _objects(conn, [address])
+            address['relevance'] = rank.weights().relevance['address']
+            features.append(shape.address_feature(address, req.lang, places, objects))
+    timing.report(log, steps, _what('reverse', req))
+    return shape.page(features, req=req, total=len(features))
+
+
+def _to_wgs84(conn, x: float, y: float, crs: str) -> tuple[float, float]:
+    """(x, y) in `crs` as (lon, lat). PostGIS transforms: the project has
+    no pyproj (`importer/geometry.py`)."""
+    row = conn.execute(
+        'SELECT ST_X(g) AS lon, ST_Y(g) AS lat FROM ST_Transform('
+        'ST_SetSRID(ST_MakePoint(%(x)s, %(y)s), %(srid)s), 4326) g',
+        {'x': x, 'y': y, 'srid': int(crs.split(':')[1])}).fetchone()
+    return row['lon'], row['lat']
+
+
 def categories(languages=None, icon=None) -> list:
     """The category tree, with names in every served language.
 
@@ -313,7 +353,8 @@ def clear_cache() -> None:
 def _what(call: str, req: Request) -> str:
     """How a timing line names a request: enough to run it again."""
     where = (f' area={req.area}' if req.area else f' bbox={req.bbox}' if req.bbox
-             else f' near={req.near}' if req.mode == 'point' else '')
+             else f' near={req.near}' if req.mode == 'point'
+             else f' near={req.near} {req.crs}' if req.mode == 'reverse' else '')
     return f'search {call} {req.mode} {req.text!r}{where}'
 
 

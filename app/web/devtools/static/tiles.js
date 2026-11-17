@@ -71,6 +71,18 @@ function currentGridId() {
   return gridSelect.value in grids ? gridSelect.value : WEB_MERCATOR;
 }
 
+// The CRS of the grid picked in the Tiles tab, even while the Search tab
+// pins the map to Web Mercator: what the reverse search's x/y are typed in.
+// `crs` projects a LatLng into it.
+export function pickedCrs() {
+  const gridId = currentMode() === 'xyz' || !(gridSelect.value in grids)
+    ? WEB_MERCATOR : gridSelect.value;
+  const grid = grids[gridId];
+  // A grid crsFor cannot build falls back to Web Mercator; say so in the code.
+  const drawable = grid && (grid.native || grid.proj4);
+  return { code: drawable ? grid.crs : 'EPSG:3857', crs: crsFor(gridId) };
+}
+
 // All four address the same tile. In every configured grid level N *is*
 // the quadtree level N, so XYZ z/x/y and WMTS TILEMATRIX/TILECOL/TILEROW
 // are the same three numbers in a different spelling. WMS has no tile
