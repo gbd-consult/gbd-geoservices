@@ -65,8 +65,8 @@ DEFAULT_SCOPES = ('tiles', 'search')
 #: How long `add(..., trial=True)` and `issue_trial` make a key valid: through
 #: tomorrow, as `expires` is the last valid day.
 TRIAL_DAYS = 1
-#: What a trial key from the form carries: the API and the viewer it is tried in.
-TRIAL_SCOPES = ('tiles', 'search', 'devtools')
+#: What a trial key from the form carries; `tiles` also opens the viewer.
+TRIAL_SCOPES = ('tiles', 'search')
 #: How long an address that had a trial key is remembered, and refused another.
 TRIAL_EMAIL_DAYS = 365
 #: How long an expired trial key stays, usage and all, before `purge_trials`.
