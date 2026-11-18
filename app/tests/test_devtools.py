@@ -76,16 +76,18 @@ def test_mounted_when_on(monkeypatch):
 
 @pytest.mark.parametrize('route', ['/devtools/api/grids', '/devtools/api/extent',
                                    '/devtools/api/watch'])
-def test_the_viewers_data_needs_a_devtools_key(monkeypatch, keys, route):
-    """With the option on in production, the key is all that keeps the
-    viewer ours: a customer's key -- even one with no scopes, which opens
-    tiles and search -- is refused."""
-    keys(['k-customer-0123456789', {'key': 'k-ours-0123456789', 'scopes': ['devtools']}])
+def test_the_viewers_data_needs_a_devtools_or_tiles_key(monkeypatch, keys, route):
+    """The viewer is where a key's holder sees what it draws, so `tiles`
+    opens it as `devtools` does; no key, or a search-only one, does not."""
+    keys([{'key': 'k-search-0123456789', 'scopes': ['search']},
+          {'key': 'k-tiles-0123456789', 'scopes': ['tiles']},
+          {'key': 'k-ours-0123456789', 'scopes': ['devtools']}])
     # What a route answers past the key -- the database may be down -- is not this test's.
     client = TestClient(app_with(monkeypatch, True), raise_server_exceptions=False)
     assert client.get(route).status_code == 401
-    assert client.get(route, params={'key': 'k-customer-0123456789'}).status_code == 403
-    assert client.get(route, params={'key': 'k-ours-0123456789'}).status_code not in (401, 403)
+    assert client.get(route, params={'key': 'k-search-0123456789'}).status_code == 403
+    for key in ('k-tiles-0123456789', 'k-ours-0123456789'):
+        assert client.get(route, params={'key': key}).status_code not in (401, 403)
 
 
 def test_the_page_opens_without_a_key(monkeypatch, keys):

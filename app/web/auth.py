@@ -389,8 +389,14 @@ def requires_key(request: Request) -> Key | None:
 
 
 def requires_devtools(request: Request) -> Key | None:
-    """A FastAPI dependency for the viewer's own routes; not counted."""
-    return check(request, 'devtools')
+    """A FastAPI dependency for the viewer's own routes; not counted.
+
+    `devtools` or `tiles`: the viewer is where a customer -- a trial key's
+    holder above all -- sees what the key draws. A search-only key does not."""
+    record = check(request, None)
+    if record is not None and not (record.allows('devtools') or record.allows('tiles')):
+        raise HTTPException(status_code=403, detail='this key has no devtools or tiles scope')
+    return record
 
 
 def warn_if_open() -> None:

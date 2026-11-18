@@ -358,7 +358,7 @@ def test_the_landing_page_names_the_operator_and_links_the_source(client, monkey
 
 
 def test_the_landing_page_does_not_link_the_devtools(client):
-    """They need the devtools key, which no visitor of the landing page has."""
+    """Only a page that issued a key links them: without one the viewer is empty."""
     assert '/devtools' not in client.get('/').text
 
 

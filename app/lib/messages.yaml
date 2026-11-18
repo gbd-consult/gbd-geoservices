@@ -67,8 +67,8 @@ landing.trial_key:
   de: Testschlüssel
   en: Trial key
 landing.trial_key_text:
-  de: Ein Testschlüssel gilt bis zum Ende des nächsten Tages für Kacheln, Suche und den Viewer. Er wird sofort angezeigt, einmal je E-Mail-Adresse.
-  en: A trial key is valid until the end of the next day for tiles, search and the viewer. It is shown at once, once per e-mail address.
+  de: Ein Testschlüssel gilt bis zum Ende des nächsten Tages für Kacheln und Suche. Er wird sofort angezeigt, einmal je E-Mail-Adresse.
+  en: A trial key is valid until the end of the next day for tiles and search. It is shown at once, once per e-mail address.
 landing.email:
   de: E-Mail-Adresse
   en: E-mail address
@@ -94,8 +94,8 @@ landing.trial_key_qgis:
   de: Sie können den Schlüssel im QGIS-Plugin ausprobieren.
   en: You can try the key in the QGIS plugin.
 landing.trial_key_browser:
-  de: Oder direkt im Browser
-  en: Or right in the browser
+  de: Oder direkt im Browser (dort den Schlüssel im Tab „Status“ eintragen)
+  en: Or right in the browser (enter the key there on the Status tab)
 landing.operator:
   de: Betrieben von
   en: Operated by

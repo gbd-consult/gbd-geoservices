@@ -91,11 +91,11 @@ def trials(store, monkeypatch):
     return store
 
 
-def test_a_trial_key_opens_the_api_and_the_viewer_through_tomorrow(trials):
+def test_a_trial_key_opens_tiles_and_search_through_tomorrow(trials):
     key = keys.issue_trial('a@example.org', per_day=5)
     [record] = keys.load()
     assert record['hash'] == keys.digest(key)
-    assert record['scopes'] == ['tiles', 'search', 'devtools']
+    assert record['scopes'] == ['tiles', 'search']
     assert record['expires'] == keys.today() + datetime.timedelta(days=1)
 
 
