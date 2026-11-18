@@ -54,7 +54,6 @@ from lib.keys import SCHEMA
 _log = logging.getLogger(__name__)
 
 #: `request_log_days` may not exceed this: the privacy policy promises it.
-#: Also how long a trial key request, with its e-mail address, is kept.
 MAX_RETENTION_DAYS = 7
 
 #: The request log's columns, in the order `write_requests` takes them.
@@ -206,7 +205,7 @@ def _span(day: datetime.date) -> dict:
 def purge(conn, today: datetime.date) -> list[str]:
     """Drop the request log's partitions, and delete the rows, older than
     `request_log_days` days, today included; the same for the host samples.
-    The key requests go after `MAX_RETENTION_DAYS`, whatever `request_log_days`."""
+    The trial keys' addresses and expired keys go by their own periods (`keys.purge_trials`)."""
     cutoff = today - datetime.timedelta(days=retention_days() - 1)
     dropped = []
     names = [row[0] for row in conn.execute(
@@ -222,7 +221,7 @@ def purge(conn, today: datetime.date) -> list[str]:
                  (cutoff.isoformat(),))
     conn.execute(sql.SQL('delete from {} where ts < %s').format(_t('host_sample')),
                  (cutoff.isoformat(),))
-    keys.purge_requests(conn, today - datetime.timedelta(days=MAX_RETENTION_DAYS - 1))
+    keys.purge_trials(conn, today)
     conn.commit()
     return dropped
 
