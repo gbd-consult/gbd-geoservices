@@ -33,13 +33,13 @@ update leaves the server answering with the old data, so neither `/health`
 nor a tile request would notice; the extract's date is the one thing that
 does. It takes no key, so the monitor needs none, and says only the date.
 
-The trial key form only stores a request (`lib/keys.py`): the e-mail
-address and organisation, for the operator to issue a key by hand. Two
-guards against a bot: a honeypot field, answered as a success so the bot
-learns nothing, and `MAX_KEY_REQUESTS` open requests, past which the form
-refuses rather than let the table fill. One client fills it no faster
-than `KEY_REQUESTS_PER_IP` an hour: the IPs are counted in memory only, so
-the form stores no IP and needs no retention period of its own.
+The trial key form issues a key at once (`keys.issue_trial`) and shows it
+in the response itself, never in a redirect's URL, which would put it into
+the browser's history; `no-store` keeps it out of caches. One key per
+e-mail address. The address is not confirmed, so three guards against a
+bot: a honeypot field, answered as "try later" so the bot learns nothing,
+`KEY_REQUESTS_PER_IP` an hour per client, counted in memory only so the
+form stores no IP, and `MAX_TRIAL_KEYS_PER_DAY` in all.
 
 The legal texts -- imprint, privacy policy, terms of use -- come from the
 operator's management and lawyer, not from this repository: they are HTML
@@ -64,11 +64,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from starlette.concurrency import run_in_threadpool
 
-from lib import config, db, i18n, keys, stats
+from lib import config, db, i18n, keys
 from lib.version import __version__, build_id
 from web import auth, serving
 from web import icons as icon_routes
 from web import legend as legend_routes
+from web.devtools import enabled as devtools_enabled
 
 _log = logging.getLogger(__name__)
 
@@ -96,14 +97,14 @@ ELEVATION_SHORT_ATTRIBUTION = 'Höhendaten: Copernicus / ESA'
 #: German paths: the texts are German law's, and so are the names people look for.
 LEGAL_PAGES = ('impressum', 'datenschutz', 'nutzungsbedingungen')
 
-#: Open trial key requests past which the form refuses.
-MAX_KEY_REQUESTS = 100
+#: Trial keys the form issues a day, to all addresses together.
+MAX_TRIAL_KEYS_PER_DAY = 50
 #: Trial key requests one IP may make in `KEY_REQUEST_WINDOW_S`.
 KEY_REQUESTS_PER_IP = 3
 KEY_REQUEST_WINDOW_S = 3600.0
 #: The form's hidden field: a person leaves it empty, a form-filling bot does not.
 HONEYPOT = 'website'
-#: Enough to catch a typo, no more: whether the address works shows when the key is sent.
+#: Enough to catch a typo, no more: the address is only what one key per person is counted by.
 EMAIL = re.compile(r'[^@\s]+@[^@\s]+\.[^@\s]+')
 
 _cache: dict[str, Any] = {}
@@ -385,9 +386,9 @@ def require_loopback(request: Request) -> None:
         raise HTTPException(status_code=403, detail='loopback only')
 
 
-@router.post('/key-request', include_in_schema=False)
-async def key_request(request: Request) -> RedirectResponse:
-    """Store a trial key request; back to the landing page with the outcome.
+@router.post('/key-request', include_in_schema=False, response_model=None)
+async def key_request(request: Request) -> HTMLResponse | RedirectResponse:
+    """Issue a trial key and show it; else back to the landing page with why not.
 
     Parsed with the standard library: FastAPI's form support needs
     python-multipart, a dependency for two text fields.
@@ -398,20 +399,24 @@ async def key_request(request: Request) -> RedirectResponse:
         return (form.get(name) or [''])[0].strip()
 
     email = field('email')
+    lang = field('lang') or None
     if field(HONEYPOT):
-        outcome = 'sent'
+        outcome = 'full'
     elif len(email) > 254 or not EMAIL.fullmatch(email):
         outcome = 'invalid'
     elif not _key_request_allowed(request.client.host if request.client else ''):
         outcome = 'full'
     else:
-        request_id = await run_in_threadpool(keys.request_add, email,
-                                             field('organisation')[:200] or None, MAX_KEY_REQUESTS)
-        outcome = 'sent' if request_id else 'full'
-        _log.info('key request %s: %s', request_id or '-',
-                  'waiting, see manage.sh key-requests' if request_id else 'refused, too many open')
-    lang = i18n.pick(field('lang') or None)
-    return RedirectResponse(f'/?lang={lang}&key_request={outcome}#key-request', status_code=303)
+        outcome = await run_in_threadpool(keys.issue_trial, email, MAX_TRIAL_KEYS_PER_DAY)
+        if outcome not in ('used', 'full'):
+            _log.info('trial key issued')
+            await run_in_threadpool(auth.configured, refresh=True)  # valid at once, not after KEYS_TTL_S
+            response = await run_in_threadpool(_landing, request, lang, None, outcome)
+            response.headers['Cache-Control'] = 'no-store'
+            return response
+        _log.info('trial key refused: %s', outcome)
+    return RedirectResponse(f'/?lang={i18n.pick(lang)}&key_request={outcome}#key-request',
+                            status_code=303)
 
 
 def _key_request_allowed(ip: str) -> bool:
@@ -430,6 +435,12 @@ def _key_request_allowed(ip: str) -> bool:
 def landing(request: Request, lang: str | None = None,
             key_request: str | None = None) -> HTMLResponse:
     """What this server is, and a URL of each kind that works, in `?lang=`."""
+    return _landing(request, lang, key_request)
+
+
+def _landing(request: Request, lang: str | None, key_request: str | None = None,
+             trial_key: str | None = None) -> HTMLResponse:
+    """The landing page; `trial_key` only from `key_request`, never from a query."""
     try:
         schema = db.active_schema()
     except db.NoImportError:
@@ -442,8 +453,11 @@ def landing(request: Request, lang: str | None = None,
         'themes': [serving.url_name(name) for name in core.available_themes(schema)] if schema else [],
         'grids': matrix.load(),
         'source_url': config.opt('source_url'),
-        'key_request': key_request if key_request in ('sent', 'invalid', 'full') else None,
-        'request_days': stats.MAX_RETENTION_DAYS,
+        'key_request': key_request if key_request in ('used', 'invalid', 'full') else None,
+        'trial_key': trial_key,
+        'trial_expires': keys.today() + datetime.timedelta(days=keys.TRIAL_DAYS),
+        'trial_email_months': keys.TRIAL_EMAIL_DAYS // 30,
+        'devtools': devtools_enabled(),
     })
 
 
