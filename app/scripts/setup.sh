@@ -136,7 +136,7 @@ rm -f "$CRON_CONF"
 cat > "$CRON_CONF" <<EOF
 # Written by $BASE/setup.sh.
 
-0 2 * * 1,3,5  $OPERATOR  $BASE/manage.sh update $AREA >> $CRON_LOG 2>&1
+0 23 * * 5  $OPERATOR  $BASE/manage.sh update $AREA >> $CRON_LOG 2>&1
 EOF
 
 rsyslogd -N1 >/dev/null
