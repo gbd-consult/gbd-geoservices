@@ -26,21 +26,14 @@ POST /search        {"mode": "point", "near": [lon, lat]}</pre>
 <p>{{ t('landing.self_hosting_text') }}</p>
 <h2 id="key-request">{{ t('landing.trial_key') }}</h2>
 {% if key_request %}<p role="status"><strong>{{ t('landing.key_request_' + key_request) }}</strong></p>{% endif %}
-{% if trial_key %}
-<div role="status">
-  <p><strong>{{ t('landing.trial_key_issued', expires=trial_expires.isoformat()) }}</strong></p>
-  <p><code>{{ trial_key }}</code></p>
-  {# shortcut: no link to the QGIS plugin, it has none yet; add it when it is published. #}
-  <p>{{ t('landing.trial_key_qgis') }}{% if devtools %} {{ t('landing.trial_key_browser') }}: <a href="/devtools">/devtools</a>{% endif %}</p>
-</div>
-{% endif %}
 <p>{{ t('landing.trial_key_text') }}</p>
 <form method="post" action="/key-request">
   <input type="hidden" name="lang" value="{{ lang }}">
   <label>{{ t('landing.email') }}<input type="email" name="email" required maxlength="254" autocomplete="email"></label>
+  <label>{{ t('landing.organisation') }}<input name="organisation" maxlength="200" autocomplete="organization"></label>
   {# The honeypot: off-screen and out of the tab order, so only a bot fills it. #}
   <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
   <button>{{ t('landing.request_key') }}</button>
 </form>
-<p class="sub">{{ t('landing.key_request_privacy', months=trial_email_months) }}</p>
+<p class="sub">{{ t('landing.key_request_privacy', days=request_days) }}</p>
 {% endblock %}

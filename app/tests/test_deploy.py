@@ -341,15 +341,6 @@ def test_the_script_never_writes_the_configuration():
     assert writes.search('printf x | tee $BASE/config/options.yaml')
 
 
-def test_the_script_checks_every_secret_the_template_asks_for():
-    """A variable missing from the server's postgres.env fails only when it is
-    read: TRIAL_EMAIL_SECRET at the first trial key, long after the deploy."""
-    template = (ROOT / 'config.example' / 'postgres.env').read_text()
-    asked = re.findall(r'^(\w+)=CHANGEME$', template, re.M)
-    checked = re.search(r'for var in ([\w ]+); do', DEPLOY.read_text()).group(1).split()
-    assert asked and set(asked) <= set(checked)
-
-
 def script_value(script: Path, name: str) -> str:
     return re.search(rf'^{name}=(\S+)$', script.read_text(), re.M).group(1)
 
@@ -478,15 +469,13 @@ def test_vaultwarden_send_never_puts_the_secret_in_an_argument(tmp_path):
 
 
 def test_keys_are_generated_only_by_vaultwarden_send(tmp_path, monkeypatch):
-    """One place makes customers' keys, and it hands them over as a Send: a
-    key printed to a terminal ends up in scrollback, a ticket or a chat. The
-    one exception is the trial key the landing page's form shows once."""
+    """One place makes keys, and it hands them over as a Send: a key printed
+    to a terminal ends up in scrollback, a ticket or a chat."""
     import inspect
 
     from lib import keys
     from tools import manage
-    outside_trial = inspect.getsource(keys).replace(inspect.getsource(keys.issue_trial), '')
-    assert 'secrets.' not in outside_trial
+    assert 'secrets' not in inspect.getsource(keys)
     assert 'token_' not in inspect.getsource(manage)
     install_bw(tmp_path)
     monkeypatch.setenv('PATH', f'{tmp_path}:/usr/local/bin:/usr/bin:/bin')

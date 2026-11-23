@@ -47,7 +47,7 @@ operator:                   # who runs this service, named on the landing page; 
   name: null
   url: null
 source_url: https://github.com/gbd-consult/gbd-geoservices   # the code this server runs, linked from the landing page; AGPL-3.0: a modified version links its own
-devtools: false             # the viewer; its data only for a key with the devtools or tiles scope
+devtools: false             # the viewer; its data only for a key with the devtools scope
 devtools_watch: false       # with devtools: recompile when styles/ changes, and the page polls for it every 1.5 s
 log_level: info
 slow_log_ms: 1000            # a tile or search slower than this logs its steps as a warning; at log_level debug every one does

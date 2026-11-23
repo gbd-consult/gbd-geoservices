@@ -103,7 +103,7 @@ The two newest complete imports of an area are kept. Only one import runs at a t
 | client IP, URL (without the key), referrer, user agent | `data/log/caddy.log` | 7 days | logrotate and journald, as `setup.sh` sets them up |
 | a slow search's text; a slow statement with its parameters | `data/log/app.log`, `postgres.log` | 7 days | the same |
 | client IP, key and, for a search, its terms, per API request | table `service.request_log` | `request_log_days` (1-7, today included) | the app, every night shortly after midnight UTC |
-| an HMAC of the e-mail address a trial key went to (not the address) | table `service.trial_email` | 365 days | the app every night |
+| e-mail address and name or company from the trial key form | table `service.key_request` | until the operator marks it done, at most 7 days | the operator (`key-request-done`), else the app every night |
 | a key's name, customer and allowed referrers; its requests per month | tables `service.api_key`, `service.key_usage` | as long as the key is registered | the operator, by hand: `key-disable` blocks a key but deletes nothing |
 
 The daily and monthly figures (`service.daily_stats`, `daily_host`, `data/stats/`) hold counts only, no IPs and no search terms. Nothing else is kept about a request: no cookies, no tracking, no analytics.
@@ -135,7 +135,7 @@ The daily and monthly figures (`service.daily_stats`, `daily_host`, `data/stats/
 | `areas` | the importable areas: name -> Geofabrik path |
 | `operator` | `name` and `url` of who runs the service, named on the landing page |
 | `source_url` | the source code the landing page links to (AGPL-3.0); a modified version sets its own |
-| `devtools` | the viewer at `/devtools/`; its data needs a key with the `devtools` or `tiles` scope |
+| `devtools` | the viewer at `/devtools/`; its data needs a key with the `devtools` scope |
 
 Any option can also be set with an environment variable `GEOSERVICES_<OPTION>`.
 
@@ -156,9 +156,9 @@ echo "$KEY" | ./manage.sh key-register old-client   # a key a client already has
 ./manage.sh usage-export 2026-10 > usage-2026-10.csv
 ```
 
-- `--scopes`: `tiles`, `search` and/or `devtools`; none means `tiles` and `search`. `devtools` or `tiles` opens the viewer's data; `devtools` is given only by name. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
-- The landing page's form issues trial keys by itself and shows the key once: valid through the next day (UTC), for tiles and search (with `tiles` also the devtools viewer), named `trial-<hash>`. One key per e-mail address for a year, 3 requests per IP an hour (counted in memory only), 50 trial keys a day in all. It needs `TRIAL_EMAIL_SECRET` in `config/postgres.env` (`openssl rand -hex 32`); `deploy.sh` refuses without it. Trial keys expired for 30 days are deleted with their usage.
-- `--trial` makes a key valid through the next day, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
+- `--scopes`: `tiles`, `search` and/or `devtools`; none means `tiles` and `search`. `devtools` opens the viewer's data and is given only by name, to our own keys. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
+- Trial key requests from the landing page's form wait in the database: `./manage.sh key-requests` lists them, `key-add <name> --customer <company> --trial` issues the key, you send the link to the address, and `./manage.sh key-request-done <id>` deletes the request. The app logs each new request (`key request <id>: waiting` in `app.log`) and deletes requests older than 7 days by itself. An address already waiting is not stored twice, one IP may send 3 requests an hour (counted in memory only, the IP is not stored), and with 100 open requests the form refuses more.
+- `--trial` makes a key valid for 30 days, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
 - Every request with a key is counted per month: successful tile requests (XYZ, WMTS, WMS) and search requests apart, and every request answered with an error (status 400 or above, the key's own refusals included) as `errors`. A WMS map counts as one request, whatever its size up to `wms_max_px`. `usage-export` writes `key;customer;month;tiles;search;errors` for every key. The app writes the same file for every finished month itself, as `data/stats/usage-YYYY-MM.csv` shortly after midnight UTC on the 1st (with `request_log` on); `usage-export` is for a month by hand.
 
 A client sends the key as `Authorization: Bearer <key>` or as `?key=<key>` (the only form tile URLs in map libraries, QGIS and other WMTS clients can use). Keys never appear in the logs. With no keys registered the server is open to everyone.
@@ -279,7 +279,7 @@ Every feature has the same properties, `null` where one does not apply. Its `id`
 | `GET /health/data` | the served extract's date and age in days; 503 when it is older than `max_data_age_days` or missing. No key |
 | `GET /` | the landing page, in German, or in English with `?lang=en`. No key |
 | `GET /openapi.json` | the API description (OpenAPI), for Swagger and other tools. No key; there is no `/docs` page, whose Swagger UI would load from a CDN |
-| `POST /key-request` | the landing page's trial key form: issues a trial key and shows it. No key |
+| `POST /key-request` | the landing page's trial key form: stores the request for the operator. No key |
 
 ## Development
 
@@ -288,7 +288,7 @@ docker compose -f docker-compose.local.yml up -d
 docker compose -f docker-compose.local.yml exec app python tools/manage.py import li
 ```
 
-The dev server is on http://localhost:8003, with a viewer for tiles and search at http://localhost:8003/devtools (open on the dev stack, which has no keys; with keys it needs one with the `devtools` or `tiles` scope). It is configured from `config.local/`. `sh app/scripts/test.sh` runs the tests. `DESIGN.md` is the developer documentation.
+The dev server is on http://localhost:8003, with a viewer for tiles and search at http://localhost:8003/devtools (open on the dev stack, which has no keys; with keys it needs one with the `devtools` scope). It is configured from `config.local/`. `sh app/scripts/test.sh` runs the tests. `DESIGN.md` is the developer documentation.
 
 ## License
 

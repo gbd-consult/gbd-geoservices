@@ -20,11 +20,11 @@ only because a browser cannot derive them: a Leaflet CRS needs a proj4
 definition and a resolution per level, and the initial view needs the
 imported extent.
 
-ONLY FOR A DEVTOOLS OR TILES KEY
+ONLY FOR A DEVTOOLS KEY
 
-Its own routes, `/devtools/api/*`, take a key with the `devtools` or the
-`tiles` scope (`auth.requires_devtools`): a customer may see what the key
-draws, a search-only key may not, so the option may be on in production. The page and its
+The viewer is ours, not a customer's: its own routes, `/devtools/api/*`,
+take only a key that names the `devtools` scope -- a key with no scopes
+does not -- so the option may be on in production. The page and its
 scripts are open: a browser opening a URL sends no Authorization header,
 and they are the repository's code anyway. Without the key the page opens
 on a map with no grids and no themes, and says why.

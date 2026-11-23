@@ -113,10 +113,10 @@ def test_a_key_with_no_scopes_carries_tiles_and_search(keys):
         assert auth.check(request(query={'key': KEY}), scope)
 
 
-def test_a_search_only_key_does_not_open_the_devtools(keys):
-    """`tiles` opens the viewer, as `devtools` does; `devtools` is still never
-    implied, so a key for search alone stays out."""
-    keys([{'key': KEY, 'scopes': ['search']}, OTHER])
+def test_a_key_with_no_scopes_does_not_open_the_devtools(keys):
+    """The viewer is ours: a customer's key added without --scopes must not
+    reach it, so `devtools` is never implied."""
+    keys([KEY, {'key': OTHER, 'scopes': ['devtools']}])
     with pytest.raises(HTTPException) as excinfo:
         auth.requires_devtools(request(query={'key': KEY}))
     assert excinfo.value.status_code == 403

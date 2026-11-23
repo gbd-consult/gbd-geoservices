@@ -97,27 +97,19 @@ def test_ips_and_search_terms_are_gone_after_request_log_days(store, monkeypatch
     assert old in counted_days                             # counted before it went
 
 
-def test_trial_addresses_and_old_trial_keys_go_by_their_own_periods(store, monkeypatch):
-    """An address is refused a second key for a year, no longer; an expired
-    trial key leaves the monthly usage export a month after it ran out."""
+def test_key_requests_are_gone_after_seven_days_whatever_request_log_days(store, monkeypatch):
+    """An e-mail address from the trial key form lasts at most what the
+    privacy policy states for the logs, however short the request log is set."""
     retention(monkeypatch, 1)
     today = datetime.date(2026, 10, 28)
     stats.keys.ensure(store)
-    year = datetime.timedelta(days=stats.keys.TRIAL_EMAIL_DAYS)
-    for day, address in ((today - year, 'alt'), (today - year + datetime.timedelta(days=1), 'neu')):
-        store.execute(f'insert into {SCHEMA}.trial_email values (%s, %s)', (address, day))
-    keep = datetime.timedelta(days=stats.keys.TRIAL_KEEP_DAYS)
-    for name, expires in (('trial-alt', today - keep - datetime.timedelta(days=1)),
-                          ('trial-neu', today - keep), ('kunde', datetime.date(2020, 1, 1))):
-        key_id = store.execute(f'insert into {SCHEMA}.api_key (name, hash, expires)'
-                               ' values (%s, %s, %s) returning id', (name, name, expires)).fetchone()[0]
-        store.execute(f'insert into {SCHEMA}.key_usage (key_id, month) values (%s, %s)',
-                      (key_id, datetime.date(2020, 1, 1)))
+    for day, email in ((today - datetime.timedelta(days=stats.MAX_RETENTION_DAYS), 'alt@x.de'),
+                       (today - datetime.timedelta(days=stats.MAX_RETENTION_DAYS - 1), 'neu@x.de')):
+        store.execute(f'insert into {SCHEMA}.key_request (ts, email) values (%s, %s)',
+                      (at(day), email))
     stats.daily(today)
-    assert [r[0] for r in store.execute(f'select hash from {SCHEMA}.trial_email')] == ['neu']
-    assert sorted(r[0] for r in store.execute(f'select name from {SCHEMA}.api_key')) == [
-        'kunde', 'trial-neu']
-    assert store.execute(f'select count(*) from {SCHEMA}.key_usage').fetchone()[0] == 2
+    left = [r[0] for r in store.execute(f'select email from {SCHEMA}.key_request').fetchall()]
+    assert left == ['neu@x.de']
 
 
 @pytest.mark.parametrize('days', [0, 8, '7', 2.5, True, None])

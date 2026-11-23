@@ -116,9 +116,8 @@ def postgres_env(directory: str) -> dict[str, str]:
 
 @pytest.mark.parametrize('directory', ['config.local', 'config.test', 'config.example'])
 def test_the_tracked_postgres_env_files_set_the_credentials(directory):
-    """The names the postgres image initialises from, and lib.config maps;
-    beside them only the app's one other secret, the trial key form's HMAC key."""
-    assert set(postgres_env(directory)) == set(config.POSTGRES_ENV) | {'TRIAL_EMAIL_SECRET'}
+    """The names the postgres image initialises from, and lib.config maps."""
+    assert set(postgres_env(directory)) == set(config.POSTGRES_ENV)
 
 
 def test_the_example_holds_no_real_secret():

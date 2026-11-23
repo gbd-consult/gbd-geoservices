@@ -67,35 +67,29 @@ landing.trial_key:
   de: Testschlüssel
   en: Trial key
 landing.trial_key_text:
-  de: Ein Testschlüssel gilt bis zum Ende des nächsten Tages für Kacheln und Suche. Er wird sofort angezeigt, einmal je E-Mail-Adresse.
-  en: A trial key is valid until the end of the next day for tiles and search. It is shown at once, once per e-mail address.
+  de: Ein Testschlüssel gilt 30 Tage für Kacheln und Suche. Wir prüfen die Anfrage und senden Ihnen den Schlüssel per E-Mail.
+  en: A trial key is valid for 30 days for tiles and search. We check the request and send you the key by e-mail.
 landing.email:
   de: E-Mail-Adresse
   en: E-mail address
+landing.organisation:
+  de: Name oder Firma
+  en: Name or company
 landing.request_key:
   de: Testschlüssel anfragen
   en: Request a trial key
 landing.key_request_privacy:
-  de: Gespeichert wird nur ein nicht umkehrbarer Hash der E-Mail-Adresse, damit sie nur einen Testschlüssel erhält; er wird nach {months} Monaten gelöscht.
-  en: Only an irreversible hash of the e-mail address is stored, so that it gets one trial key; it is deleted after {months} months.
-landing.key_request_used:
-  de: Für diese E-Mail-Adresse wurde bereits ein Testschlüssel ausgegeben.
-  en: A trial key has already been issued for this e-mail address.
+  de: Die Angaben werden nur zur Bearbeitung der Anfrage gespeichert und danach, spätestens nach {days} Tagen, gelöscht.
+  en: The details are stored only to deal with the request and deleted afterwards, after {days} days at the latest.
+landing.key_request_sent:
+  de: Danke, Ihre Anfrage ist eingegangen.
+  en: Thank you, your request has been received.
 landing.key_request_invalid:
   de: Bitte eine gültige E-Mail-Adresse angeben.
   en: Please enter a valid e-mail address.
 landing.key_request_full:
-  de: Zurzeit können keine weiteren Testschlüssel ausgegeben werden. Bitte versuchen Sie es später noch einmal.
-  en: No further trial keys can be issued at the moment. Please try again later.
-landing.trial_key_issued:
-  de: 'Ihr Testschlüssel, gültig bis {expires} (UTC). Er wird nur jetzt angezeigt, bitte kopieren Sie ihn:'
-  en: 'Your trial key, valid until {expires} (UTC). It is shown only now, please copy it:'
-landing.trial_key_qgis:
-  de: Sie können den Schlüssel im QGIS-Plugin ausprobieren.
-  en: You can try the key in the QGIS plugin.
-landing.trial_key_browser:
-  de: Oder direkt im Browser (dort den Schlüssel im Tab „Status“ eintragen)
-  en: Or right in the browser (enter the key there on the Status tab)
+  de: Zurzeit können keine weiteren Anfragen angenommen werden. Bitte versuchen Sie es später noch einmal.
+  en: No further requests can be taken at the moment. Please try again later.
 landing.operator:
   de: Betrieben von
   en: Operated by

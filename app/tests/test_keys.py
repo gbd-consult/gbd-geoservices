@@ -85,44 +85,20 @@ def test_usage_adds_up_and_exports_every_key(store):
     ]
 
 
-@pytest.fixture
-def trials(store, monkeypatch):
-    monkeypatch.setenv('TRIAL_EMAIL_SECRET', 'test-secret')
-    return store
+def test_key_requests_stop_at_the_limit_and_go_when_done(store):
+    """The limit is what a bot past the honeypot can fill; done deletes the
+    address at once rather than after the seven days."""
+    first = keys.request_add('a@example.org', 'A GmbH', limit=2)
+    keys.request_add('b@example.org', None, limit=2)
+    assert keys.request_add('c@example.org', None, limit=2) is None
+    assert [r[2] for r in keys.requests()] == ['a@example.org', 'b@example.org']
+    assert keys.request_done(first)
+    assert not keys.request_done(first)
+    assert [r[2] for r in keys.requests()] == ['b@example.org']
 
 
-def test_a_trial_key_opens_tiles_and_search_through_tomorrow(trials):
-    key = keys.issue_trial('a@example.org', per_day=5)
-    [record] = keys.load()
-    assert record['hash'] == keys.digest(key)
-    assert record['scopes'] == ['tiles', 'search']
-    assert record['expires'] == keys.today() + datetime.timedelta(days=1)
-
-
-def test_an_address_gets_one_trial_key_however_it_is_written(trials):
-    assert keys.issue_trial('a@example.org', per_day=5) not in ('used', 'full')
-    assert keys.issue_trial(' A@Example.ORG ', per_day=5) == 'used'
-    assert len(keys.load()) == 1
-
-
-def test_the_daily_cap_does_not_use_up_the_address(trials):
-    """Refused for the day, the address must still get its key later."""
-    keys.issue_trial('a@example.org', per_day=1)
-    assert keys.issue_trial('b@example.org', per_day=1) == 'full'
-    assert keys.issue_trial('b@example.org', per_day=2) not in ('used', 'full')
-
-
-def test_the_address_is_stored_only_as_a_keyed_hash(trials, monkeypatch):
-    """A plain SHA-256 of an address is found again by hashing a guess."""
-    keys.issue_trial('a@example.org', per_day=5)
-    dump = str(trials.execute(f'select * from {SCHEMA}.trial_email').fetchall()) + str(keys.load())
-    assert 'example.org' not in dump
-    assert keys.digest('a@example.org') not in dump
-    monkeypatch.setenv('TRIAL_EMAIL_SECRET', 'another')
-    assert keys.email_hash('a@example.org') not in dump
-
-
-def test_no_secret_issues_no_key(store, monkeypatch):
-    monkeypatch.delenv('TRIAL_EMAIL_SECRET', raising=False)
-    with pytest.raises(RuntimeError, match='TRIAL_EMAIL_SECRET'):
-        keys.issue_trial('a@example.org', per_day=5)
+def test_an_address_already_waiting_takes_no_second_place(store):
+    first = keys.request_add('a@example.org', 'A GmbH', limit=2)
+    assert keys.request_add('A@Example.org', None, limit=2) == first
+    assert keys.request_add('b@example.org', None, limit=2) is not None
+    assert len(keys.requests()) == 2

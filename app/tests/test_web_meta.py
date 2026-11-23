@@ -358,7 +358,7 @@ def test_the_landing_page_names_the_operator_and_links_the_source(client, monkey
 
 
 def test_the_landing_page_does_not_link_the_devtools(client):
-    """Only a page that issued a key links them: without one the viewer is empty."""
+    """They need the devtools key, which no visitor of the landing page has."""
     assert '/devtools' not in client.get('/').text
 
 
@@ -366,39 +366,29 @@ def test_the_landing_page_does_not_link_the_devtools(client):
 
 @pytest.fixture
 def stored(monkeypatch):
-    """The trial keys the form issued, with no database."""
+    """The key requests the form stored, with no database."""
     from lib import keys
-    from web import auth, meta
+    from web import meta
     meta._key_request_times.clear()
     calls = []
 
-    def issue(email, per_day):
-        calls.append(email)
-        return {'used@example.org': 'used', 'full@example.org': 'full'}.get(email, 'k-trial')
-    monkeypatch.setattr(keys, 'issue_trial', issue)
-    monkeypatch.setattr(auth, 'configured', lambda refresh=False: {})
+    def add(email, organisation, limit):
+        calls.append((email, organisation))
+        return None if email == 'full@example.org' else len(calls)
+    monkeypatch.setattr(keys, 'request_add', add)
     return calls
 
 
-def test_an_issued_key_is_shown_once_and_never_in_a_url(client, stored):
-    """A redirect would carry the key in its URL: into the history and the logs."""
-    response = client.post('/key-request', data={'email': ' a@example.org ', 'lang': 'en'},
-                           follow_redirects=False)
-    assert response.status_code == 200 and 'location' not in response.headers
-    assert response.headers['cache-control'] == 'no-store'
-    assert '<code>k-trial</code>' in response.text
-    assert stored == ['a@example.org']
-
-
 @pytest.mark.parametrize('form, outcome, stored_as', [
-    ({'email': 'a@example.org', 'website': 'http://spam'}, 'full', []),
+    ({'email': ' a@example.org ', 'organisation': 'A GmbH', 'lang': 'en'}, 'sent',
+     [('a@example.org', 'A GmbH')]),
+    ({'email': 'a@example.org', 'website': 'http://spam'}, 'sent', []),
     ({'email': 'not an address'}, 'invalid', []),
-    ({'email': 'used@example.org', 'lang': 'en'}, 'used', ['used@example.org']),
-    ({'email': 'full@example.org'}, 'full', ['full@example.org']),
+    ({'email': 'full@example.org'}, 'full', [('full@example.org', None)]),
 ])
-def test_the_key_request_form_when_no_key_is_issued(client, stored, form, outcome, stored_as):
-    """A filled honeypot is told to try later, so the bot learns nothing, and
-    gets nothing; the outcome comes back to the landing page."""
+def test_the_key_request_form(client, stored, form, outcome, stored_as):
+    """A filled honeypot is told it worked, so the bot learns nothing, and
+    stores nothing; the outcome comes back to the landing page."""
     response = client.post('/key-request', data=form, follow_redirects=False)
     assert response.status_code == 303
     lang = form.get('lang', 'de')
@@ -406,24 +396,22 @@ def test_the_key_request_form_when_no_key_is_issued(client, stored, form, outcom
     assert stored == stored_as
 
 
-def test_one_ip_takes_no_more_than_its_share_of_trial_keys(client, stored):
-    """A script that gets past the honeypot would otherwise take the day's
-    keys within seconds and close the form to everyone else."""
+def test_one_ip_fills_no_more_than_its_share_of_key_requests(client, stored):
+    """A script that gets past the honeypot would otherwise take every open
+    place within seconds and close the form to everyone else."""
     from web import meta
-    responses = [client.post('/key-request', data={'email': f'{n}@example.org'},
-                             follow_redirects=False)
-                 for n in range(meta.KEY_REQUESTS_PER_IP + 1)]
+    outcomes = [client.post('/key-request', data={'email': f'{n}@example.org'},
+                            follow_redirects=False).headers['location']
+                for n in range(meta.KEY_REQUESTS_PER_IP + 1)]
     assert len(stored) == meta.KEY_REQUESTS_PER_IP
-    assert responses[-1].headers['location'].endswith('key_request=full#key-request')
+    assert outcomes[-1].endswith('key_request=full#key-request')
 
 
 def test_the_landing_page_has_the_key_request_form_and_its_outcome(client):
-    page = client.get('/', params={'key_request': 'used'}).text
+    page = client.get('/', params={'key_request': 'sent'}).text
     assert 'action="/key-request"' in page and 'name="website"' in page
-    assert 'bereits ein Testschlüssel' in page
+    assert 'Ihre Anfrage ist eingegangen' in page
     assert '<script' not in client.get('/', params={'key_request': '<script>'}).text
-    # The key is shown only by the form's response, never from a query.
-    assert '<code>x</code>' not in client.get('/', params={'trial_key': 'x'}).text
 
 
 def test_reload_is_loopback_only(client):

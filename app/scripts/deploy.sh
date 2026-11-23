@@ -101,7 +101,7 @@ PY
 # copied from the template?
 check_config() {
     step "Checking $CONFIG"
-    local problems=() f host var
+    local problems=() f host
     for f in options.yaml postgres.env postgresql.conf pg_hba.conf pgbouncer.ini Caddyfile; do
         [ -f "$CONFIG/$f" ] || problems+=("missing config/$f")
     done
@@ -131,10 +131,8 @@ check_config() {
         fi
     fi
     if [ -f "$CONFIG_ENV" ]; then
-        for var in POSTGRES_PASSWORD TRIAL_EMAIL_SECRET; do
-            grep -qE "^$var=." "$CONFIG_ENV" \
-                || problems+=("config/postgres.env: set $var")
-        done
+        grep -qE '^POSTGRES_PASSWORD=.' "$CONFIG_ENV" \
+            || problems+=("config/postgres.env: set POSTGRES_PASSWORD")
         grep -q CHANGEME "$CONFIG_ENV" \
             && problems+=("config/postgres.env: replace CHANGEME")
     fi
