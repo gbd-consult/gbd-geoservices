@@ -13,15 +13,25 @@ point `near` (for `point`, the point itself) by a few millionths of a degree
 -- a random offset per run plus 1e-7 per repeat -- so the server's response
 cache, keyed on every field of the request, never answers: cold is the query
 on whatever the database has cached, warm the query with warm database
-caches. Each query may carry an `expect` string; the report shows at which
-rank a result whose name or street contains it appears (1 = first), which is
-a coarse relevance check next to the timing. `/search/count` is timed
+caches. Each query may carry an `expect` string, or a list of them where the
+data spells the right result in several ways ("St."/"Sankt", "VHS"/
+"Volkshochschule"); the report shows at which rank a result whose name or
+street contains one appears (1 = first), which is a coarse relevance check
+next to the timing. A query meets the target (`ok`) when that rank is at most
+`--target-rank` and the warm time at most `--target-ms`: warm, because a
+typo is rarely repeated, so the response cache misses while the database's
+caches are warm, which is what warm measures. `/search/count` is timed
 separately for the same query. Queries live in a JSON file (`--queries`);
 without one the built-in Schleswig-Holstein set is used.
 
 Typos and fragments are sent as
 phrases (`phrase_typo`, `phrase_prefix`, `phrase_partial`), which reach the
-phrase mode's fuzzy step.
+phrase mode's fuzzy step. `profiles/queries_de_nrw_typo.json` is the fixed
+set of typical typos and German abbreviations for North Rhine-Westphalia:
+
+    python3 app/tools/profile_search.py --base-url http://127.0.0.1:8003 --api-key <key> \\
+        --queries profiles/queries_de_nrw_typo.json --bbox 5.85,50.32,9.47,52.53 \\
+        > profiles/search_de_nrw_typo_<label>.md
 
 A "view" query filters with `bbox` and `within=false` (intersects); an "all"
 query sends no spatial filter, only `near`; `point` queries use the point mode.
@@ -126,14 +136,21 @@ def feature_label(f: dict) -> str:
     return ' | '.join(x for x in parts if x)
 
 
-def expected_rank(features: list[dict], expect: str | None) -> int | None:
+def expected_rank(features: list[dict], expect: str | list[str] | None) -> int | None:
     if not expect:
         return None
-    needle = expect.lower()
+    needles = [e.lower() for e in ([expect] if isinstance(expect, str) else expect)]
     for i, f in enumerate(features, 1):
-        if needle in feature_label(f).lower():
+        label = feature_label(f).lower()
+        if any(n in label for n in needles):
             return i
     return 0
+
+
+def meets_target(row: dict, target_rank: int, target_ms: float) -> bool | None:
+    if row['rank'] is None:
+        return None
+    return row['status'] == 200 and 1 <= row['rank'] <= target_rank and row['warm_ms'] <= target_ms
 
 
 def run(queries: list[dict], base_url: str, api_key: str, repeat: int, default_box) -> list[dict]:
@@ -180,21 +197,25 @@ def write_report(args, rows: list[dict]) -> None:
     out()
     out('`cold` is the first request, `warm` the median of the rest (every request nudges `near` by a few millionths of a degree, so a response cache never answers); `count` is `/search/count` for the same body. '
         '`rank` is the position of the first result whose name or street contains `expect` (1 = top, 0 = not on the page, '
-        '- = nothing expected). `total` is the server\'s total for the query.')
+        '- = nothing expected). `total` is the server\'s total for the query. '
+        f'`ok`: rank 1-{args.target_rank} and warm at most {args.target_ms:.0f} ms.')
     out()
+    for r in rows:
+        r['ok'] = meets_target(r, args.target_rank, args.target_ms)
     for mode in ('name', 'address', 'phrase', 'point'):
         sel = [r for r in rows if r['mode'] == mode]
         if not sel:
             continue
         out(f'## {mode}')
         out()
-        out('| id | query | box | status | cold ms | warm ms | count ms | total | rank | top result |')
-        out('|---|---|---|---|---|---|---|---|---|---|')
+        out('| id | query | box | status | cold ms | warm ms | count ms | total | rank | ok | top result |')
+        out('|---|---|---|---|---|---|---|---|---|---|---|')
         for r in sel:
             rank = '-' if r['rank'] is None else str(r['rank'])
+            ok = {None: '-', True: 'yes', False: '**no**'}[r['ok']]
             top = r['top'][0] if r['top'] else ''
             out(f"| {r['id']} | {r['query']} | {r['bbox']} | {r['status']} | {r['cold_ms']:.0f} | {r['warm_ms']:.0f} | "
-                f"{r['count_ms']:.0f} | {r['total'] if r['total'] is not None else '-'} | {rank} | {top} |")
+                f"{r['count_ms']:.0f} | {r['total'] if r['total'] is not None else '-'} | {rank} | {ok} | {top} |")
         out()
     warm = [r['warm_ms'] for r in rows if r['status'] == 200]
     ranked = [r for r in rows if r['expect']]
@@ -204,6 +225,10 @@ def write_report(args, rows: list[dict]) -> None:
     out()
     out(f'- warm ms over all successful queries: min {min(warm):.0f} / median {statistics.median(warm):.0f} / max {max(warm):.0f}')
     out(f'- expected result at rank 1: {hits} of {len(ranked)}; on the first page: {found} of {len(ranked)}')
+    in_rank = sum(1 for r in ranked if r['rank'] and r['rank'] <= args.target_rank)
+    out(f'- target (rank 1-{args.target_rank}, warm at most {args.target_ms:.0f} ms) met: '
+        f"{sum(1 for r in ranked if r['ok'])} of {len(ranked)}; "
+        f'rank alone: {in_rank} of {len(ranked)}')
     out()
     out('<details><summary>Top 3 per query</summary>')
     out()
@@ -220,6 +245,8 @@ def main() -> None:
     parser.add_argument('--queries', help='JSON list of {id, mode, query|address|lon+lat, bbox?, expect?}; default: built-in set')
     parser.add_argument('--repeat', type=int, default=3)
     parser.add_argument('--bbox', default=','.join(map(str, SH_BOX)), help='default box, lon/lat; its centre is `near`')
+    parser.add_argument('--target-rank', type=int, default=5, help='a query is ok with the expected result at this rank or better ...')
+    parser.add_argument('--target-ms', type=float, default=200, help='... and a warm time at most this')
     parser.add_argument('--hardware-note', default='')
     parser.add_argument('--json', help='also dump raw results to this file')
     args = parser.parse_args()

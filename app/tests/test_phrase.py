@@ -51,6 +51,46 @@ def test_a_query_of_n_tokens_offers_n_times_n_plus_one_over_two_spans():
     assert len(phrase.spans(['a', 'b', 'c', 'd'])) == 10
 
 
+# --- abbreviations (no database) -----------------------------------------
+
+def test_an_abbreviation_is_written_out_first_and_the_query_as_typed_kept():
+    assert phrase.variants('Köln Hbf.') == ['koeln hauptbahnhof', 'Köln Hbf.']
+
+
+def test_a_query_without_an_abbreviation_runs_once():
+    assert phrase.variants('Holstentor') == ['Holstentor']
+
+
+def test_only_whole_words_are_abbreviations():
+    """"Stuttgart" holds "st", "Thun" "th": expanded inside a word, every
+    such query would pay a second cascade for a text nobody typed."""
+    assert phrase.variants('Stuttgart Thun') == ['Stuttgart Thun']
+
+
+def test_a_long_form_is_not_expanded_again():
+    # "tu" -> "technische universitaet", and no key inside it is expanded.
+    assert phrase.variants('TU Dortmund') == ['technische universitaet dortmund', 'TU Dortmund']
+
+
+def test_a_short_form_of_more_than_one_word():
+    assert phrase.variants('Mülheim a.d. Ruhr')[0] == 'muelheim an der ruhr'
+
+
+def test_a_long_form_the_data_also_writes_short_is_tried_short_last():
+    assert phrase.variants('Sankt Tönis') == ['Sankt Tönis', 'st toenis']
+    assert phrase.variants('Zentraler Omnibusbahnhof Lünen')[-1] == 'zob luenen'
+
+
+def test_every_short_form_has_a_long_form_with_no_short_form_in_it():
+    """A long form holding a short form would read differently depending on
+    the order the substitution took them in."""
+    expand, contract = phrase.abbreviations()
+    for short, long in expand.items():
+        assert short and long and short != long
+        assert not set(long.split()) & set(expand), short
+    assert set(contract.values()) <= set(expand)
+
+
 # --- readings ------------------------------------------------------------
 
 def parsed(q, lang='de'):
@@ -144,6 +184,27 @@ def test_an_exact_name_ends_the_search():
     assert names(page)[0] == 'Vaduz'
     assert set(rules_of(page)) == {'name_text'}
     assert ran(page) == ['name_text']
+
+
+def test_an_abbreviation_finds_the_written_out_name():
+    """Nothing is named "Schaan Bhf"; without the long form the fuzzy step
+    has nothing in common with "Schaan Bahnhof" to go on."""
+    page = find('Schaan Bhf')
+    assert names(page)[0] == 'Schaan Bahnhof'
+
+
+def test_a_later_variant_runs_no_step_below_what_an_earlier_one_found():
+    """"Schaan Bahnhof" is found exactly; "Schaan Bhf" as typed would fall to
+    the fuzzy step, whose rows could only queue behind it."""
+    page = find('Schaan Bhf')
+    assert 'name_like_text' not in ran(page)
+
+
+def test_the_query_as_typed_still_runs_after_the_written_out_one():
+    """"St. Peter" is a street in Liechtenstein, named short: the
+    written-out "Sankt Peter" must not be all the search looks for."""
+    page = find('St. Peter', limit=50)
+    assert 'St. Peter' in names(page)
 
 
 def test_step_one_needs_no_parse(monkeypatch):

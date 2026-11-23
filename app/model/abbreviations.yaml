@@ -1,0 +1,58 @@
+# Abbreviations common in German searches, resolved on the query side only
+# (search/phrase.py `variants`): the phrase search runs once on the query with
+# its abbreviations written out and once on the query as typed, and merges
+# the two by relevance, the written-out one first on a tie.
+#
+# `expand` maps a short form to its long form, as people type them; both are
+# normalised when the file is loaded (lib/text.py: case, umlauts, punctuation),
+# so "Hbf." and "hbf" are one key and "Kindertagesstätte" needs no folding. A
+# short form matches whole words only, and may be more than one word ("a.d.").
+# One long form per short form: the query as typed runs as well, so a short
+# form that is also a name is still found.
+#
+# `contract` lists short forms that OSM names use as often as the long form
+# ("St. Tönis", "VHS Warendorf", "ZOB Lünen"): a query with the long form is
+# also run with the short one, after the query as typed.
+#
+# Not here: "Str." and the other street suffixes, which lib/text.py expands
+# on both sides; and local acronyms (UKM, RUB, CAU, DUS), which are names and
+# not abbreviations of German.
+
+expand:
+  # stations and transport
+  Hbf: Hauptbahnhof
+  Hbhf: Hauptbahnhof
+  Bf: Bahnhof
+  Bhf: Bahnhof
+  ZOB: Zentraler Omnibusbahnhof
+  # education
+  Uni: Universität
+  TU: Technische Universität
+  TH: Technische Hochschule
+  FH: Fachhochschule
+  PH: Pädagogische Hochschule
+  VHS: Volkshochschule
+  GS: Grundschule
+  Gym: Gymnasium
+  Kita: Kindertagesstätte
+  Kiga: Kindergarten
+  Bib: Bibliothek
+  # health
+  KH: Krankenhaus
+  Krhs: Krankenhaus
+  Uniklinik: Universitätsklinikum
+  Apo: Apotheke
+  # services
+  FFW: Freiwillige Feuerwehr
+  FW: Feuerwehr
+  Spk: Sparkasse
+  KSK: Kreissparkasse
+  JH: Jugendherberge
+  DJH: Jugendherberge
+  # names
+  St: Sankt
+  Ev: Evangelische
+  Kath: Katholische
+  a.d.: an der
+
+contract: [St, VHS, ZOB]
