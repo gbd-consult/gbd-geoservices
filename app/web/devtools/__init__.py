@@ -116,6 +116,8 @@ def start_watcher() -> watcher.Watcher | None:
 TABS = ('tiles', 'search', 'status')
 DETAILS = ('std', 'min', 'nav', 'max', 'topographic', 'vegetation', 'overlay')
 REQUEST_MODES = ('xyz', 'wmts-rest', 'wmts-kvp', 'wms')
+#: The tile pixel ratio the viewer asks for: `auto` follows the screen.
+RATIOS = ('auto', '1x', '2x')
 SEARCH_MODES = ('name', 'address', 'phrase', 'here', 'reverse')
 SORTS = ('score', 'distance', 'name', 'address')
 
@@ -184,6 +186,10 @@ def controls(params, lang: str) -> dict:
         'grid_disabled': request_mode == 'xyz' or tab == 'search',
         'formats': formats.RASTER,
         'format': _choice(params.get('format'), formats.RASTER),
+        'ratios': RATIOS,
+        'ratio': _choice(params.get('ratio'), RATIOS),
+        # Only /xyz has @2x tiles.
+        'ratio_disabled': request_mode != 'xyz',
         'debug': params.get('debug') == '1',
         'smode': _choice(params.get('smode'), SEARCH_MODES),
         'text': {key: params.get(key, '')

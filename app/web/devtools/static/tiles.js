@@ -25,6 +25,7 @@ const detailSelect = document.getElementById('detailLevel');
 const detailField = document.getElementById('detailField');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const formatSelect = document.getElementById('format');
+const ratioSelect = document.getElementById('ratio');
 const gridSelect = document.getElementById('grid');
 const gridHint = document.getElementById('gridHint');
 const debugGridCheckbox = document.getElementById('debugGrid');
@@ -60,6 +61,13 @@ function currentTheme() {
 
 function currentFormat() {
   return formatSelect.value in formats ? formatSelect.value : 'png';
+}
+
+// The `@2x` suffix, or none. Resolved here rather than left to Leaflet's
+// `{r}`, so the request URL box shows which tiles are actually loaded.
+function ratioSuffix() {
+  const ratio = ratioSelect.value;
+  return ratio === '2x' || (ratio === 'auto' && L.Browser.retina) ? '@2x' : '';
 }
 
 // XYZ is Web Mercator by definition, so the grid picker applies to WMTS
@@ -103,8 +111,7 @@ function urlTemplateFor(mode, theme, gridId, format, version) {
   if (mode === 'wmts-rest') {
     return `/wmts/${theme}/${gridId}/{z}/{x}/{y}.${format}?${bust}${api.keyParam('&')}`;
   }
-  // Leaflet fills `{r}` with `@2x` on a screen with a pixel ratio above 1.
-  return `/xyz/${theme}/{z}/{x}/{y}{r}.${format}?${bust}${api.keyParam('&')}`;
+  return `/xyz/${theme}/{z}/{x}/{y}${ratioSuffix()}.${format}?${bust}${api.keyParam('&')}`;
 }
 
 function crsFor(gridId) {
@@ -185,6 +192,8 @@ export function setWebMercatorLock(locked) {
 
 function syncGridControl() {
   gridSelect.disabled = webMercatorLock || currentMode() === 'xyz';
+  // Only /xyz has @2x tiles.
+  ratioSelect.disabled = currentMode() !== 'xyz';
 }
 
 function updateHints() {
@@ -316,6 +325,7 @@ export async function init(state) {
     theme: currentTheme()?.name,
     mode: currentMode(),
     format: currentFormat(),
+    ratio: ratioSelect.value,
     grid: currentMode() === 'xyz' ? '' : gridSelect.value,
     debug: debugGridCheckbox.checked ? '1' : '',
     legend: mapview.isLegendOpen() ? '1' : '',
@@ -338,6 +348,7 @@ export async function init(state) {
   });
   detailSelect.addEventListener('change', refreshTiles);
   formatSelect.addEventListener('change', refreshTiles);
+  ratioSelect.addEventListener('change', refreshTiles);
   gridSelect.addEventListener('change', refreshTiles);
   debugGridCheckbox.addEventListener('change', () => {
     syncDebugGrid();

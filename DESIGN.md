@@ -300,7 +300,7 @@ PNG tiles are encoded as 8-bit palette images; Mapnik spells JPEG `jpeg`, the AP
 
 For a non-3857 grid the pre-cache is where the reprojection is paid, once.
 
-An `@2x` tile (`/xyz` only) is the same ground at 512 px, rendered with Mapnik's scale factor 2 (`renderer/core.py` `SCALES`). Mapnik widens strokes, fonts, icons and each layer's buffer by the factor and divides it out of the scale denominator, for the rules and `!scale_denominator!` alike, so the compiled XML serves both ratios unchanged; `test_core.py` holds Mapnik to that. Its cache tree is `theme/<grid>_2x/...` in the tier its 1x twin is in, and `manage.py pre-cache` seeds the Web Mercator grid at both ratios, so a refresh renews both. The devtools viewer asks for `@2x` through Leaflet's `{r}` on a screen with a pixel ratio above 1.
+An `@2x` tile (`/xyz` only) is the same ground at 512 px, rendered with Mapnik's scale factor 2 (`renderer/core.py` `SCALES`). Mapnik widens strokes, fonts, icons and each layer's buffer by the factor and divides it out of the scale denominator, for the rules and `!scale_denominator!` alike, so the compiled XML serves both ratios unchanged; `test_core.py` holds Mapnik to that. Its cache tree is `theme/<grid>_2x/...` in the tier its 1x twin is in, and `manage.py pre-cache` seeds the Web Mercator grid at both ratios, so a refresh renews both. The devtools viewer's resolution switch picks 1x, 2x, or `auto`: `@2x` on a screen with a pixel ratio above 1 (Leaflet's `L.Browser.retina`).
 
 ## Search
 

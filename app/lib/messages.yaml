@@ -147,6 +147,15 @@ devtools.debug_grid:
 devtools.debug_hint:
   de: Rote Kachelränder mit <code>z/x/y</code> jeder Kachel, im Raster, das die Kachelebene anfragt — im WMTS-Modus ist das TILEMATRIX/TILECOL/TILEROW.
   en: Red tile borders with each tile's <code>z/x/y</code>, on the grid the tile layer requests — in WMTS mode that is TILEMATRIX/TILECOL/TILEROW.
+devtools.ratio:
+  de: Auflösung
+  en: Resolution
+devtools.xyz_only:
+  de: (nur XYZ)
+  en: (XYZ only)
+devtools.ratio_hint:
+  de: 2x lädt die 512-px-Kacheln (@2x); auto nimmt sie auf einem Bildschirm mit Pixelverhältnis über 1.
+  en: 2x loads the 512 px tiles (@2x); auto takes them on a screen with a pixel ratio above 1.
 devtools.request_url:
   de: Anfrage-URL
   en: Request URL

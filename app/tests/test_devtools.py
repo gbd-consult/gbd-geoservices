@@ -184,7 +184,7 @@ def test_every_control_is_rendered_as_the_url_sets_it(monkeypatch):
     grid = sorted(matrix.load())[-1]
     text = TestClient(app_with(monkeypatch, True)).get('/devtools', params={
         'tab': 'search', 'theme': 'dark_max', 'mode': 'wmts-rest', 'grid': grid,
-        'format': 'jpg', 'debug': '1', 'smode': 'address', 'q': 'kiel',
+        'format': 'jpg', 'ratio': '2x', 'debug': '1', 'smode': 'address', 'q': 'kiel',
         'street': 'Holstenstraße', 'hn': '12', 'pc': '24103', 'city': 'Kiel', 'radius': '250',
         'cat': 'cat_geography', 'inview': '1', 'within': '0', 'sort': 'distance', 'sim': '7',
         'fuzzy': '1',
@@ -196,6 +196,9 @@ def test_every_control_is_rendered_as_the_url_sets_it(monkeypatch):
     assert _checked(text, 'mode') == ['wmts-rest']
     assert f'<option value="{grid}" selected>' in text
     assert '<option value="jpg" selected>' in text
+    # Rendered as chosen, though wmts-rest disables it: switching back to XYZ keeps it.
+    assert '<option value="2x" selected>' in text
+    assert re.search(r'id="ratio" disabled', text)
     assert re.search(r'id="debugGrid" checked', text)
     assert _checked(text, 'smode') == ['address']
     assert 'class="panel-controls mode-address" id="panel-search"' in text

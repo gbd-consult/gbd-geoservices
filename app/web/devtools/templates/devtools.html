@@ -129,6 +129,12 @@
       </div>
 
       <div class="field">
+        <label class="field-label" for="ratio">{{ t('devtools.ratio') }} <span style="text-transform:none;font-weight:400;">{{ t('devtools.xyz_only') }}</span></label>
+        <select id="ratio"{{ ' disabled' if ui.ratio_disabled }}>{% for ratio in ui.ratios %}<option value="{{ ratio }}"{{ ' selected' if ratio == ui.ratio }}>{{ ratio }}</option>{% endfor %}</select>
+        <span class="hint">{{ t('devtools.ratio_hint') }}</span>
+      </div>
+
+      <div class="field">
         <label class="field-check" for="debugGrid">
           <input type="checkbox" id="debugGrid"{{ ' checked' if ui.debug }}> {{ t('devtools.debug_grid') }}
         </label>
