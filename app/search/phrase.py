@@ -25,6 +25,20 @@ each. The full parse -- the address readings, then every span of the query
 offered at once to the category terms, the places and the streets, one
 btree probe each -- runs only when step 1 found nothing.
 
+ABBREVIATIONS
+
+"Köln Hbf" shares no trigram and no sound with "Köln Hauptbahnhof", so no
+fuzzy channel finds one from the other. The query is therefore run once per
+variant (`variants`, model/abbreviations.yaml): with its abbreviations
+written out, as typed, and -- for the few short forms OSM names use as often
+-- shortened. On the query side only: OSM writes names out, so the stored
+side has little to expand, and the list changes without a re-import. As
+typed is never skipped, because a short form is often the right name ("TH
+Köln"). Nor is it the answer when it alone found something: OSM names stops,
+entrances and a WLAN hotspot "Essen Hbf", and the step that finds those would
+end the search before the station. So the variants' results are merged by
+relevance, and on a tie the written-out one comes first.
+
 WHAT `total` MEANS HERE
 
 Each rule is capped, the results are merged in Python, and `total` is the
@@ -38,7 +52,9 @@ query; `/count` on a phrase is the same number.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+import yaml
 
 from lib import text
 from search import address as address_mode
@@ -115,6 +131,40 @@ class Run:
     reading: Reading
     rows: list
     relevance: int
+
+
+_abbreviations: tuple[dict[str, str], dict[str, str]] | None = None
+
+
+def abbreviations() -> tuple[dict[str, str], dict[str, str]]:
+    """model/abbreviations.yaml, normalised: short -> long to expand, and
+    long -> short to contract."""
+    global _abbreviations
+    if _abbreviations is None:
+        document = yaml.safe_load((rules._default_model_dir() / 'abbreviations.yaml').read_text())
+        expand = {text.normalize(short): text.normalize(long)
+                  for short, long in document['expand'].items()}
+        contract = {expand[text.normalize(short)]: text.normalize(short)
+                    for short in document['contract']}
+        _abbreviations = expand, contract
+    return _abbreviations
+
+
+def _substitute(query: str, table: dict[str, str]) -> str:
+    # One pass, longest first, whole words: a long form is never expanded again.
+    pattern = r'(?<!\S)(' + '|'.join(re.escape(k) for k in sorted(table, key=len, reverse=True)) + r')(?!\S)'
+    return re.sub(pattern, lambda m: table[m.group(1)], query)
+
+
+def variants(query: str) -> list[str]:
+    """The texts the phrase search runs, in order: written out, as typed,
+    shortened -- only those that differ from the query as typed."""
+    expand, contract = abbreviations()
+    normalized = text.normalize(query)
+    longer = _substitute(normalized, expand)
+    shorter = _substitute(normalized, contract)
+    return ([longer] if longer != normalized else []) + [query] + \
+        ([shorter] if shorter not in (normalized, longer) else [])
 
 
 def tokens_of(query: str) -> list[str]:
@@ -304,10 +354,21 @@ def _streets(conn, statement, indexed) -> list[tuple[int, int, str]]:
 # --- running the steps ---------------------------------------------------
 
 def find(conn, statement, req, steps) -> tuple[list, int, list]:
-    """The phrase search: the steps in order until one finds something.
+    """The phrase search: for each variant of the query, the steps in order
+    until one finds something.
 
     Returns the page of rows, the merged total and the interpretation.
     """
+    runs: list[Run] = []
+    for query in variants(req.text):
+        runs += _cascade(conn, statement, replace(req, text=query), steps)
+    # Stable, so on a tie the earlier variant -- the written-out one -- leads.
+    merged, total = merge(sorted(runs, key=lambda run: -run.relevance), req.limit, req.offset)
+    return merged, total, interpretations(runs)
+
+
+def _cascade(conn, statement, req, steps) -> list[Run]:
+    """The steps in order until one finds something, on one text."""
     w = rank.weights()
     whole: Reading | None = None
     parsed: tuple[Reading, ...] | None = None
@@ -345,9 +406,7 @@ def find(conn, statement, req, steps) -> tuple[list, int, list]:
                 found = found or bool(rows)
         if found:
             break
-
-    merged, total = merge(runs, req.limit, req.offset)
-    return merged, total, interpretations(runs)
+    return runs
 
 
 def _fits_text(rule: Rule, whole: Reading) -> bool:
