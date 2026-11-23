@@ -3,7 +3,8 @@
 <h1>gbd-geoservices</h1>
 <p class="sub">{{ t('landing.subtitle') }} &mdash; {{ t('landing.area') }} <strong>{{ area }}</strong>, {{ t('landing.version') }} {{ version }}.</p>
 <h2>{{ t('landing.tiles') }}</h2>
-<pre>/xyz/{theme}/{z}/{x}/{y}.png</pre>
+<pre>/xyz/{theme}/{z}/{x}/{y}.png
+/xyz/{theme}/{z}/{x}/{y}@2x.png</pre>
 <p>{{ t('landing.themes') }}: {% for theme in themes %}<code>{{ theme }}</code>{% if not loop.last %} {% endif %}{% else %}<em>{{ t('landing.no_themes') }}</em>{% endfor %}</p>
 <h2>WMTS</h2>
 <pre>/wmts?SERVICE=WMTS&amp;REQUEST=GetCapabilities

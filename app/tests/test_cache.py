@@ -182,6 +182,20 @@ def test_a_tile_is_read_from_the_tier_it_was_written_to(tiers):
     assert tiers.get('default', 'DE_EPSG_25832_ADV', 'png', 11, 1, 1) == b'high'
 
 
+def test_a_2x_tile_has_its_own_tree_and_its_1x_twins_tier(tiers):
+    """A 2x tile is another image of the same address: keyed apart, or one
+    ratio would be served the other's bytes. Its tier is the grid's -- so
+    the pre-cached levels are renewed by `pre-cache --force` with the 1x
+    ones, not left stale in a tier an update never empties."""
+    tiers.set('default', 'GoogleMapsCompatible', 'png', 12, 1, 1, b'1x')
+    tiers.set('default', 'GoogleMapsCompatible', 'png', 12, 1, 1, b'2x', scale=2)
+    tiers.set('default', 'GoogleMapsCompatible', 'png', 13, 1, 1, b'deep', scale=2)
+    assert tiers.get('default', 'GoogleMapsCompatible', 'png', 12, 1, 1) == b'1x'
+    assert tiers.get('default', 'GoogleMapsCompatible', 'png', 12, 1, 1, scale=2) == b'2x'
+    assert tiers.precache.get('default/GoogleMapsCompatible_2x/png/12/1/1') == b'2x'
+    assert tiers.ondemand.get('default/GoogleMapsCompatible_2x/png/13/1/1') == b'deep'
+
+
 def test_an_unaddressable_key_is_a_miss_not_an_error(tiers):
     # The routes look the cache up before they validate anything.
     assert tiers.get('../evil', 'GoogleMapsCompatible', 'png', 1, 1, 1) is None

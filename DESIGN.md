@@ -300,6 +300,8 @@ PNG tiles are encoded as 8-bit palette images; Mapnik spells JPEG `jpeg`, the AP
 
 For a non-3857 grid the pre-cache is where the reprojection is paid, once.
 
+An `@2x` tile (`/xyz` only) is the same ground at 512 px, rendered with Mapnik's scale factor 2 (`renderer/core.py` `SCALES`). Mapnik widens strokes, fonts, icons and each layer's buffer by the factor and divides it out of the scale denominator, for the rules and `!scale_denominator!` alike, so the compiled XML serves both ratios unchanged; `test_core.py` holds Mapnik to that. Its cache tree is `theme/<grid>_2x/...` in the tier its 1x twin is in, and `manage.py pre-cache` seeds the Web Mercator grid at both ratios, so a refresh renews both. The devtools viewer asks for `@2x` through Leaflet's `{r}` on a screen with a pixel ratio above 1.
+
 ## Search
 
 `search/`, entry points in `search/api.py`: `find`, `count`, `categories`. One request body for four modes; every result is a GeoJSON Feature with the same flat properties.
@@ -360,6 +362,7 @@ Names follow `lang`. Responses are cached per request for `search.cache_ttl_s`; 
 | route | |
 |---|---|
 | `GET /xyz/{theme}/{z}/{x}/{y}.{png,jpg}` | raster tile, GoogleMapsCompatible |
+| `GET /xyz/{theme}/{z}/{x}/{y}@2x.{png,jpg}` | the same tile at 512 px, for a pixel ratio of 2 |
 | `GET /wmts/{theme}/{grid}/{level}/{col}/{row}.{fmt}` | raster tile in any served grid |
 | `GET /wmts?SERVICE=WMTS&REQUEST=GetCapabilities` | the served grids and themes; ResourceURLs carry the caller's key, each layer's `LegendURL` the `?lang=` asked for |
 | `GET /wmts?...&REQUEST=GetTile&...` | KVP GetTile, same handler |

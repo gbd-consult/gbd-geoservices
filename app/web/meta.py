@@ -190,6 +190,9 @@ def services(base: str, grids: dict) -> list[dict]:
     if matrix.by_crs(grids, 'EPSG:3857') is not None:
         out.append({'rel': 'tiles', 'href': f'{base}/xyz/{{theme}}/{{z}}/{{x}}/{{y}}.{{format}}',
                     'templated': True, 'formats': list(formats.RASTER)})
+        out.append({'rel': 'tiles-2x',
+                    'href': f'{base}/xyz/{{theme}}/{{z}}/{{x}}/{{y}}@2x.{{format}}',
+                    'templated': True, 'formats': list(formats.RASTER)})
     out += [
         {'rel': 'wmts-tiles',
          'href': f'{base}/wmts/{{theme}}/{{grid}}/{{level}}/{{col}}/{{row}}.{{format}}',

@@ -22,7 +22,8 @@ the cache for the run, and without the variable afterwards:
 
     GEOSERVICES_NOCACHE=false docker compose -f docker-compose.local.yml up -d app
 
-`--quick` runs a representative subset in about two minutes.
+`--quick` runs a representative subset in about two minutes. `--scale 2`
+profiles the 512 px `@2x` tiles (EPSG:3857 only).
 
 Tiles are picked pseudo-randomly in the box, and a pick is kept only if the
 tile holds a building: open sea and empty land render in milliseconds and
@@ -257,6 +258,8 @@ def tile_address(crs: str, tms: TileMatrixSet, projector: Projector, lon: float,
 
 
 API_KEY = ''
+#: The pixel ratio, from `--scale`: 2 fetches and renders `@2x` tiles.
+SCALE = 1
 
 
 def url_name(theme: str) -> str:
@@ -271,7 +274,9 @@ def url_name(theme: str) -> str:
 
 def tile_url(base_url: str, theme: str, crs: str, tms: TileMatrixSet, level: str, col: int, row: int) -> str:
     if crs == 'EPSG:3857':
-        return f'{base_url}/xyz/{url_name(theme)}/{level}/{col}/{row}.png' + (f'?key={API_KEY}' if API_KEY else '')
+        suffix = '' if SCALE == 1 else f'@{SCALE}x'
+        return (f'{base_url}/xyz/{url_name(theme)}/{level}/{col}/{row}{suffix}.png'
+                + (f'?key={API_KEY}' if API_KEY else ''))
     params = dict(SERVICE='WMTS', REQUEST='GetTile', LAYER=url_name(theme), STYLE='default', FORMAT='image/png',
                   TILEMATRIXSET=tms.identifier, TILEMATRIX=level, TILEROW=row, TILECOL=col)
     if API_KEY:
@@ -371,12 +376,14 @@ def layer_sql(layer, m, mapnik) -> str:
     # The Map's buffer is 0 and each Layer carries its own, which is what
     # Mapnik widens that layer's query by.
     env = m.envelope()
-    env.pad(m.scale() * (layer.buffer_size or 0))
+    # Mapnik scales both the buffer and the scale denominator by the render's
+    # scale factor (renderer/core.py SCALES); `m` knows nothing of it.
+    env.pad(m.scale() * (layer.buffer_size or 0) * SCALE)
     if layer.srs != m.srs:
         env = mapnik.ProjTransform(mapnik.Projection(m.srs), mapnik.Projection(layer.srs)).forward(env)
     envelope = f'ST_MakeEnvelope({env.minx!r},{env.miny!r},{env.maxx!r},{env.maxy!r},{srid})'
     table = table.replace('!bbox!', envelope)
-    table = table.replace('!scale_denominator!', repr(m.scale_denominator()))
+    table = table.replace('!scale_denominator!', repr(m.scale_denominator() * SCALE))
     columns = ''.join(f',"{f}"' for f in layer.datasource.fields())
     return (f'SELECT ST_AsBinary("{geometry}") AS geom{columns} FROM {table} '
             f'WHERE "{geometry}" && {envelope}')
@@ -385,7 +392,7 @@ def layer_sql(layer, m, mapnik) -> str:
 def render_once(m, mapnik) -> tuple[float, float, int]:
     image = mapnik.Image(m.width, m.height)
     t = time.perf_counter()
-    mapnik.render(m, image)
+    mapnik.render(m, image, SCALE)
     render_s = time.perf_counter() - t
     t = time.perf_counter()
     # What the server sends for `png` (renderer/core.py MAPNIK_ENCODER);
@@ -410,7 +417,7 @@ def stage_layers(conn, xml_path: Path, crss, sets, projector, points, layer_zoom
     import mapnik
 
     mapnik.register_fonts('/usr/share/fonts')
-    m = mapnik.Map(TILE_SIZE, TILE_SIZE)
+    m = mapnik.Map(TILE_SIZE * SCALE, TILE_SIZE * SCALE)
     mapnik.load_map(m, str(xml_path))
     base_srs = m.srs
     layers = list(m.layers)
@@ -424,7 +431,7 @@ def stage_layers(conn, xml_path: Path, crss, sets, projector, points, layer_zoom
             level, col, row = tile_address(crs, tms, projector, lon, lat, z)
             bbox = xyz_bbox(z, col, row) if crs == 'EPSG:3857' else tms.bbox(level, col, row)
             m.zoom_to_box(mapnik.Box2d(*bbox))
-            sd = m.scale_denominator()
+            sd = m.scale_denominator() * SCALE
             for layer in layers:
                 layer.active = True
             render_once(m, mapnik)
@@ -494,7 +501,8 @@ def write_report(args, env, box, sets, http_rows, layer_results) -> None:
     origin = 'given' if args.bbox else 'inner half of the data extent'
     out(f'- tile box (lon/lat, {origin}): {box[0]:.3f} {box[1]:.3f} -- {box[2]:.3f} {box[3]:.3f}, '
         f'seed {args.seed}, up to {args.per_zoom} tiles with buildings per zoom')
-    out(f'- themes: {", ".join(args.themes)}')
+    out(f'- themes: {", ".join(args.themes)}; pixel ratio {args.scale} '
+        f'({TILE_SIZE * args.scale} px tiles)')
     out('- crs: ' + ', '.join(f'{crs} ({sets[crs].identifier})' for crs in args.crs))
     out()
 
@@ -589,6 +597,8 @@ def main() -> None:
     parser.add_argument('--quick', action='store_true',
                         help='representative subset: theme default_std, zooms 8/12/14/16, one tile per zoom, '
                              'layer stage at 8/12/14; explicit --themes/--zooms/--per-zoom/--layer-zooms still win')
+    parser.add_argument('--scale', type=int, choices=(1, 2), default=1,
+                        help='pixel ratio; 2 profiles the 512 px @2x tiles, EPSG:3857 only')
     parser.add_argument('--skip-http', action='store_true')
     parser.add_argument('--skip-layers', action='store_true')
     parser.add_argument('--json', help='also dump raw results to this file')
@@ -607,8 +617,11 @@ def main() -> None:
     args.layer_theme = args.layer_theme or ('default_std' if 'default_std' in available else available[0])
     layer_zooms = [int(z) for z in (args.layer_zooms or ','.join(map(str, DEFAULT_LAYER_ZOOMS))).split(',')]
 
-    global API_KEY
+    if args.scale != 1 and args.crs != ['EPSG:3857']:
+        raise SystemExit('--scale 2 is EPSG:3857 only: /xyz is the one route with @2x tiles')
+    global API_KEY, SCALE
     API_KEY = args.api_key
+    SCALE = args.scale
     sets = fetch_capabilities(args.base_url, args.api_key)
     missing = [crs for crs in args.crs if crs not in sets]
     if missing:

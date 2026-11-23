@@ -72,8 +72,12 @@ def served():
         serving.reset()
 
 
-def url(theme='std', z=Z, x=X, y=Y, fmt='png'):
-    return f'/xyz/{theme}/{z}/{x}/{y}.{fmt}'
+def url(theme='std', z=Z, x=X, y=Y, fmt='png', suffix=''):
+    return f'/xyz/{theme}/{z}/{x}/{y}{suffix}.{fmt}'
+
+
+def png_size(data: bytes) -> tuple[int, int]:
+    return int.from_bytes(data[16:20], 'big'), int.from_bytes(data[20:24], 'big')
 
 
 # --- formats -------------------------------------------------------------
@@ -124,6 +128,16 @@ def test_a_tile_renders(served):
     assert response.content[:4] == b'\x89PNG'
     # Real content, not an empty tile: the address is computed, not guessed.
     assert len(response.content) > 10_000
+
+
+def test_a_2x_tile_is_512_px_and_a_1x_tile_stays_256(served):
+    """The `@2x` route is matched before `{y}.{fmt}`, which would take
+    `5749@2x` for y and answer 422."""
+    big = served.get(url(suffix='@2x'))
+    assert big.status_code == 200
+    assert png_size(big.content) == (512, 512)
+    assert png_size(served.get(url()).content) == (256, 256)
+    assert served.head(url(suffix='@2x')).status_code == 200
 
 
 @pytest.mark.parametrize('fmt,mime', [('png', 'image/png'), ('jpg', 'image/jpeg'),
@@ -410,7 +424,7 @@ class Recorder:
     def __init__(self):
         self.calls = []
 
-    def render_tile(self, theme, bbox, fmt, crs=None, matrix_set=None, steps=None):
+    def render_tile(self, theme, bbox, fmt, crs=None, matrix_set=None, steps=None, scale=1):
         self.calls.append({'theme': theme, 'crs': crs, 'matrix_set': matrix_set})
         return b'tile-bytes'
 

@@ -31,8 +31,9 @@ class FakeRegistry:
         self.calls: list[tuple] = []
         self.fail = fail or set()
 
-    def render(self, theme, bbox, fmt, crs=None, matrix_set=None):
+    def render(self, theme, bbox, fmt, crs=None, matrix_set=None, scale=1):
         self.calls.append((theme, bbox, fmt, crs, matrix_set))
+        self.scale = scale
         if len(self.calls) in self.fail:
             raise RuntimeError('render failed')
         return f'{theme}:{bbox[0]:.0f}'.encode()
@@ -173,6 +174,24 @@ def test_tiles_land_in_the_precache_tier_not_on_demand(web, tiers):
     key = f'default/{web.identifier}/png/{level}/{col}/{row}'
     assert tiers.precache.get(key) is not None
     assert tiers.ondemand.get(key) is None
+
+
+def test_web_mercator_is_seeded_at_every_ratio_and_utm_at_one(web):
+    """`/xyz` serves 2x and is the Web Mercator grid; seeding 2x elsewhere
+    would be tiles no route ever reads."""
+    utm = matrix.load(['DE_EPSG_25832_ADV'], GRIDS)['DE_EPSG_25832_ADV']
+    assert precache.scales_for(web) == (1, 2)
+    assert precache.scales_for(utm) == (1,)
+
+
+def test_a_2x_seed_renders_at_2x_and_stores_apart(web, tiers):
+    registry = FakeRegistry()
+    precache.seed(registry, tiers, web, 'default', EXTENT, 2)
+    result = precache.seed(registry, tiers, web, 'default', EXTENT, 2, scale=2)
+    assert registry.scale == 2
+    # Not found as cached under its 1x twin's key.
+    assert result.rendered == result.tiles
+    assert tiers.precache.get('default/GoogleMapsCompatible_2x/png/0/0/0')
 
 
 def test_per_level_counts_are_reported(web, tiers):

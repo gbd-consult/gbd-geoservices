@@ -79,6 +79,13 @@ def cache_key(theme: str, tile_matrix_set: str, fmt: str, z: int, x: int, y: int
     return str(TileKey(theme, tile_matrix_set, fmt, z, x, y))
 
 
+def scaled_set(tile_matrix_set: str, scale: int = 1) -> str:
+    """The grid's segment in a cache key: the identifier at 1x,
+    `<identifier>_2x` at 2x -- its own tree, as a 2x tile is another image
+    of the same address."""
+    return tile_matrix_set if scale == 1 else f'{tile_matrix_set}_{scale}x'
+
+
 class TileCache(Protocol):
     def get(self, key: str) -> bytes | None: ...
     def set(self, key: str, data: bytes) -> None: ...
@@ -213,9 +220,12 @@ class TileCacheFacade:
             return self.uncached
         return self.ondemand
 
-    def get(self, theme: str, tile_matrix_set: str, fmt: str, z: int, x: int, y: int):
+    # `scale` names the key's tree; the tier still goes by the grid, so a 2x
+    # tile above the pre-cache depth is pre-cached and refreshed with its 1x twin.
+    def get(self, theme: str, tile_matrix_set: str, fmt: str, z: int, x: int, y: int,
+            scale: int = 1):
         try:
-            key = cache_key(theme, tile_matrix_set, fmt, z, x, y)
+            key = cache_key(theme, scaled_set(tile_matrix_set, scale), fmt, z, x, y)
         except InvalidTileKey:
             # A miss, not an error: nothing can ever have been stored
             # under a key that cannot be built, and the routes look the
@@ -224,9 +234,9 @@ class TileCacheFacade:
         return self.tier_for(tile_matrix_set, z).get(key)
 
     def set(self, theme: str, tile_matrix_set: str, fmt: str, z: int, x: int, y: int,
-            data: bytes) -> None:
+            data: bytes, scale: int = 1) -> None:
         try:
-            key = cache_key(theme, tile_matrix_set, fmt, z, x, y)
+            key = cache_key(theme, scaled_set(tile_matrix_set, scale), fmt, z, x, y)
         except InvalidTileKey:
             log.warning('refusing to cache an unaddressable tile: %s/%s/%s/%s/%s/%s',
                         theme, tile_matrix_set, fmt, z, x, y)

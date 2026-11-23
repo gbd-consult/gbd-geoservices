@@ -43,6 +43,15 @@ DEFAULT_MATRIX_SET = 'GoogleMapsCompatible'
 
 TILE_SIZE = 256
 
+#: The pixel ratios a tile is served at: 1 is the 256 px tile, 2 the 512 px
+#: `@2x` tile of the same ground. Mapnik's scale factor carries the ratio:
+#: it widens every stroke, font and icon and each layer's `buffer-size`, and
+#: it divides the factor back out of the scale denominator -- for the rules
+#: and for `!scale_denominator!` in the SQL alike -- so a 2x tile selects and
+#: fetches what its 1x twin does (`test_core.py`'s real-Mapnik tests hold
+#: Mapnik to both).
+SCALES = (1, 2)
+
 
 class MissingStyleError(RuntimeError):
     """A theme's compiled XML is not on disk.
@@ -71,7 +80,7 @@ class MapnikBackend(Protocol):
     def load_map(self, xml_path: Path, width: int, height: int, buffer_size: int) -> Any: ...
 
     def render(self, handle: Any, bbox: BBox, fmt: str, crs: str,
-               size: tuple[int, int]) -> bytes: ...
+               size: tuple[int, int], scale: int) -> bytes: ...
 
 
 #: Mapnik's encoder names for the canonical short formats the rest of the
@@ -134,7 +143,7 @@ class RealMapnikBackend:
             cls._fonts_registered = True
 
     def render(self, handle: Any, bbox: BBox, fmt: str, crs: str,
-               size: tuple[int, int]) -> bytes:
+               size: tuple[int, int], scale: int) -> bytes:
         import mapnik
 
         # `.srs` and the size are plain mutable state: this repoints an
@@ -146,7 +155,7 @@ class RealMapnikBackend:
             handle.resize(*size)
         handle.zoom_to_box(mapnik.Box2d(*bbox))
         image = mapnik.Image(handle.width, handle.height)
-        mapnik.render(handle, image)
+        mapnik.render(handle, image, scale)
         # `to_string`, not `tostring`: renamed in Mapnik 4, and a test
         # that mocks at the backend boundary cannot catch it.
         return image.to_string(encoder_for(fmt))
@@ -263,7 +272,7 @@ class MapRegistry:
 
     def render(self, theme: str, bbox: BBox, fmt: str, crs: str = DEFAULT_CRS,
                matrix_set: str = DEFAULT_MATRIX_SET, steps=None,
-               size: tuple[int, int] | None = None) -> bytes:
+               size: tuple[int, int] | None = None, scale: int = 1) -> bytes:
         """Render one tile, riding out connections a database restart killed.
 
         Mapnik's PostGIS plugin keeps its own pool of connections, one pool
@@ -283,7 +292,7 @@ class MapRegistry:
         render apart: a tile that queued behind `map_pool_size` renders of
         the same theme looks, in the access log, like a slow render.
         """
-        size = size or (self._tile_size, self._tile_size)
+        size = size or (self._tile_size * scale, self._tile_size * scale)
         started = time.perf_counter()
         with self._checkout(theme, matrix_set) as handle:
             if steps is not None:
@@ -291,9 +300,9 @@ class MapRegistry:
             for attempt in range(self.lost_connection_retries + 1):
                 try:
                     if steps is None:
-                        return self._backend.render(handle, bbox, fmt, crs, size)
+                        return self._backend.render(handle, bbox, fmt, crs, size, scale)
                     with steps.step('render'):
-                        return self._backend.render(handle, bbox, fmt, crs, size)
+                        return self._backend.render(handle, bbox, fmt, crs, size, scale)
                 except RuntimeError as exc:
                     if attempt == self.lost_connection_retries or not lost_connection(exc):
                         raise
@@ -375,14 +384,15 @@ def get_registry() -> MapRegistry:
 
 def render_tile(theme: str, bbox: BBox, fmt: str, crs: str = DEFAULT_CRS,
                 matrix_set: str = DEFAULT_MATRIX_SET, steps=None,
-                size: tuple[int, int] | None = None) -> bytes:
-    """Render one tile, or a `size` (width, height) image. `bbox` is already in `crs`.
+                size: tuple[int, int] | None = None, scale: int = 1) -> bytes:
+    """Render one tile, or a `size` (width, height) image. `bbox` is already in `crs`;
+    `scale` is the pixel ratio (`SCALES`).
 
     `crs` repoints the Map; `matrix_set` picks which compiled XML to
     repoint. They are two facts, not one: the XML's scale arithmetic
     belongs to the grid, and a grid is what a request addresses.
     """
-    return get_registry().render(theme, bbox, fmt, crs, matrix_set, steps, size)
+    return get_registry().render(theme, bbox, fmt, crs, matrix_set, steps, size, scale)
 
 
 def preload_all(schema: str | None = None,

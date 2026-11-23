@@ -158,8 +158,9 @@ def check_theme(name: str, schema: str) -> str:
 
 
 def serve(request: Request, *, theme: str, tms, level: int, col: int, row: int,
-          fmt: str, schema: str) -> Response:
+          fmt: str, schema: str, scale: int = 1) -> Response:
     """One tile: cache, else render; then the conditional-request dance.
+    `scale` is the pixel ratio, 2 for an `@2x` tile.
 
     The cache is consulted before the address is validated, because a hit
     proves the address was valid when it was written and a miss costs
@@ -170,7 +171,7 @@ def serve(request: Request, *, theme: str, tms, level: int, col: int, row: int,
     steps = timing.Steps()
     cache = _cache(schema)
     with steps.step('cache'):
-        data = cache.get(theme, tms.identifier, fmt, level, col, row)
+        data = cache.get(theme, tms.identifier, fmt, level, col, row, scale)
     request.state.cache = 'miss' if data is None else 'hit'      # the request log's
 
     if data is None:
@@ -188,15 +189,18 @@ def serve(request: Request, *, theme: str, tms, level: int, col: int, row: int,
             # every EPSG:25832 tile from the Web Mercator file -- one zoom
             # too fine, and reading the unbanded tables where the band was
             # meant. It renders, it caches, and it is the wrong tile.
-            data = core.render_tile(theme, bbox, fmt, tms.crs, tms.identifier, steps=steps)
+            data = core.render_tile(theme, bbox, fmt, tms.crs, tms.identifier, steps=steps,
+                                    scale=scale)
         except Exception as exc:              # noqa: BLE001
             log.exception('render failed for %s/%s/%s/%s/%s',
                           theme, tms.identifier, level, col, row)
             raise HTTPException(status_code=500, detail='tile render failed') from exc
         with steps.step('store'):
-            cache.set(theme, tms.identifier, fmt, level, col, row, data)
+            cache.set(theme, tms.identifier, fmt, level, col, row, data, scale)
         sweeper.note(cache, tms.identifier, level, len(data))
-    timing.report(log, steps, f'tile {theme}/{tms.identifier}/{level}/{col}/{row}.{fmt}')
+    suffix = '' if scale == 1 else f'@{scale}x'
+    timing.report(log, steps,
+                  f'tile {theme}/{tms.identifier}/{level}/{col}/{row}{suffix}.{fmt}')
 
     etag = httpcache.tile_etag(data)
     versioned = 'v' in request.query_params

@@ -40,10 +40,11 @@ class FakeBackend:
         self.loads += 1
         return FakeHandle(xml_path, self.loads)
 
-    def render(self, handle, bbox, fmt, crs, size):
+    def render(self, handle, bbox, fmt, crs, size, scale):
         if self.blocking is not None:
             self.blocking.wait(timeout=5)
         self.rendered.append((handle, bbox, fmt, crs, size))
+        self.scale = scale
         return f'{handle.xml.stem}:{fmt}:{crs}'.encode()
 
 
@@ -116,6 +117,15 @@ def test_a_size_reaches_the_backend(xml):
     registry.load_theme('default', xml)
     registry.render('default', (0, 0, 1, 1), 'png', size=(800, 600))
     assert backend.rendered[0][4] == (800, 600)
+
+
+def test_a_2x_tile_is_twice_the_size_at_scale_two(xml):
+    backend = FakeBackend()
+    registry = MapRegistry(backend, pool_size=1)
+    registry.load_theme('default', xml)
+    registry.render('default', (0, 0, 1, 1), 'png', scale=2)
+    assert backend.rendered[0][4] == (2 * core.TILE_SIZE, 2 * core.TILE_SIZE)
+    assert backend.scale == 2
 
 
 def test_the_default_crs_is_the_one_the_xml_declares(xml):
@@ -387,11 +397,11 @@ class DroppingBackend(FakeBackend):
         self.message = message
         self.attempts = 0
 
-    def render(self, handle, bbox, fmt, crs, size):
+    def render(self, handle, bbox, fmt, crs, size, scale):
         self.attempts += 1
         if self.attempts <= self.dead:
             raise RuntimeError(self.message)
-        return super().render(handle, bbox, fmt, crs, size)
+        return super().render(handle, bbox, fmt, crs, size, scale)
 
 
 def test_the_first_tile_after_a_database_restart_renders(xml):
@@ -453,3 +463,93 @@ def test_the_handle_goes_back_to_the_pool_after_a_retried_render(xml):
     registry.render('default', (0, 0, 1, 1), 'png')
     # With a pool of one, a leaked handle would block this second render.
     assert registry.render('default', (0, 0, 1, 1), 'png')
+
+
+# --- the 2x tile, against real Mapnik ------------------------------------
+
+#: A z14 tile over Vaduz, in 3857, and what one of its 1x pixels spans.
+_HALF = 20037508.342789244
+_SPAN = 2 * _HALF / 2 ** 14
+_Z14 = (-_HALF + 8607 * _SPAN, _HALF - 5763 * _SPAN, -_HALF + 8608 * _SPAN, _HALF - 5762 * _SPAN)
+_PIXEL = _SPAN / core.TILE_SIZE
+
+#: Between the z14 (34 124) and z15 (17 062) scale denominators.
+_BETWEEN = 25000
+
+
+def _render(xml: str, scale: int) -> int:
+    """The colour at the middle of the right edge of the z14 tile, rendered
+    at `scale` the way `RealMapnikBackend` does."""
+    mapnik = pytest.importorskip('mapnik', reason='libmapnik is installed in the container')
+    size = core.TILE_SIZE * scale
+    handle = mapnik.Map(size, size)
+    mapnik.load_map_from_string(handle, xml)
+    handle.zoom_to_box(mapnik.Box2d(*_Z14))
+    image = mapnik.Image(size, size)
+    mapnik.render(handle, image, scale)
+    return image.get_pixel(size - 2, size // 2)
+
+
+#: `get_pixel` packs RGBA little-endian: opaque red.
+RED = 0xff0000ff
+
+
+@pytest.mark.parametrize('scale', core.SCALES)
+def test_a_2x_tile_selects_and_queries_what_its_1x_twin_does(db, scale):
+    """Mapnik divides the scale factor back out of the scale denominator, for
+    the rules and for `!scale_denominator!` in the SQL alike.
+
+    Every zoom boundary depends on it -- the rule ranges and the zoom the
+    queries derive from `!scale_denominator!` (`renderer.queries`). Without
+    it a 512 px tile reads as one zoom finer: more detail, the next band's
+    table, and nothing that fails. The colour says which rule (red/yellow
+    above the boundary) and which value the SQL saw (red/blue above it).
+    """
+    xml = f'''<Map srs="epsg:3857" background-color="white">
+      <Style name="s">
+        <Rule><MinScaleDenominator>{_BETWEEN}</MinScaleDenominator>
+          <Filter>[sd] &gt; {_BETWEEN}</Filter><PolygonSymbolizer fill="#ff0000"/></Rule>
+        <Rule><MinScaleDenominator>{_BETWEEN}</MinScaleDenominator>
+          <Filter>[sd] &lt;= {_BETWEEN}</Filter><PolygonSymbolizer fill="#ffff00"/></Rule>
+        <Rule><MaxScaleDenominator>{_BETWEEN}</MaxScaleDenominator>
+          <Filter>[sd] &gt; {_BETWEEN}</Filter><PolygonSymbolizer fill="#0000ff"/></Rule>
+        <Rule><MaxScaleDenominator>{_BETWEEN}</MaxScaleDenominator>
+          <Filter>[sd] &lt;= {_BETWEEN}</Filter><PolygonSymbolizer fill="#00ff00"/></Rule>
+      </Style>
+      <Layer name="l" srs="epsg:3857"><StyleName>s</StyleName><Datasource>
+        <Parameter name="type">postgis</Parameter>
+        <Parameter name="table">(select st_expand(!bbox!, 10) as geom,
+                                 !scale_denominator!::float8 as sd) t</Parameter>
+        <Parameter name="geometry_field">geom</Parameter>
+        <Parameter name="srid">3857</Parameter>
+        <Parameter name="extent">-{_HALF},-{_HALF},{_HALF},{_HALF}</Parameter>
+      </Datasource></Layer>
+    </Map>'''
+    assert _render(xml, scale) == RED
+
+
+@pytest.mark.parametrize('scale', core.SCALES)
+@pytest.mark.parametrize('outside,seen', [(40, True), (70, False)])
+def test_a_2x_tile_fetches_the_ground_its_1x_twin_does(scale, outside, seen):
+    """Mapnik scales each layer's `buffer-size` by the scale factor, so the
+    64 px the styles write (`buffer_px`) reach as far at 2x as at 1x.
+
+    If it did not, a 2x tile would fetch half the margin: labels and icons
+    just outside it would vanish at its edges and nowhere in a 1x tile. A
+    point `outside` 1x pixels to the right of the tile carries a marker
+    that reaches into it -- drawn when 64 px of buffer cover it (40), not
+    when they do not (70), at either ratio.
+    """
+    x = _Z14[2] + outside * _PIXEL
+    y = (_Z14[1] + _Z14[3]) / 2
+    xml = f'''<Map srs="epsg:3857" background-color="white" buffer-size="0">
+      <Style name="s"><Rule><MarkersSymbolizer marker-type="ellipse" width="160" height="160"
+        fill="#ff0000" stroke-width="0" allow-overlap="true"/></Rule></Style>
+      <Layer name="l" srs="epsg:3857" buffer-size="64"><StyleName>s</StyleName><Datasource>
+        <Parameter name="type">csv</Parameter>
+        <Parameter name="inline">x,y
+{x},{y}
+</Parameter>
+      </Datasource></Layer>
+    </Map>'''
+    assert (_render(xml, scale) == RED) is seen

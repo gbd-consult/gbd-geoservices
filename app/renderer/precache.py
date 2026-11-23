@@ -98,26 +98,34 @@ def fast_depth(tms: matrix.TileMatrixSet, bbox: BBox, max_tiles: int) -> int:
     return level
 
 
+def scales_for(tms: matrix.TileMatrixSet) -> tuple[int, ...]:
+    """Every pixel ratio a grid is served at, so a refresh renews the 2x
+    tiles of the pre-cached levels with the 1x ones. Only `/xyz` serves 2x,
+    and `/xyz` is the Web Mercator grid."""
+    return core.SCALES if tms.crs.lower() == core.DEFAULT_CRS else (1,)
+
+
 def seed(registry, tiers, tms: matrix.TileMatrixSet, theme: str, bbox: BBox,
          max_level: int, *, fmt: str = 'png', workers: int = 4,
-         force: bool = False) -> Result:
-    """Render and store every tile of one theme in one set."""
+         force: bool = False, scale: int = 1) -> Result:
+    """Render and store every tile of one theme in one set, at one pixel ratio."""
     result = Result()
     started = time.monotonic()
     work = list(plan(tms, bbox, max_level))
 
     def one(task) -> str:
         level, col, row = task
-        if not force and tiers.get(theme, tms.identifier, fmt, level, col, row) is not None:
+        if not force and tiers.get(theme, tms.identifier, fmt, level, col, row,
+                                   scale) is not None:
             return 'cached'
         try:
             data = registry.render(theme, tms.bbox(level, col, row), fmt,
-                                   tms.crs.lower(), tms.identifier)
+                                   tms.crs.lower(), tms.identifier, scale=scale)
         except Exception:
             log.warning('%s %s %s/%s/%s failed to render',
                         theme, tms.identifier, level, col, row, exc_info=True)
             return 'failed'
-        tiers.set(theme, tms.identifier, fmt, level, col, row, data)
+        tiers.set(theme, tms.identifier, fmt, level, col, row, data, scale)
         return 'rendered'
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -179,11 +187,12 @@ def run(schema: str | None = None, themes=None, grid_ids=None, *, fmt: str = 'pn
         if fast:
             depth = min(depth, fast_depth(tms, extents[identifier],
                                           int(config.opt('pre_cache_fast_max'))))
-        for theme in loaded:
+        for scale, theme in itertools.product(scales_for(tms), loaded):
             result = seed(registry, tiers, tms, theme, extents[identifier], depth,
-                          fmt=fmt, workers=workers, force=force)
-            out.setdefault(tms.identifier, {})[theme] = result
+                          fmt=fmt, workers=workers, force=force, scale=scale)
+            name = cache_module.scaled_set(tms.identifier, scale)
+            out.setdefault(name, {})[theme] = result
             log.info('%s %s: %d tiles, %d rendered, %d already cached, %.1f s',
-                     tms.identifier, theme, result.tiles, result.rendered,
+                     name, theme, result.tiles, result.rendered,
                      result.cached, result.seconds)
     return out

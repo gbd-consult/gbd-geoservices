@@ -139,6 +139,8 @@ def test_metadata_services_are_absolute_templates(client):
     absolute, and templated where they carry placeholders."""
     services = {s['rel']: s for s in client.get('/metadata').json()['services']}
     assert {'wmts', 'wms', 'search', 'search-count', 'icon', 'legend', 'status'} <= set(services)
+    if 'tiles' in services:
+        assert services['tiles-2x']['href'].endswith('/xyz/{theme}/{z}/{x}/{y}@2x.{format}')
     for service in services.values():
         assert service['href'].startswith('http')
         assert service.get('templated', False) == ('{' in service['href'])

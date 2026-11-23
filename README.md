@@ -170,6 +170,7 @@ Map tiles need a key with the `tiles` scope. A theme is a color scheme (`default
 | URL | |
 |---|---|
 | `GET /xyz/{theme}/{z}/{x}/{y}.{format}` | a tile in Web Mercator, the usual `{z}/{x}/{y}` scheme of web maps; `format` is `png` or `jpg` |
+| `GET /xyz/{theme}/{z}/{x}/{y}@2x.{format}` | the same tile at 512 px, for high-resolution screens |
 | `GET /wmts?SERVICE=WMTS&REQUEST=GetCapabilities&key=...` | the WMTS capabilities: add this URL to QGIS or any other WMTS client |
 | `GET /wmts/{theme}/{grid}/{level}/{col}/{row}.{format}` | a tile in any served grid (`GoogleMapsCompatible`, `DE_EPSG_25832_ADV`, `DE_EPSG_25833_ADV`), as the capabilities advertise it |
 | `GET /wmts?SERVICE=WMTS&REQUEST=GetTile&...` | the same tile in WMTS key-value form |

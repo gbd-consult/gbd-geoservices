@@ -1,6 +1,10 @@
 """The XYZ tile route.
 
     GET /xyz/{theme}/{z}/{x}/{y}.{png,jpg}
+    GET /xyz/{theme}/{z}/{x}/{y}@2x.{png,jpg}
+
+The `@2x` tile is the same ground at 512 px, for a screen with a pixel
+ratio of 2 (`renderer.core.SCALES`).
 
 `/xyz` is the EPSG:3857 case of `/wmts`, and says so in one place: both call
 `serving.serve`, which is the whole of "look in the cache, else render, then
@@ -54,6 +58,15 @@ def web_mercator():
 # plain routes which add HEAD alongside it -- so `curl -I` on a tile, and
 # every monitor that probes with HEAD, got a 405. Starlette drops the body
 # for a HEAD response itself, so the handler is the same one.
+#
+# The `@2x` route comes first: routes match in order, and `{y}.{fmt}` would
+# take `5762@2x.png` as y=`5762@2x` and answer it with a 422.
+@router.api_route('/xyz/{theme}/{z}/{x}/{y}@2x.{fmt}', methods=['GET', 'HEAD'])
+def xyz_2x(request: Request, theme: str, z: int, x: int, y: int, fmt: str) -> Response:
+    """One 512 px tile in EPSG:3857, the `@2x` of `xyz`."""
+    return _tile(request, theme, z, x, y, fmt, scale=2)
+
+
 @router.api_route('/xyz/{theme}/{z}/{x}/{y}.{fmt}', methods=['GET', 'HEAD'])
 def xyz(request: Request, theme: str, z: int, x: int, y: int, fmt: str) -> Response:
     """One raster tile in EPSG:3857.
@@ -63,8 +76,13 @@ def xyz(request: Request, theme: str, z: int, x: int, y: int, fmt: str) -> Respo
     against a list in code, so a theme that was never generated is a 404
     instead of a render that fails deep inside Mapnik.
     """
+    return _tile(request, theme, z, x, y, fmt)
+
+
+def _tile(request: Request, theme: str, z: int, x: int, y: int, fmt: str,
+          scale: int = 1) -> Response:
     schema = db.active_schema()
     fmt = serving.check_format(fmt)
     theme = serving.check_theme(theme, schema)
     return serving.serve(request, theme=theme, tms=web_mercator(),
-                         level=z, col=x, row=y, fmt=fmt, schema=schema)
+                         level=z, col=x, row=y, fmt=fmt, schema=schema, scale=scale)

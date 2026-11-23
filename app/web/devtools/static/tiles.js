@@ -103,7 +103,8 @@ function urlTemplateFor(mode, theme, gridId, format, version) {
   if (mode === 'wmts-rest') {
     return `/wmts/${theme}/${gridId}/{z}/{x}/{y}.${format}?${bust}${api.keyParam('&')}`;
   }
-  return `/xyz/${theme}/{z}/{x}/{y}.${format}?${bust}${api.keyParam('&')}`;
+  // Leaflet fills `{r}` with `@2x` on a screen with a pixel ratio above 1.
+  return `/xyz/${theme}/{z}/{x}/{y}{r}.${format}?${bust}${api.keyParam('&')}`;
 }
 
 function crsFor(gridId) {
