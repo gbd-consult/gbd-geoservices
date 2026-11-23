@@ -37,7 +37,9 @@ typed is never skipped, because a short form is often the right name ("TH
 Köln"). Nor is it the answer when it alone found something: OSM names stops,
 entrances and a WLAN hotspot "Essen Hbf", and the step that finds those would
 end the search before the station. So the variants' results are merged by
-relevance, and on a tie the written-out one comes first.
+relevance, and on a tie the written-out one comes first. A later variant
+runs no step below the relevance an earlier one found rows at: its rows
+there would only queue behind, and the fuzzy step they cost is the slow one.
 
 WHAT `total` MEANS HERE
 
@@ -360,8 +362,13 @@ def find(conn, statement, req, steps) -> tuple[list, int, list]:
     Returns the page of rows, the merged total and the interpretation.
     """
     runs: list[Run] = []
+    floor = req.relevance
     for query in variants(req.text):
-        runs += _cascade(conn, statement, replace(req, text=query), steps)
+        found = _cascade(conn, statement, replace(req, text=query, relevance=floor), steps)
+        runs += found
+        # A later variant's rows below what an earlier one found would all
+        # merge in behind it; the steps that find only those need not run.
+        floor = max([floor] + [run.relevance for run in found if run.rows])
     # Stable, so on a tie the earlier variant -- the written-out one -- leads.
     merged, total = merge(sorted(runs, key=lambda run: -run.relevance), req.limit, req.offset)
     return merged, total, interpretations(runs)

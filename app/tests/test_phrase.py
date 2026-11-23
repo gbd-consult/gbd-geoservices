@@ -193,6 +193,13 @@ def test_an_abbreviation_finds_the_written_out_name():
     assert names(page)[0] == 'Schaan Bahnhof'
 
 
+def test_a_later_variant_runs_no_step_below_what_an_earlier_one_found():
+    """"Schaan Bahnhof" is found exactly; "Schaan Bhf" as typed would fall to
+    the fuzzy step, whose rows could only queue behind it."""
+    page = find('Schaan Bhf')
+    assert 'name_like_text' not in ran(page)
+
+
 def test_the_query_as_typed_still_runs_after_the_written_out_one():
     """"St. Peter" is a street in Liechtenstein, named short: the
     written-out "Sankt Peter" must not be all the search looks for."""
