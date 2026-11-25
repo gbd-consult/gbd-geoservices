@@ -13,6 +13,7 @@ import pytest
 from search.request import (
     DEFAULT_LIMIT,
     MAX_LIMIT,
+    MAX_OFFSET,
     MAX_TEXT,
     Request,
     RequestError,
@@ -191,6 +192,16 @@ def test_a_negative_page_is_refused():
 
 def test_the_offset_follows_page_and_limit():
     assert parse(body(page=3, limit=20)).offset == 60
+
+
+def test_a_page_past_the_deepest_offset_is_refused():
+    """OFFSET scores and skips every row before the page, and a page number
+    past bigint was a database error: a 500 for a client's mistake."""
+    assert parse(body(page=MAX_OFFSET // 100, limit=100)).offset == MAX_OFFSET
+    with pytest.raises(RequestError, match=f'at most {MAX_OFFSET}'):
+        parse(body(page=MAX_OFFSET // 100 + 1, limit=100))
+    with pytest.raises(RequestError, match=f'at most {MAX_OFFSET}'):
+        parse(body(page=10 ** 20))
 
 
 def test_an_unknown_sort_falls_back_rather_than_raising():

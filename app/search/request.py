@@ -41,6 +41,11 @@ SORTS = ('score', 'name', 'address', 'distance')
 MAX_LIMIT = 100
 DEFAULT_LIMIT = 50
 
+#: The deepest result a page may start at, `page * limit`. Paging is OFFSET,
+#: which scores and skips every row before the page; and a page number past
+#: bigint was a database error, a 500.
+MAX_OFFSET = 10_000
+
 #: 1 = very fuzzy, 10 = near-exact. Also the latency knob: it sets both
 #: pg_trgm thresholds, and a higher value means fewer candidates to score.
 #: 7 because, on de_sh, it found the same top ten for typos and prefixes as 4
@@ -214,6 +219,7 @@ def parse(body: dict) -> Request:
         # something by each.
         raise RequestError('bbox and area are alternatives; send one')
 
+    limit = _bounded(body.get('limit'), 'limit', 1, MAX_LIMIT, DEFAULT_LIMIT)
     return Request(
         mode=mode,
         text=query,
@@ -225,8 +231,8 @@ def parse(body: dict) -> Request:
         sort=_sort(body.get('sort')),
         similarity=_bounded(body.get('similarity'), 'similarity',
                             MIN_SIMILARITY, MAX_SIMILARITY, DEFAULT_SIMILARITY),
-        page=_page(body.get('page')),
-        limit=_bounded(body.get('limit'), 'limit', 1, MAX_LIMIT, DEFAULT_LIMIT),
+        page=_page(body.get('page'), limit),
+        limit=limit,
         lang=_string(body, 'lang') or 'de',
         relevance=_bounded(body.get('relevance'), 'relevance', 0, MAX_RELEVANCE, 0),
         **address,
@@ -450,7 +456,7 @@ def _sort(value) -> str:
     return value
 
 
-def _page(value) -> int:
+def _page(value, limit: int) -> int:
     if value is None:
         return 0
     try:
@@ -459,6 +465,9 @@ def _page(value) -> int:
         raise RequestError(f'page must be a whole number, got {value!r}') from exc
     if page < 0:
         raise RequestError('page must not be negative')
+    if page * limit > MAX_OFFSET:
+        raise RequestError(f'page * limit must be at most {MAX_OFFSET}, got {page * limit}; '
+                           'narrow the search instead')
     return page
 
 
