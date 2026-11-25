@@ -241,7 +241,8 @@ def spans(tokens: list[str]) -> list[tuple[int, int, str]]:
     """Every contiguous run of tokens, longest first, as (start, end, text).
 
     A query has two to four tokens, so this is at most ten strings and one
-    `= ANY(...)` probe -- which is why longest-match costs nothing.
+    `= ANY(...)` probe -- which is why longest-match costs nothing. The count
+    grows with the square of the tokens; `request.MAX_TEXT` bounds them.
     """
     return [(start, start + length, ' '.join(tokens[start:start + length]))
             for length in range(len(tokens), 0, -1)

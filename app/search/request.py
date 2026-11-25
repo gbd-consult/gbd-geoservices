@@ -26,6 +26,11 @@ MODES = ('name', 'address', 'phrase', 'point')
 #: The address mode's fields.
 ADDRESS_FIELDS = ('street', 'housenumber', 'postcode', 'city')
 
+#: The longest `text` and address field. The phrase mode probes every run of
+#: words, n(n+1)/2 strings for n words: 1 500 words took 4.6 GB, and one
+#: request killed the app. 200 characters is at most ~100 words.
+MAX_TEXT = 200
+
 #: `sort` is a display preference, so an unknown value falls back to the
 #: score order rather than raising -- a client with a typo should get results
 #: in a sensible order, not an error.
@@ -186,7 +191,7 @@ def parse(body: dict) -> Request:
         if body.get(name) is not None:
             raise RequestError(f'{name}: only in the point mode')
 
-    query = (_string(body, 'text') or '').strip()
+    query = _short('text', (_string(body, 'text') or '').strip())
     categories = _categories(body.get('categories'))
     if mode == 'address':
         if query or categories:
@@ -297,7 +302,8 @@ def _string(body: dict, name: str, *, required: bool = False) -> str | None:
 
 
 def _address(body: dict, mode: str) -> dict:
-    fields = {name: (_scalar(body, name) or '').strip() or None for name in ADDRESS_FIELDS}
+    fields = {name: _short(name, (_scalar(body, name) or '').strip()) or None
+              for name in ADDRESS_FIELDS}
     if mode != 'address':
         given = [name for name, value in fields.items() if value]
         if given:
@@ -310,6 +316,12 @@ def _address(body: dict, mode: str) -> dict:
         raise RequestError(f'housenumber must be a number with an optional letter, '
                            f'got {fields["housenumber"]!r}')
     return fields
+
+
+def _short(name: str, value: str) -> str:
+    if len(value) > MAX_TEXT:
+        raise RequestError(f'{name} must be at most {MAX_TEXT} characters, got {len(value)}')
+    return value
 
 
 def _scalar(body: dict, name: str) -> str | None:
