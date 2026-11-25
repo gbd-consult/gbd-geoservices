@@ -38,6 +38,8 @@ SIMPLIFIED = 'simplified-water-polygons-split-3857'
 
 #: The class the water polygons get. It has no classifier rule -- nothing in
 #: OSM carries it -- and is styled as the first fill in the landcover layer.
+#: The class of the water polygons. No rule produces it: the importer, the
+#: style compiler and the band builder take it from here.
 OCEAN = 'cls_ocean'
 
 

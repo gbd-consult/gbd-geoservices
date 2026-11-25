@@ -51,7 +51,6 @@ Each section is sorted by importance, most important first. Items are numbered a
 29. **Named objects no rule matches** have NULL importance and are still searchable. Decided without asking.
 31. **Areas larger than `de`** (Europe): not feasible without a file-backed node cache (`location_store`, tried on `li` only) and a chunked or SQL street merge. Estimated, not measured.
 32. **The versioned default `serve_area: sh`** names an area that no longer exists (`app/config/options.yaml`).
-34. **`cls_ocean` is a literal in three places** (`renderer/styles.py`, `tools/gen_classifier.py`, `importer/postprocess.py`). Proposed: a hand-written rule for it.
 37. **Resuming an import from a step** (`--from <step>`). Needs a record of finished steps per schema, re-runnable steps, a refusal once `_street_ends` is dropped, and a check against mixed code versions.
 38. **Water runs after the passes**, not beside them.
 39. **An import competes with serving** for CPU, memory and `shared_buffers` on the same host.

@@ -88,7 +88,9 @@ RAIL_CLASSES = {
 }
 
 
-#: Assigned by the water import; no rule produces it.
+#: Assigned by the water import; no rule produces it. `importer.water.OCEAN`,
+#: written out because this script runs on the host without the app's
+#: packages; test_gen_classifier.py checks the two agree.
 WATER_CLASS = 'cls_ocean'
 
 

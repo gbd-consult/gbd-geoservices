@@ -51,7 +51,7 @@ from pathlib import Path
 
 import yaml
 
-from importer import elevation
+from importer import elevation, water
 from importer.rules import NO_CLASS
 from renderer import icons as icons_module
 from renderer import queries
@@ -468,7 +468,6 @@ def load_style_files(styles_dir: Path):
 # --- checks --------------------------------------------------------------
 
 #: The class the water import assigns; no rule produces it.
-WATER_CLASS = 'cls_ocean'
 
 #: The palette token for the map background.
 BACKGROUND = 'clr_land'
@@ -504,7 +503,7 @@ def check(styles: Styles, layers: list[dict], details: dict, classifier,
     errors: list[str] = []
     warnings: list[str] = []
     classified = {rule.cls for rule in classifier.rules
-                  if rule.cls and rule.cls != NO_CLASS} | {WATER_CLASS, *elevation.classes()}
+                  if rule.cls and rule.cls != NO_CLASS} | {water.OCEAN, *elevation.classes()}
 
     for cls in sorted(styles.classes - classified):
         errors.append(f'classes.yaml styles {cls!r}, which no rule produces')

@@ -12,6 +12,7 @@ import logging
 from psycopg import sql
 
 from importer import tables as t
+from importer import water
 
 log = logging.getLogger('importer')
 
@@ -118,7 +119,7 @@ def band_polygons(conn, schema: str, params, band) -> int:
                     -- state's full-resolution coastline at z6 is both slow
                     -- and pointless, which is why osmdata publishes two
                     -- resolutions.
-                    from {source} where minzoom <= %(zoom_max)s and class <> 'cls_ocean'
+                    from {source} where minzoom <= %(zoom_max)s and class <> %(ocean)s
                 ) c group by class, cx, cy
             ) d where st_area(geom) >= %(pixel_area)s and st_geometrytype(geom) = 'ST_Polygon'
         """).format(target=target, source=source)
@@ -134,7 +135,7 @@ def band_polygons(conn, schema: str, params, band) -> int:
         """).format(target=target, source=source)
 
     cursor = conn.execute(statement, {'tolerance': band.tolerance_m, 'zoom_max': band.zoom_max,
-                                      'pixel_area': pixel_area,
+                                      'pixel_area': pixel_area, 'ocean': water.OCEAN,
                                       'cell': band.union_cell_deg * UNITS_PER_DEGREE or 1.0})
     return cursor.rowcount
 

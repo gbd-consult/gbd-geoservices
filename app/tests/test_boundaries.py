@@ -190,6 +190,6 @@ def test_a_ruled_class_nobody_styles_is_refused(classifier):
 
 def test_ocean_is_not_drift():
     """The water import assigns it and no rule produces it."""
-    from importer import run
+    from importer import water
 
-    assert run.WATER_CLASS == 'cls_ocean'
+    assert water.OCEAN == 'cls_ocean'
