@@ -42,9 +42,9 @@ def deployment(tmp_path, monkeypatch):
 
 
 def test_the_deployment_file_overrides_the_defaults(deployment):
-    options = deployment({'serve_area': 'de_nrw', 'db': {'pool_size': 3}})
+    options = deployment({'serve_area': 'de_nrw', 'db': {'mapnik_pool_size': 3}})
     assert options['serve_area'] == 'de_nrw'
-    assert options['db']['pool_size'] == 3
+    assert options['db']['mapnik_pool_size'] == 3
     # A nested mapping merges: the rest of `db` keeps its defaults.
     assert options['db']['port'] == 6432
 

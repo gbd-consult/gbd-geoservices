@@ -34,7 +34,7 @@ class FakeBackend:
         self.rendered: list[tuple] = []
         self.blocking: threading.Event | None = None
 
-    def load_map(self, xml_path, width, height, buffer_size):
+    def load_map(self, xml_path, width, height):
         if xml_path.stem in self.fail_for:
             raise RuntimeError(f'bad xml: {xml_path}')
         self.loads += 1
@@ -354,7 +354,7 @@ def test_a_real_tile_renders_and_caches(tmp_path):
     from renderer.cache import FilesystemCache, TileCacheFacade
 
     themes = compiled()
-    registry = MapRegistry(pool_size=1, buffer_size=64)
+    registry = MapRegistry(pool_size=1)
     loaded = registry.preload(themes[:1],
                               lambda t, s_: core.xml_path_for(t, SMALL, s_))
     assert loaded, 'the compiled XML did not load in Mapnik'

@@ -77,7 +77,7 @@ class MapnikBackend(Protocol):
     tests then need neither libmapnik nor a database.
     """
 
-    def load_map(self, xml_path: Path, width: int, height: int, buffer_size: int) -> Any: ...
+    def load_map(self, xml_path: Path, width: int, height: int) -> Any: ...
 
     def render(self, handle: Any, bbox: BBox, fmt: str, crs: str,
                size: tuple[int, int], scale: int) -> bytes: ...
@@ -122,7 +122,7 @@ class RealMapnikBackend:
 
     _fonts_registered = False
 
-    def load_map(self, xml_path: Path, width: int, height: int, buffer_size: int) -> Any:
+    def load_map(self, xml_path: Path, width: int, height: int) -> Any:
         import mapnik
 
         self._register_fonts(mapnik)
@@ -173,11 +173,9 @@ class MapRegistry:
     """
 
     def __init__(self, backend: MapnikBackend | None = None, *,
-                 tile_size: int = TILE_SIZE, buffer_size: int = 64,
-                 pool_size: int = 4, db_pool_size: int = 40) -> None:
+                 tile_size: int = TILE_SIZE, pool_size: int = 4, db_pool_size: int = 40) -> None:
         self._backend = backend or RealMapnikBackend()
         self._tile_size = tile_size
-        self._buffer_size = buffer_size
         self._pool_size = pool_size
         # Each retry evicts one dead pooled connection, so one more than
         # the pool holds clears it.
@@ -204,8 +202,7 @@ class MapRegistry:
                 f'{xml_path}. Run `manage.py compile-styles`; refusing to fall back to '
                 f'another style.')
         log.info('loading map %s', xml_path)
-        handles = [self._backend.load_map(xml_path, self._tile_size, self._tile_size,
-                                          self._buffer_size)
+        handles = [self._backend.load_map(xml_path, self._tile_size, self._tile_size)
                    for _ in range(self._pool_size)]
         pool: queue.Queue = queue.Queue(maxsize=self._pool_size)
         for handle in handles:
@@ -376,8 +373,7 @@ def get_registry() -> MapRegistry:
     if _registry is None:
         from lib import config
 
-        _registry = MapRegistry(buffer_size=int(config.opt('buffer_px', 64)),
-                                pool_size=int(config.opt('map_pool_size', 4)),
+        _registry = MapRegistry(pool_size=int(config.opt('map_pool_size', 4)),
                                 db_pool_size=int(config.opt('db.mapnik_pool_size', 40)))
     return _registry
 

@@ -36,7 +36,7 @@ import sys
 import time
 from pathlib import Path
 
-from lib import config, db
+from lib import db
 from renderer import core, matrix
 
 UTM = 'EPSG:25832'
@@ -88,11 +88,10 @@ def main(argv=None) -> int:
     sets = matrix.load()
     utm, mercator = matrix.by_crs(sets, UTM), matrix.by_crs(sets, WEB_MERCATOR)
     backend = core.RealMapnikBackend()
-    buffer = int(config.opt('buffer_px', 64))
 
     def load(identifier):
         path = core.xml_path_for(args.theme, schema, identifier)
-        return backend.load_map(Path(path), 256, 256, buffer)
+        return backend.load_map(Path(path), 256, 256)
 
     native_map, reprojected_map = load(mercator.identifier), load(utm.identifier)
 
