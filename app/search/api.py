@@ -431,9 +431,15 @@ def _connect():
     Not autocommit: the pg_trgm thresholds are set per statement with SET
     LOCAL, which outside a transaction applies to nothing and warns. The
     transaction is read-only in effect and is rolled back on close.
+
+    `search.statement_timeout_s` bounds every statement: a query that hangs,
+    behind a lock or on an unforeseen plan, would otherwise hold a worker
+    thread and a connection after Caddy has given up on the request.
     """
     conn = db.connect()
     conn.row_factory = dict_row
+    conn.execute("select set_config('statement_timeout', %s, false)",
+                 (f'{int(config.opt("search.statement_timeout_s", 30))}s',))
     return conn
 
 
