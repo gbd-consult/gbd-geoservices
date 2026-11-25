@@ -217,7 +217,7 @@ Request fields. `mode` is required, and so are `text` or `categories` in the nam
 | `sort` | string | name, address, phrase | `score` (default), `distance`, `name`, `address` |
 | `similarity` | integer | name, phrase | 1 (very fuzzy) to 10 (near exact), default 7 |
 | `relevance` | integer | name, address, phrase | 0-100: drop results that matched less literally; default 0 |
-| `page` | integer | name, address, phrase | from 0 |
+| `page` | integer | name, address, phrase | from 0; `page` × `limit` at most 10 000 |
 | `limit` | integer | all | results per page, 1-100, default 50 |
 | `lang` | string | all | language of category names, `de` (default) or `en` |
 

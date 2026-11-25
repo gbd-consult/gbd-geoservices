@@ -100,3 +100,12 @@ def test_the_generated_files_are_current():
 
     assert categories == yaml.safe_load((MODEL / 'generated' / 'categories.yaml').read_text())
     assert rules == yaml.safe_load((MODEL / 'generated' / 'classifier.yaml').read_text())
+
+
+def test_the_water_class_is_the_importers():
+    """The generator runs on the host without the app's packages, so it writes
+    the class out; renamed in one place only, the ocean's rows would be
+    reported as drift or drawn by no rule."""
+    from importer import water
+
+    assert gen.WATER_CLASS == water.OCEAN

@@ -41,7 +41,6 @@ EXTENSIONS = ('postgis', 'pg_trgm', 'fuzzystrmatch')
 KEEP_SCHEMAS = 2
 
 #: Assigned by the water import; no rule produces it.
-WATER_CLASS = 'cls_ocean'
 
 
 class ClassDriftError(RuntimeError):
@@ -87,7 +86,7 @@ def check_class_drift(classifier, params) -> None:
     classes are added because the water and contours steps assign them and no
     rule produces them.
     """
-    ruled = classifier.classes | {WATER_CLASS, *elevation.classes()}
+    ruled = classifier.classes | {water.OCEAN, *elevation.classes()}
     styled = params.styled_classes
     missing = sorted(styled - ruled)
     unstyled = sorted(ruled - styled)
