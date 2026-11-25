@@ -153,8 +153,18 @@ class FilesystemCache:
         generated deliberately and evicting it would mean rendering it
         again.
         """
-        files = [(p.stat().st_atime, p.stat().st_size, p)
-                 for p in self.root.rglob('*') if p.is_file()]
+        # A drop-cache or a tile renamed into place removes files under the
+        # walk: os.walk skips a vanished directory, and a vanished file is
+        # skipped here, rather than failing the whole sweep.
+        files = []
+        for directory, _, names in os.walk(self.root):
+            for name in names:
+                path = Path(directory, name)
+                try:
+                    status = path.stat()
+                except FileNotFoundError:
+                    continue
+                files.append((status.st_atime, status.st_size, path))
         total = sum(size for _, size, _ in files)
         removed = 0
         for _, size, path in sorted(files):

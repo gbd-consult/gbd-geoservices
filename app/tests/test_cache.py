@@ -150,6 +150,26 @@ def test_eviction_drops_the_least_recently_used(tmp_path):
     assert tier.get('default/GoogleMapsCompatible/png/3/4/4') == b'x' * 100
 
 
+def test_a_file_gone_under_the_sweep_does_not_stop_it(tmp_path, monkeypatch):
+    """`update` drops the on-demand tier while a sweep may be walking it; a
+    sweep that failed on the first missing file left the tier over its limit."""
+    from pathlib import Path
+
+    tier = FilesystemCache(tmp_path)
+    for index in range(3):
+        tier.set(f'default/GoogleMapsCompatible/png/3/4/{index}', b'x' * 100)
+    gone = tmp_path / 'default' / 'GoogleMapsCompatible' / 'png' / '3' / '4' / '0.png'
+    stat = Path.stat
+
+    def vanishing(path, *args, **kwargs):
+        if path == gone:
+            raise FileNotFoundError(path)
+        return stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'stat', vanishing)
+    assert tier.evict_lru(150) == 1
+
+
 # --- the tier split ------------------------------------------------------
 
 def test_web_mercator_is_precached_to_twelve(tiers):
