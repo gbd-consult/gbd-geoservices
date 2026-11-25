@@ -346,7 +346,7 @@ Each rule is capped; `total` is the size of the merged list, not a true count. T
 
 An address hit with an object behind it is that object, with the matched address in `address_*` and the address point as `center`. Without one it is a pure address, shown as the category of what it sits on ("Wohnhaus"), or "Adresse" for an address node.
 
-Names follow `lang`. Responses are cached per request for `search.cache_ttl_s`; the tables change only with an import.
+Names follow `lang`. Responses are cached per request for `search.cache_ttl_s`; the tables change only with an import. Every search statement is cancelled after `search.statement_timeout_s` and answered 503, so a hung one does not keep a worker thread after the proxy has given up.
 
 ### Two traps
 

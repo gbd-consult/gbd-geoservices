@@ -33,6 +33,7 @@ wms_max_px: 2048            # WMS GetMap: the largest WIDTH and HEIGHT; a map is
 search:
   cache_ttl_s: 60           # a stale entry can never be worse than this: the tables change
   cache_size: 512           # only on a full re-import, so nothing has to notice one happened
+  statement_timeout_s: 30   # a search statement running longer is cancelled and answered 503; de's slowest take ~1 s
 
 cors_origins: ['*']
 request_log: true           # write service.request_log (IPs and search terms, kept request_log_days) and host samples

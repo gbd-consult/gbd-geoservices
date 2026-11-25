@@ -340,3 +340,33 @@ def test_the_icon_url_is_not_written_into_the_cached_body(served):
     post(served, {'mode': 'name', 'text': 'vaduz', 'limit': 1})
     cached = api.find(parse({'mode': 'name', 'text': 'vaduz', 'limit': 1}))
     assert features(cached)[0]['properties']['icon'] is None
+
+
+# --- the time limit ------------------------------------------------------
+
+def test_a_search_statement_over_the_limit_is_cancelled(db, monkeypatch):
+    """A hung statement would hold a worker thread and a connection after
+    Caddy gave up on the request; enough of them and nothing is served."""
+    from psycopg import errors
+
+    from lib import config
+    from search import api
+    opt = config.opt
+    monkeypatch.setattr(config, 'opt', lambda path, default=None:
+                        1 if path == 'search.statement_timeout_s' else opt(path, default))
+    with pytest.raises(errors.QueryCanceled), api._connect() as conn:
+        conn.execute('select pg_sleep(3)')
+
+
+def test_a_cancelled_statement_is_a_503(monkeypatch):
+    from psycopg import errors
+
+    from web import search as routes
+
+    def cancelled(*args, **kwargs):
+        raise errors.QueryCanceled('canceling statement due to statement timeout')
+
+    monkeypatch.setattr(routes.search_api, 'count', cancelled)
+    response = TestClient(app).post('/search/count', json={'mode': 'name', 'text': 'kiel'})
+    assert response.status_code == 503
+    assert 'too long' in response.json()['detail']

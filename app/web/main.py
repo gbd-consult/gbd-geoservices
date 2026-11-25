@@ -44,6 +44,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from psycopg import errors as pg_errors
 
 from lib import config, db
 from lib.version import __version__
@@ -133,6 +134,13 @@ async def no_import(request: Request, exc: db.NoImportError) -> JSONResponse:
     return JSONResponse({'detail': str(exc)}, status_code=503)
 
 
+async def timed_out(request: Request, exc: pg_errors.QueryCanceled) -> JSONResponse:
+    """A statement over its time limit (`search.statement_timeout_s`): the
+    server's trouble, not the client's, and worth a retry."""
+    _log.warning('%s %s: statement cancelled: %s', request.method, safe_path(request), exc)
+    return JSONResponse({'detail': 'the query took too long; try again'}, status_code=503)
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title='gbd-geoservices',
@@ -162,6 +170,7 @@ def create_app() -> FastAPI:
     app.middleware('http')(count_usage)
     app.middleware('http')(record_request)
     app.add_exception_handler(db.NoImportError, no_import)
+    app.add_exception_handler(pg_errors.QueryCanceled, timed_out)
 
     app.include_router(meta.router)
     app.include_router(tiles.router)
