@@ -13,6 +13,7 @@ import pytest
 from search.request import (
     DEFAULT_LIMIT,
     MAX_LIMIT,
+    MAX_TEXT,
     Request,
     RequestError,
     parse,
@@ -271,3 +272,18 @@ def test_a_value_cannot_spell_another_key():
     a = Request(mode='name', text='a', lang='b')
     b = Request(mode='name', text='a\x1fb')
     assert a.cache_key('find') != b.cache_key('find')
+
+
+@pytest.mark.parametrize('request_body, field', [
+    (body(mode='phrase', text='a ' * MAX_TEXT), 'text'),
+    (address(street='a ' * MAX_TEXT), 'street'),
+])
+def test_a_text_longer_than_the_cap_is_refused(request_body, field):
+    """The phrase mode probes every run of words: 12 KB of text took 4.6 GB
+    and 25 KB killed the app, so one request could take the server down."""
+    with pytest.raises(RequestError, match=f'{field} must be at most {MAX_TEXT}'):
+        parse(request_body)
+
+
+def test_a_text_at_the_cap_is_taken():
+    assert parse(body(text='a' * MAX_TEXT)).text == 'a' * MAX_TEXT

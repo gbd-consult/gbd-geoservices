@@ -202,7 +202,7 @@ Request fields. `mode` is required, and so are `text` or `categories` in the nam
 | name | type | modes | description |
 |---|---|---|---|
 | `mode` | string | all | `name`, `address`, `phrase` or `point` |
-| `text` | string | name, phrase | the name, or the free text |
+| `text` | string | name, phrase | the name, or the free text; at most 200 characters, as each address field |
 | `categories` | array of string | name, phrase, point | category ids; a category includes everything below it |
 | `street` | string | address | street name |
 | `housenumber` | string | address | house number with its suffix: `12a` is not `12` |
