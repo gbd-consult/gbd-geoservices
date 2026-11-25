@@ -112,6 +112,7 @@ def _preload() -> None:
                           len(themes), schema, matrix_set)
     except Exception as exc:                  # noqa: BLE001 - startup must not die here
         _log.warning('could not preload the renderer: %s', exc)
+    record_served()
 
     try:
         # The ~800 ms of YAML the first search would otherwise pay for.
@@ -125,6 +126,14 @@ def _preload() -> None:
         point_mode.radii()
     except Exception as exc:                  # noqa: BLE001
         _log.warning('could not preload the search model: %s', exc)
+
+
+def record_served() -> None:
+    """Tell imports which schema this app serves (`db.mark_served`)."""
+    try:
+        db.mark_served(db.active_schema())
+    except Exception as exc:                  # noqa: BLE001 - serving does not depend on it
+        _log.warning('could not record the served schema: %s', exc)
 
 
 async def no_import(request: Request, exc: db.NoImportError) -> JSONResponse:

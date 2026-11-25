@@ -130,14 +130,16 @@ def area_lock(area: str):
 def publish(conn, area: str, schema: str, *, keep: int, data_dir: Path) -> list[str]:
     """Give the temp schema its final name, then drop all but the newest `keep`.
 
-    The schema pinned by `force_schema` is never dropped, however old: it is
-    being served. Each dropped schema's compiled styles go with it. Returns
+    Never dropped, however old: the schema pinned by `force_schema`, and the
+    one the web app serves (`db.served_schema`) -- an import by hand without
+    a reload, then the cron's `update`, would otherwise drop it under the
+    running app. Each dropped schema's compiled styles go with it. Returns
     the dropped schemas.
     """
     conn.execute(sql.SQL('alter schema {} rename to {}').format(
         sql.Identifier(db.temp_name(schema)), sql.Identifier(schema)))
-    pinned = config.opt('force_schema')
-    dropped = [old for old in db.complete_schemas(conn, area)[keep:] if old != pinned]
+    served = {config.opt('force_schema'), db.served_schema(conn, area)}
+    dropped = [old for old in db.complete_schemas(conn, area)[keep:] if old not in served]
     for old in dropped:
         drop_schema(conn, old)
     conn.commit()

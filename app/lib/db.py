@@ -117,6 +117,31 @@ def reset_active_schema() -> None:
     _active.clear()
 
 
+def mark_served(schema: str) -> None:
+    """Record that the web app now serves `schema`, so an import keeps it.
+
+    Written by the app when it resolves its schema, at start and on reload,
+    and not by `active_schema`: a tool resolving the newest import would
+    record a schema the app does not serve yet.
+    """
+    with connection() as conn:
+        conn.execute('create schema if not exists service')
+        conn.execute('create table if not exists service.served '
+                     '(area text primary key, schema text not null)')
+        conn.execute('insert into service.served values (%s, %s) '
+                     'on conflict (area) do update set schema = excluded.schema',
+                     (area_of(schema), schema))
+        conn.commit()
+
+
+def served_schema(conn, area: str) -> str | None:
+    """The schema the web app last said it serves for `area`, if any."""
+    if conn.execute("select to_regclass('service.served')").fetchone()[0] is None:
+        return None
+    row = conn.execute('select schema from service.served where area = %s', (area,)).fetchone()
+    return row[0] if row else None
+
+
 def schema_for(name: str | None) -> str:
     """A schema name as it is, an area's active schema, or the served one's."""
     if name and re.fullmatch(r'.+_\d{8}_\d{6}', name):
