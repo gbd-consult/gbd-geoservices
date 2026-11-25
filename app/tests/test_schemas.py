@@ -60,6 +60,8 @@ def schemas(db):
 
     yield create
     db.rollback()
+    if db_module.served_schema(db, AREA):
+        db.execute('delete from service.served where area = %s', (AREA,))
     for name in (db_module.complete_schemas(db, AREA) + db_module.temp_schemas(db, AREA)
                  + ['area_1', 'area_1_other_20260101_000000']):
         db.execute(sql.SQL('drop schema if exists {} cascade').format(sql.Identifier(name)))
@@ -97,6 +99,20 @@ def test_publishing_never_drops_the_forced_schema(db, schemas, tmp_path, monkeyp
     monkeypatch.setattr(config, 'opt', lambda path, default=None:
                         'area_1_20260101_000000' if path == 'force_schema' else None)
     schemas('area_1_20260101_000000', 'area_1_20260102_000000', '_area_1_20260103_000000')
+    assert run.publish(db, AREA, 'area_1_20260103_000000', keep=2, data_dir=tmp_path) == []
+    assert 'area_1_20260101_000000' in db_module.complete_schemas(db, AREA)
+
+
+def test_publishing_never_drops_the_served_schema(db, schemas, tmp_path, monkeypatch):
+    """An import by hand without a reload, then the cron's `update`: the third
+    import would otherwise drop the schema the running app still serves."""
+    from importer import run
+
+    monkeypatch.setattr(config, 'opt', lambda path, default=None: None)
+    schemas('area_1_20260101_000000', 'area_1_20260102_000000', '_area_1_20260103_000000')
+    db_module.mark_served('area_1_20260102_000000')
+    db_module.mark_served('area_1_20260101_000000')       # the later record wins
+    assert db_module.served_schema(db, AREA) == 'area_1_20260101_000000'
     assert run.publish(db, AREA, 'area_1_20260103_000000', keep=2, data_dir=tmp_path) == []
     assert 'area_1_20260101_000000' in db_module.complete_schemas(db, AREA)
 

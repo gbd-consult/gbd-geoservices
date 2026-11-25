@@ -139,7 +139,7 @@ A way that is both a border and something else (a river along a municipal bounda
 
 ### Schemas and imports
 
-Every import writes a schema of its own, `<area>_<yyyymmdd>_<hhmmss>`, named with a leading `_` until it is complete. A schema without an `import_meta` row, or with a leading `_`, is an incomplete import; the next import of the area drops it. The two newest complete schemas are kept -- the one just written and the one still served until the reload, which is also the rollback. The server serves the newest complete schema of `serve_area`, resolved at start and on `/internal/reload` (`lib/db.py` `active_schema()`), or `force_schema` when that is set.
+Every import writes a schema of its own, `<area>_<yyyymmdd>_<hhmmss>`, named with a leading `_` until it is complete. A schema without an `import_meta` row, or with a leading `_`, is an incomplete import; the next import of the area drops it. The two newest complete schemas are kept -- the one just written and the one still served until the reload, which is also the rollback -- and, however old, `force_schema` and the schema the app last recorded in `service.served` at start or reload (`lib/db.py` `mark_served()`), so an import by hand without a reload, followed by another, does not drop the schema being served. The server serves the newest complete schema of `serve_area`, resolved at start and on `/internal/reload` (`lib/db.py` `active_schema()`), or `force_schema` when that is set.
 
 Compiled styles are per schema; the tile cache is per area and survives imports. Nothing empties it as a side effect -- `manage.py drop-cache` does, both tiers or with `--ondemand` only that one.
 

@@ -374,8 +374,12 @@ def reload_all() -> dict:
     # would keep routing tiles to the tier the *old* configuration named.
     serving.reset()
 
+    from web.main import record_served
+
     schema = db.active_schema()
-    return {'reloaded': core.preload_all(schema), 'schema': schema}
+    reloaded = core.preload_all(schema)
+    record_served()
+    return {'reloaded': reloaded, 'schema': schema}
 
 
 def require_loopback(request: Request) -> None:
