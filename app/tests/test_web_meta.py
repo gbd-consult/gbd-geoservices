@@ -10,6 +10,7 @@ are properties of the wiring and not of any function.
 from __future__ import annotations
 
 import datetime
+import re
 
 import pytest
 from fastapi.testclient import TestClient
@@ -374,8 +375,8 @@ def stored(monkeypatch):
     meta._key_request_times.clear()
     calls = []
 
-    def add(email, organisation, limit):
-        calls.append((email, organisation))
+    def add(email, organisation, consent, limit):
+        calls.append((email, organisation, consent))
         return None if email == 'full@example.org' else len(calls)
     monkeypatch.setattr(keys, 'request_add', add)
     return calls
@@ -383,10 +384,11 @@ def stored(monkeypatch):
 
 @pytest.mark.parametrize('form, outcome, stored_as', [
     ({'email': ' a@example.org ', 'organisation': 'A GmbH', 'lang': 'en'}, 'sent',
-     [('a@example.org', 'A GmbH')]),
+     [('a@example.org', 'A GmbH', False)]),
+    ({'email': 'a@example.org', 'consent': 'yes'}, 'sent', [('a@example.org', None, True)]),
     ({'email': 'a@example.org', 'website': 'http://spam'}, 'sent', []),
     ({'email': 'not an address'}, 'invalid', []),
-    ({'email': 'full@example.org'}, 'full', [('full@example.org', None)]),
+    ({'email': 'full@example.org'}, 'full', [('full@example.org', None, False)]),
 ])
 def test_the_key_request_form(client, stored, form, outcome, stored_as):
     """A filled honeypot is told it worked, so the bot learns nothing, and
@@ -412,6 +414,9 @@ def test_one_ip_fills_no_more_than_its_share_of_key_requests(client, stored):
 def test_the_landing_page_has_the_key_request_form_and_its_outcome(client):
     page = client.get('/', params={'key_request': 'sent'}).text
     assert 'action="/key-request"' in page and 'name="website"' in page
+    # Optional: the key must not depend on consent to advertising.
+    consent = re.search(r'<input[^>]*name="consent"[^>]*>', page).group()
+    assert 'required' not in consent and 'checked' not in consent
     assert 'Ihre Anfrage ist eingegangen' in page
     assert '<script' not in client.get('/', params={'key_request': '<script>'}).text
 

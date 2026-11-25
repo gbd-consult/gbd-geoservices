@@ -116,12 +116,14 @@ def postgres_env(directory: str) -> dict[str, str]:
 
 @pytest.mark.parametrize('directory', ['config.local', 'config.test', 'config.example'])
 def test_the_tracked_postgres_env_files_set_the_credentials(directory):
-    """The names the postgres image initialises from, and lib.config maps."""
-    assert set(postgres_env(directory)) == set(config.POSTGRES_ENV)
+    """The names the postgres image initialises from, and lib.config maps;
+    and the key of the trial key requests' HMACs (lib/keys.py)."""
+    assert set(postgres_env(directory)) == set(config.POSTGRES_ENV) | {'KEY_REQUEST_SECRET'}
 
 
 def test_the_example_holds_no_real_secret():
     example = yaml.safe_load((ROOT / 'config.example' / 'options.yaml').read_text())
     assert postgres_env('config.example')['POSTGRES_PASSWORD'] == 'CHANGEME'
+    assert postgres_env('config.example')['KEY_REQUEST_SECRET'] == 'CHANGEME'
     # API keys are in the database, never in a file; and `keys` is no option.
     assert 'keys' not in example

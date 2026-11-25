@@ -206,7 +206,8 @@ def _span(day: datetime.date) -> dict:
 def purge(conn, today: datetime.date) -> list[str]:
     """Drop the request log's partitions, and delete the rows, older than
     `request_log_days` days, today included; the same for the host samples.
-    The key requests go after `MAX_RETENTION_DAYS`, whatever `request_log_days`."""
+    An open key request closes after `MAX_RETENTION_DAYS`, whatever
+    `request_log_days`; `keys.purge_requests` has the other periods."""
     cutoff = today - datetime.timedelta(days=retention_days() - 1)
     dropped = []
     names = [row[0] for row in conn.execute(
@@ -222,7 +223,7 @@ def purge(conn, today: datetime.date) -> list[str]:
                  (cutoff.isoformat(),))
     conn.execute(sql.SQL('delete from {} where ts < %s').format(_t('host_sample')),
                  (cutoff.isoformat(),))
-    keys.purge_requests(conn, today - datetime.timedelta(days=MAX_RETENTION_DAYS - 1))
+    keys.purge_requests(conn, today, MAX_RETENTION_DAYS)
     conn.commit()
     return dropped
 

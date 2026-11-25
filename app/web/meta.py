@@ -34,7 +34,9 @@ nor a tile request would notice; the extract's date is the one thing that
 does. It takes no key, so the monitor needs none, and says only the date.
 
 The trial key form only stores a request (`lib/keys.py`): the e-mail
-address and organisation, for the operator to issue a key by hand. Two
+address and organisation, for the operator to issue a key by hand, and
+whether the visitor consented to offers by e-mail. The key does not depend
+on that consent, so the box is optional. Two
 guards against a bot: a honeypot field, answered as a success so the bot
 learns nothing, and `MAX_KEY_REQUESTS` open requests, past which the form
 refuses rather than let the table fill. One client fills it no faster
@@ -409,7 +411,8 @@ async def key_request(request: Request) -> RedirectResponse:
         outcome = 'full'
     else:
         request_id = await run_in_threadpool(keys.request_add, email,
-                                             field('organisation')[:200] or None, MAX_KEY_REQUESTS)
+                                             field('organisation')[:200] or None,
+                                             field('consent') == 'yes', MAX_KEY_REQUESTS)
         outcome = 'sent' if request_id else 'full'
         _log.info('key request %s: %s', request_id or '-',
                   'waiting, see manage.sh key-requests' if request_id else 'refused, too many open')
@@ -447,6 +450,8 @@ def landing(request: Request, lang: str | None = None,
         'source_url': config.opt('source_url'),
         'key_request': key_request if key_request in ('sent', 'invalid', 'full') else None,
         'request_days': stats.MAX_RETENTION_DAYS,
+        'contact_days': keys.CONTACT_DAYS,
+        'hash_days': keys.HASH_DAYS,
     })
 
 

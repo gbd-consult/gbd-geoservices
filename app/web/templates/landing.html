@@ -32,9 +32,11 @@ POST /search        {"mode": "point", "near": [lon, lat]}</pre>
   <input type="hidden" name="lang" value="{{ lang }}">
   <label>{{ t('landing.email') }}<input type="email" name="email" required maxlength="254" autocomplete="email"></label>
   <label>{{ t('landing.organisation') }}<input name="organisation" maxlength="200" autocomplete="organization"></label>
+  {# Optional and unticked: the key must not depend on consent to advertising. #}
+  <label><input type="checkbox" name="consent" value="yes"> {{ t('landing.consent', days=contact_days) }}</label>
   {# The honeypot: off-screen and out of the tab order, so only a bot fills it. #}
   <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
   <button>{{ t('landing.request_key') }}</button>
 </form>
-<p class="sub">{{ t('landing.key_request_privacy', days=request_days) }}</p>
+<p class="sub">{{ t('landing.key_request_privacy', days=request_days, hash_days=hash_days) }}</p>
 {% endblock %}

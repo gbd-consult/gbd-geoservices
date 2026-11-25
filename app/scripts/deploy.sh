@@ -133,6 +133,8 @@ check_config() {
     if [ -f "$CONFIG_ENV" ]; then
         grep -qE '^POSTGRES_PASSWORD=.' "$CONFIG_ENV" \
             || problems+=("config/postgres.env: set POSTGRES_PASSWORD")
+        grep -qE '^KEY_REQUEST_SECRET=.' "$CONFIG_ENV" \
+            || problems+=("config/postgres.env: set KEY_REQUEST_SECRET")
         grep -q CHANGEME "$CONFIG_ENV" \
             && problems+=("config/postgres.env: replace CHANGEME")
     fi
