@@ -10,9 +10,6 @@ max_data_age_days: 14       # GET /health/data answers 503 when the served extra
 db:
   host: pgbouncer           # the compose service in front of postgres
   port: 6432                # database, user and password are postgres.env's, not options
-  pool_size: 20
-  pool_overflow: 20
-  pool_timeout: 10
   mapnik_pool_size: 40      # Mapnik's PostGIS connections, one pool for every theme: at least the concurrent renders, which Starlette's 40 worker threads cap; a render that finds it full fails
 
 precache:                       # highest level pre-cached per grid

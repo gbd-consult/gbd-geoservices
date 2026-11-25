@@ -48,9 +48,6 @@ buildings:                  # osm_building.height; height_src records which of t
   level_height_m: 3.2       # building:levels * this, when there is no height tag
   default_height_m: 8.0     # the estimate when there is neither; one value, since there is one building class
 
-streets:
-  merge_by: [end_node, name]     # no distance fallback
-
 places:                     # the address path: the places a search row lies in (importer/places.py)
   levels: [4, 6, 8, 9, 10, 11]      # admin_level of the boundary=administrative areas; every one the row intersects. Not 7 (Amt): an administrative grouping nobody gives as part of an address
                             # German: what a level means differs per country (7 is an Amt only
@@ -185,10 +182,3 @@ ranking:                    # the name score; DESIGN.md "Relevance and score"
   # finds Lübeck, not "lubeka" -- and kept the streets named after a city ("Kieler Strase")
   # first; 0.02 added nothing.
   importance_weight: 0.01
-
-# Not read by any code: the pre-cache depths are the `precache` option (config/options.yaml).
-precache:
-  EPSG:3857: 12
-  EPSG:25832: 8
-  EPSG:25833: 8
-  other_crs_scale_from: EPSG:3857/12

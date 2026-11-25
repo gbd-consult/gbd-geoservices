@@ -158,7 +158,6 @@ def run(schema: str | None = None, themes=None, grid_ids=None, *, fmt: str = 'pn
 
     pool_size = int(config.opt('map_pool_size', 4))
     workers = workers or pool_size
-    buffer_px = int(config.opt('buffer_px', 64))
 
     tiers = cache_module.build(db.area_of(schema))
     with db.connection() as conn:
@@ -172,7 +171,7 @@ def run(schema: str | None = None, themes=None, grid_ids=None, *, fmt: str = 'pn
         # holding every set's pools at once would be `sets x themes x
         # pool_size` Mapnik Maps in memory for a job that visits one set
         # at a time.
-        registry = core.MapRegistry(buffer_size=buffer_px, pool_size=pool_size,
+        registry = core.MapRegistry(pool_size=pool_size,
                                     db_pool_size=int(config.opt('db.mapnik_pool_size', 40)))
         loaded = registry.preload(
             themes, lambda t, s_, schema=schema: core.xml_path_for(t, schema, s_),

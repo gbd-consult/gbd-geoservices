@@ -7,7 +7,7 @@ is the regression test for it: same name, not touching, must stay two
 objects.
 
 Only ways that share an end node *and* a normalized name are joined, with no
-distance fallback anywhere (`parameters.yaml`: merge_by: [end_node, name]).
+distance fallback anywhere.
 """
 
 from __future__ import annotations
