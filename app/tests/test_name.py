@@ -59,7 +59,7 @@ def test_a_narrowed_text_query_probes_every_channel():
     plan = name.fuzzy_plan(parse({'mode': 'name', 'text': 'meyer'}), narrowed=True)
     assert any('search_name %%' in p for p in plan.probes)          # letters
     assert any('<%% o.search_name' in p for p in plan.probes)       # fragment
-    assert any('phon_name = ANY' in p for p in plan.probes)         # exact code
+    assert any('phon_words &&' in p for p in plan.probes)          # exact code, per word
     assert any('phon_name %%' in p for p in plan.probes)            # near code
 
 
@@ -69,7 +69,7 @@ def test_an_unnarrowed_query_has_no_near_code_probe():
     candidates, each a heap page to recheck. Only a probe something else
     narrows -- a place, a category -- can afford it."""
     plan = name.fuzzy_plan(parse({'mode': 'name', 'text': 'meyer'}))
-    assert any('phon_name = ANY' in p for p in plan.probes)
+    assert any('phon_words &&' in p for p in plan.probes)
     assert not any('phon_name %%' in p for p in plan.probes)
     plan = name.fuzzy_plan(parse({'mode': 'name', 'text': 'meyer',
                                   'categories': ['cat_poi_food_restaurant']}))
@@ -137,6 +137,15 @@ def test_a_typo_or_a_fragment_falls_back_to_the_fuzzy_search():
         assert 'Vaduz' in names(page), q
         assert {f['properties']['match_relevance'] for f in page['results']['features']} == {20}, q
         assert api.count(parse({'mode': 'name', 'text': q})) == page['total'], q
+
+
+def test_a_word_of_a_longer_name_is_found_by_its_sound():
+    """One code for the whole name ("fagobymeier") shared nothing with the
+    query's ("maier"), and the letters are too far apart for the trigram
+    channels, so a name was found by sound only when it was that one word."""
+    found = [row['name'] for row in fuzzy('Maier')]
+    assert 'Fago by meier' in found
+    assert any(n.startswith('Dr. Med. Wolfgang Meyer') for n in found)
 
 
 def test_nothing_like_any_name_finds_nothing():

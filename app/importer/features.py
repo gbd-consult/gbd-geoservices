@@ -191,7 +191,7 @@ def search_row(osm_id: int, result: Result, params: Params, tags: Mapping[str, s
     return (
         [osm_id], name, text.expand_street(name),
         join_unique(name, street, housenumber, postcode, city),
-        text.phonetic(name), text.normalize(city),
+        text.phonetic(name), text.phonetic_tokens(name), text.normalize(city),
         list(result.categories), result.category, result.importance, result.cls,
         street, housenumber, postcode, city,
         point, line, polygon, centre,
@@ -211,7 +211,7 @@ def address_row(osm_id: int, tags: Mapping[str, str], centre, category: str | No
     number, number_part = parsed if parsed else (None, None)
     search_street = text.expand_street(street)
     return (
-        osm_id, street, search_street, text.phonetic(search_street),
+        osm_id, street, search_street,
         tags.get('addr:postcode'), tags.get('addr:city'), housenumber,
         number, number_part, centre, None, None, category,
     )
@@ -229,7 +229,8 @@ def street_ends_row(osm_id: int, result: Result, params: Params, tags: Mapping[s
     name = tags['name']
     search_name = text.expand_street(name)
     return (osm_id, name, search_name, text.phonetic(search_name),
-            result.cls, result.category, params.rank(result.cls), first_node, last_node)
+            text.phonetic_tokens(search_name), result.cls, result.category,
+            params.rank(result.cls), first_node, last_node)
 
 
 def explode(osm_id: int, result: Result, params: Params, tags: Mapping[str, str],

@@ -92,8 +92,8 @@ def test_the_weight_params_cover_every_placeholder_in_the_scores(w):
 def test_a_channel_with_nothing_to_compare_contributes_zero():
     # An unpronounceable query has no phonetic codes; the term has to
     # disappear rather than multiply a weight by NULL.
-    assert rank.phonetic_term('o.phon_name', '%(p)s', False) == '0.0'
-    assert 'unnest' in rank.phonetic_term('o.phon_name', '%(p)s', True)
+    assert rank.phonetic_term('o.phon_name', 'o.phon_words', '%(p)s', False) == '0.0'
+    assert 'unnest' in rank.phonetic_term('o.phon_name', 'o.phon_words', '%(p)s', True)
 
 
 def test_the_spatial_clause_tests_each_geometry_column_separately():

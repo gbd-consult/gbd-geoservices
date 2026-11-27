@@ -162,24 +162,27 @@ def set_thresholds(conn, trgm: float, word: float) -> None:
 
 # --- score expressions ---------------------------------------------------
 
-def phonetic_term(column: str, param: str, enabled: bool) -> str:
+def phonetic_term(column: str, words: str, param: str, enabled: bool) -> str:
     """The phonetic channel: the best match against any of the query's codes.
 
-    An exact code match scores 1.0 outright rather than going through
-    similarity(): two equal codes are the strongest signal this channel
-    has, and trigram similarity understates it badly on strings this short
-    ("0678" vs "0687" scores 0.25 despite being a near miss).
+    A word of the row sounding like a word of the query (`words`, the row's
+    `text.phonetic_tokens`, sharing a code with `param`) scores 1.0
+    outright rather than going through similarity(): equal codes are the
+    strongest signal this channel has, and trigram similarity understates
+    it badly on strings this short ("0678" vs "0687" scores 0.25 despite
+    being a near miss). Otherwise the best similarity of the whole name's
+    code (`column`) to any of the query's.
 
-    The max() over `unnest` is what lets a query name two things at once
-    ("Rathaus Neuss") match a row named only one of them.
+    Code against code, word by word, is what lets a query name two things
+    at once ("Rathaus Neuss") match a row named only one of them, and
+    "Meyer" a row named "Bäckerei Maier".
     """
     if not enabled:
         return '0.0'
-    return f"""COALESCE((
-            SELECT max(CASE WHEN {column} = code THEN 1.0
-                            ELSE similarity({column}, code) END)
+    return f"""(CASE WHEN {words} && cast({param} as text[]) THEN 1.0 ELSE COALESCE((
+            SELECT max(similarity({column}, code))
             FROM unnest(cast({param} as text[])) AS code
-        ), 0.0)"""
+        ), 0.0) END)"""
 
 
 #: The row's importance (0-100) scaled into the score. A row without a
@@ -212,12 +215,13 @@ def name_score(*, has_phonetic: bool, spatial: bool) -> str:
     scoring but would match every row in a city if it were the whole
     channel.
     """
+    phonetic = phonetic_term('o.phon_name', 'o.phon_words', '%(q_phon_tokens)s', has_phonetic)
     return f"""
           %(w_similarity)s::real * similarity(o.search_name, %(q_name)s)
         + %(w_word_similarity)s::real * GREATEST(
               word_similarity(%(q_name)s, o.search_text),
               word_similarity(o.search_name, %(q_name)s))
-        + %(w_phonetic)s::real * {phonetic_term('o.phon_name', '%(q_phon_tokens)s', has_phonetic)}
+        + %(w_phonetic)s::real * {phonetic}
         + (CASE WHEN o.search_name = %(q_name)s THEN %(w_exact)s::real ELSE 0.0 END)
         + (CASE WHEN o.search_name LIKE %(q_prefix)s THEN %(w_prefix)s::real ELSE 0.0 END)
         + {inside_view_term(spatial)}

@@ -30,7 +30,7 @@ def search_schema(db, temp_schema):
 
 def add_street(db, schema, name, *, postcode=None, city=None, at=WEST):
     writer = TableWriter(db, schema, t.OSM_SEARCH_OBJECT)
-    writer.add(([1], name, name, name, 'X', city, ['highway'], 'highway', 80,
+    writer.add(([1], name, name, name, 'X', ['X'], city, ['highway'], 'highway', 80,
                 'cls_road_minor', None, None, postcode, city,
                 None, street_at(*at), None, shapely.Point(*at), None, None))
     writer.close()
@@ -42,7 +42,7 @@ def add_street(db, schema, name, *, postcode=None, city=None, at=WEST):
 
 def add_address(db, schema, street, *, postcode=None, city=None, at=WEST, osm_id=99):
     writer = TableWriter(db, schema, t.OSM_SEARCH_ADDRESS)
-    writer.add((osm_id, street, street, 'X', postcode, city, '1', 1, None,
+    writer.add((osm_id, street, street, postcode, city, '1', 1, None,
                 shapely.Point(*at), None, None, None))
     writer.close()
 
@@ -51,7 +51,7 @@ def test_id_object_links_to_the_carrier(db, search_schema):
     # The reason osm_search_address carries osm_id at all: the search row's
     # id is a serial the database assigned, so this is the only handle.
     writer = TableWriter(db, search_schema, t.OSM_SEARCH_OBJECT)
-    writer.add(([4242], 'Rathaus', 'rathaus', 'rathaus', 'X', None,
+    writer.add(([4242], 'Rathaus', 'rathaus', 'rathaus', 'X', ['X'], None,
                 ['cat_poi'], 'cat_poi', 80, 'cls_poi_public', None, None, None, None,
                 None, None, shapely.MultiPolygon([[[(10.0, 54.0), (10.1, 54.0),
                                                     (10.1, 54.1), (10.0, 54.0)]], ]),
@@ -92,7 +92,7 @@ def test_only_streets_reach_the_street_dictionary(db, search_schema, classifier)
     writer = TableWriter(db, search_schema, t.OSM_SEARCH_OBJECT)
     for name, cls in [('muehlbach', 'cls_waterway_stream'), ('nordbahn', 'cls_rail_rail'),
                       ('namenlos', None)]:
-        writer.add(([9], name, name, name, 'X', None, ['x'], 'x', 20, cls,
+        writer.add(([9], name, name, name, 'X', ['X'], None, ['x'], 'x', 20, cls,
                     None, None, None, None, None, street_at(*EAST), None,
                     shapely.Point(*EAST), None, None))
     writer.close()

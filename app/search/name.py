@@ -85,10 +85,10 @@ def fuzzy_plan(req, *, narrowed: bool = False) -> rank.Plan:
             '%(q_name)s <%% o.search_name',
         ]
         if q_phon_tokens:
-            # Exact phonetic hits: a btree `= ANY(...)` lookup, the
-            # cheapest probe here, and the one that answers "Maier" for
-            # "Meyer" outright rather than by degrees.
-            probes.append('o.phon_name = ANY(%(q_phon_tokens)s)')
+            # Exact phonetic hits, word against word: a GIN lookup, and the
+            # one that answers "Maier" -- or "Bäckerei Maier" -- for "Meyer"
+            # outright rather than by degrees.
+            probes.append('o.phon_words && %(q_phon_tokens)s')
         if q_phon and (narrowed or categories):
             # Near-miss codes -- a typo bad enough to change the code.
             # Only where something else narrows the probe: codes are digit

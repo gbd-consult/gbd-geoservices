@@ -142,27 +142,35 @@ def phonetic(value: str | None) -> str:
     return koelner_phonetik(normalize(value).replace(' ', ''))
 
 
-def phonetic_tokens(value: str | None) -> list[str]:
-    """Phonetic codes to compare a query against: one per word, plus the
-    code of the whole string joined.
+#: Words shorter than this get no code of their own in `phonetic_tokens`:
+#: "am", "der", "St" code to one or two digits that half the names share,
+#: and a probe on them would match half the table.
+MIN_PHONETIC_WORD = 4
 
-    A single code for a multi-word query is too blunt. "Rathaus Neuss"
-    codes as one string that matches neither a row named "Rathaus" nor one
-    named "Neuss", even though it names both. Scoring against the *best*
-    of the per-word codes finds either, while the joined code still
-    handles the compound the user split ("Haupt Strasse").
+
+def phonetic_tokens(value: str | None) -> list[str]:
+    """The phonetic codes of a name or a query: the whole string joined, and
+    each word of at least `MIN_PHONETIC_WORD` letters.
+
+    Both sides use it -- the importer stores a row's as `phon_words`, the
+    query probes them with `&&` -- so a word sounding like a word of the
+    other side is a match. One code for the whole string is too blunt:
+    "Bäckerei Maier" codes as 14767 and "Meyer" as 67, so the bakery was
+    never found by sound, and "Rathaus Neuss" matched neither a row named
+    "Rathaus" nor one named "Neuss". The joined code still handles the
+    compound split one way and typed the other ("Haupt Strasse").
 
     Deduplicated and empty-code-free, so the array can go straight into an
-    `= ANY(...)` probe.
+    `&&` probe.
     """
     normalized = normalize(value)
     if not normalized:
         return []
 
     words = normalized.split(' ')
-    codes = [koelner_phonetik(word) for word in words]
+    codes = [koelner_phonetik(normalized.replace(' ', ''))]
     if len(words) > 1:
-        codes.append(koelner_phonetik(normalized.replace(' ', '')))
+        codes += [koelner_phonetik(word) for word in words if len(word) >= MIN_PHONETIC_WORD]
 
     seen: list[str] = []
     for code in codes:

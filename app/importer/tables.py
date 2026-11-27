@@ -243,6 +243,7 @@ OSM_SEARCH_OBJECT = Table('osm_search_object', (
     ('search_name', 'text'),
     ('search_text', 'text'),
     ('phon_name', 'text'),
+    ('phon_words', 'text[]'),                # text.phonetic_tokens: the whole name and each word
     ('search_city', 'text'),
     ('categories', 'text[] not null'),       # matched leaves plus all ancestors
     ('category', 'text'),                    # the first rule that matched
@@ -283,6 +284,9 @@ OSM_SEARCH_OBJECT = Table('osm_search_object', (
     'using gin (phon_name gin_trgm_ops)',
     'using btree (search_name)',
     'using btree (phon_name)',
+    # The phonetic probe, `phon_words && query codes`: a word of the name
+    # that sounds like a word of the query.
+    'using gin (phon_words)',
     'using btree (category)',
     # `location IN query.place` ANDs `id_places && places` into every text
     # probe. Without this index the place is a filter on the heap: on
@@ -309,7 +313,6 @@ OSM_SEARCH_ADDRESS = Table('osm_search_address', (
     ('osm_id', 'bigint not null'),
     ('street', 'text'),
     ('search_street', 'text'),
-    ('phon_street', 'text'),
     ('postcode', 'text'),
     ('city', 'text'),
     ('housenumber', 'text'),
@@ -358,6 +361,7 @@ STREET_ENDS = Table('_street_ends', (
     ('name', 'text not null'),
     ('search_name', 'text not null'),
     ('phon_name', 'text'),
+    ('phon_words', 'text[]'),
     ('class', 'text not null'),
     ('category', 'text'),        # carried so the merged row needs no reclassification
     ('rank', 'smallint not null'),  # z_order's class rank, the tie-break between ways of a street

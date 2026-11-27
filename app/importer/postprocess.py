@@ -242,6 +242,7 @@ def merge_streets(conn, schema: str, classifier) -> int:
             select c.component, e.search_name,
                    array_agg(distinct e.osm_id) ids,
                    min(e.name) name, min(e.phon_name) phon_name,
+                   min(e.phon_words) phon_words,
                    (array_agg(e.category order by w.importance desc nulls last, e.rank desc,
                               e.class, e.category, e.osm_id))[1] category,
                    (array_agg(e.class order by w.importance desc nulls last, e.rank desc,
@@ -254,11 +255,11 @@ def merge_streets(conn, schema: str, classifier) -> int:
             group by c.component, e.search_name
         )
         insert into {target}
-            (osm_ids, name, search_name, search_text, phon_name, search_city,
+            (osm_ids, name, search_name, search_text, phon_name, phon_words, search_city,
              categories, category, importance, class,
              addr_street, addr_housenumber, addr_postcode, addr_city,
              geom_point, geom_line, geom_polygon, geom_center, tags)
-        select m.ids, m.name, m.search_name, m.search_name, m.phon_name, null,
+        select m.ids, m.name, m.search_name, m.search_name, m.phon_name, m.phon_words, null,
                coalesce(x.categories, '{{}}'), m.category, x.importance, m.class,
                null, null, null, null,
                null, m.geom, null,
