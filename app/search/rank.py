@@ -55,6 +55,7 @@ class Weights:
     similarity: float
     word_similarity: float
     phonetic: float
+    phonetic_word_share: float
     exact_bonus: float
     prefix_bonus: float
     # shared
@@ -79,6 +80,7 @@ class Weights:
             similarity=float(name['similarity']),
             word_similarity=float(name['word_similarity']),
             phonetic=float(name['phonetic']),
+            phonetic_word_share=float(name['phonetic_word_share']),
             exact_bonus=float(name['exact_bonus']),
             prefix_bonus=float(name['prefix_bonus']),
             min_score=float(values['min_score']),
@@ -102,6 +104,7 @@ class Weights:
             'w_similarity': self.similarity,
             'w_word_similarity': self.word_similarity,
             'w_phonetic': self.phonetic,
+            'w_phonetic_word': self.phonetic_word_share,
             'w_exact': self.exact_bonus,
             'w_prefix': self.prefix_bonus,
             'w_inside': self.inside_view_bonus,
@@ -167,13 +170,16 @@ def set_thresholds(conn, trgm: float, word: float) -> None:
 def phonetic_term(column: str, words: str, param: str, enabled: bool) -> str:
     """The phonetic channel: the best match against any of the query's codes.
 
-    A word of the row sounding like a word of the query (`words`, the row's
-    `text.phonetic_tokens`, sharing a code with `param`) scores 1.0
-    outright rather than going through similarity(): equal codes are the
-    strongest signal this channel has, and trigram similarity understates
-    it badly on strings this short ("0678" vs "0687" scores 0.25 despite
-    being a near miss). Otherwise the best similarity of the whole name's
-    code (`column`) to any of the query's.
+    The whole name sounding like the query or a word of it (`column`, one
+    of `param`'s codes) scores 1.0 outright rather than going through
+    similarity(): equal codes are the strongest signal this channel has,
+    and trigram similarity understates it badly on strings this short
+    ("0678" vs "0687" scores 0.25 despite being a near miss). A word of the
+    name sounding like one of the query (`words`, the row's
+    `text.phonetic_tokens`) scores `ranking.name.phonetic_word_share`:
+    weaker, since the rest of the name is unaccounted for -- at 1.0
+    "Heide (Holstein)" went ahead of "Holstendamm" for "holsten". Otherwise
+    the best similarity of the whole name's code to any of the query's.
 
     Code against code, word by word, is what lets a query name two things
     at once ("Rathaus Neuss") match a row named only one of them, and
@@ -181,7 +187,9 @@ def phonetic_term(column: str, words: str, param: str, enabled: bool) -> str:
     """
     if not enabled:
         return '0.0'
-    return f"""(CASE WHEN {words} && cast({param} as text[]) THEN 1.0 ELSE COALESCE((
+    return f"""(CASE WHEN {column} = ANY(cast({param} as text[])) THEN 1.0
+            WHEN {words} && cast({param} as text[]) THEN %(w_phonetic_word)s::real
+            ELSE COALESCE((
             SELECT max(similarity({column}, code))
             FROM unnest(cast({param} as text[])) AS code
         ), 0.0) END)"""

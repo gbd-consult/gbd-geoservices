@@ -128,12 +128,15 @@ STREET_LOOKUP = 'SELECT search_street FROM {streets} WHERE search_street = ANY(%
 #: sound like it (the codes' btrees) or share trigrams with it at
 #: pg_trgm.similarity_threshold (the trigram GINs), with their similarity,
 #: for `parse_corrected` to keep the closest of each kind. Terms are
-#: compared as typed, places and streets with street suffixes written out,
-#: as each is stored.
+#: compared as typed, and only in the request's language: a typo is in the
+#: language the user writes, and "universitaet" read as the English
+#: "university" took "Universität Kiel" from the university's own name.
+#: Places and streets are compared with street suffixes written out, as
+#: each is stored.
 CORRECTION_LOOKUP = """
     SELECT s.span, 'term' AS kind, t.term AS corrected, similarity(t.term, s.span) AS sim
     FROM unnest(%(spans)s::text[], %(codes)s::text[]) AS s(span, code)
-    JOIN {terms} t ON t.phon_term = s.code OR t.term %% s.span
+    JOIN {terms} t ON (t.phon_term = s.code OR t.term %% s.span) AND t.lang = %(lang)s
     UNION ALL
     SELECT s.span, 'place', o.search_name, similarity(o.search_name, s.xspan)
     FROM unnest(%(spans)s::text[], %(xspans)s::text[], %(xcodes)s::text[]) AS s(span, xspan, xcode)
@@ -333,7 +336,8 @@ def parse_corrected(conn, statement, query: str, lang: str, w: rank.Weights,
                and span.replace(' ', '').isalpha()]
     if not unknown:
         return ()
-    alias = _corrections(conn, statement, [span for *_, span in unknown], w, word_threshold)
+    alias = _corrections(conn, statement, [span for *_, span in unknown], lang, w,
+                         word_threshold)
     if not any(alias.values()):
         return ()
     fixed = _parts(conn, statement, tokens, unknown, lang, alias)
@@ -410,7 +414,7 @@ def _readings(tokens, categories, places, streets, corrected=None) -> list[Readi
     return out
 
 
-def _corrections(conn, statement, typed: list[str], w: rank.Weights,
+def _corrections(conn, statement, typed: list[str], lang: str, w: rank.Weights,
                  word_threshold: float) -> dict[str, dict[str, str]]:
     """{kind: {span: the closest term, place or street to it}}."""
     expanded = [text.expand_street(span) for span in typed]
@@ -426,11 +430,16 @@ def _corrections(conn, statement, typed: list[str], w: rank.Weights,
         'xspans': expanded, 'xcodes': [text.phonetic(span) for span in expanded],
         'sspans': [span for span, _ in streets], 'sxspans': [x for _, x in streets],
         'sxcodes': [text.phonetic(x) for _, x in streets],
-        'place_categories': list(place_mode.PLACE_CATEGORIES),
+        'place_categories': list(place_mode.PLACE_CATEGORIES), 'lang': lang,
     }).fetchall()
     best: dict[str, dict[str, tuple[float, str]]] = {'term': {}, 'place': {}, 'street': {}}
     for row in rows:
         if row['sim'] < w.phrase_correct_min_similarity:
+            continue
+        # A word inside a longer one is no typo of it: "universitaet" is not
+        # the "universitaetscampus" its trigrams are closest to.
+        as_stored = row['span'] if row['kind'] == 'term' else text.expand_street(row['span'])
+        if as_stored in row['corrected']:
             continue
         current = best[row['kind']].get(row['span'])
         if current is None or (row['sim'], current[1]) > (current[0], row['corrected']):

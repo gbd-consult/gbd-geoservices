@@ -384,6 +384,16 @@ def test_a_corrected_word_beside_a_name_is_left_to_the_name_rules():
     assert not any('corrected' in i for i in page['interpretation'])
 
 
+def test_a_word_inside_a_longer_term_is_not_corrected_to_it():
+    """"universitaet" is no category term, and its trigrams are closest to
+    "universitaetscampus" -- read so, the universities in Kiel went ahead
+    of the university's own name on de_sh. Nor is it the English
+    "university": a typo is in the language the user writes."""
+    page = find('Universität Vaduz')
+    assert not any('corrected' in i for i in page['interpretation'])
+    assert any('Universität Liechtenstein' in n for n in names(page))
+
+
 def test_a_misspelt_street_still_finds_the_house():
     """At 40 the street alone was found by name and ended the search; the
     address with its typo comes first now."""

@@ -133,6 +133,9 @@ ranking:                    # the name score; DESIGN.md "Relevance and score"
     similarity: 0.40
     word_similarity: 0.35
     phonetic: 0.25
+    # The phonetic channel's value when only a word of the name sounds like the query's,
+    # not the whole name (search/rank.py `phonetic_term`); the whole name is 1.0.
+    phonetic_word_share: 0.5
     exact_bonus: 0.30
     prefix_bonus: 0.10
   min_score: 0.15
