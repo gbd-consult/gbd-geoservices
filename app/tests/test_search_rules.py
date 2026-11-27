@@ -164,6 +164,18 @@ def test_every_rule_stays_off_a_sequential_scan():
     assert covered == object_rules
 
 
+def test_a_misspelt_street_is_read_as_the_closest_street_only():
+    """Every street at the trigram threshold read "Schildergasse 10 Köln"
+    -- a real street, its 10 in Geseke -- as "Schemmergasse 10" on de_nrw,
+    ahead of the Schildergasse itself. A street the dictionary holds is
+    not misspelt, and one that is reads as the closest."""
+    from search import address
+    req = parse_request({'mode': 'phrase', 'text': 'x'})
+    readings = phrase.parse_address('Schildergase 10 Köln')
+    query, _ = address.build_sql(readings, req, count_only=False, limit=10, street_like=True)
+    assert 'NOT EXISTS' in query and 'LIMIT 1' in query
+
+
 @pytest.mark.usefixtures('small')
 @pytest.mark.parametrize('street_like', [False, True])
 def test_the_address_rules_stay_off_a_sequential_scan(street_like):

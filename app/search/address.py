@@ -109,11 +109,18 @@ def from_request(req) -> Address | None:
                    city=text.normalize(req.city) or None)
 
 
-#: A street matched fuzzily: the names in the street dictionary similar to
-#: it, by its trigram index, then each by equality as usual. The address
-#: table has no trigram index of its own, and needs none.
-LIKE_STREET = ('a.search_street = ANY(ARRAY(SELECT st.search_street FROM {{streets}} st'
-               ' WHERE st.search_street %% %(street_{i})s))')
+#: A street matched fuzzily: the name in the street dictionary closest to
+#: it, by its trigram index, then by equality as usual. The address table
+#: has no trigram index of its own, and needs none. Only a street the
+#: dictionary does not hold is misspelt, and only as the closest one: every
+#: street of the threshold read "Schildergasse 10 Köln" -- a real street,
+#: its 10 in Geseke -- as "Schemmergasse 10" ahead of the Schildergasse.
+LIKE_STREET = ('a.search_street = (SELECT st.search_street FROM {{streets}} st'
+               ' WHERE st.search_street %% %(street_{i})s'
+               ' AND NOT EXISTS (SELECT 1 FROM {{streets}} k'
+               ' WHERE k.search_street = %(street_{i})s)'
+               ' ORDER BY similarity(st.search_street, %(street_{i})s) DESC,'
+               ' st.n DESC, st.search_street LIMIT 1)')
 
 
 def _reading(i: int, address: Address, street_like: bool = False) -> tuple[str, dict]:
