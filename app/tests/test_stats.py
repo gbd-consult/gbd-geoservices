@@ -98,8 +98,9 @@ def test_ips_and_search_terms_are_gone_after_request_log_days(store, monkeypatch
 
 
 def test_key_requests_are_gone_after_seven_days_whatever_request_log_days(store, monkeypatch):
-    """An e-mail address from the trial key form lasts at most what the
-    privacy policy states for the logs, however short the request log is set."""
+    """An e-mail address from the trial key form, given without consent to
+    offers, lasts at most what the privacy policy states for the logs,
+    however short the request log is set."""
     retention(monkeypatch, 1)
     today = datetime.date(2026, 10, 28)
     stats.keys.ensure(store)
@@ -108,7 +109,8 @@ def test_key_requests_are_gone_after_seven_days_whatever_request_log_days(store,
         store.execute(f'insert into {SCHEMA}.key_request (ts, email) values (%s, %s)',
                       (at(day), email))
     stats.daily(today)
-    left = [r[0] for r in store.execute(f'select email from {SCHEMA}.key_request').fetchall()]
+    left = [r[0] for r in store.execute(f'select email from {SCHEMA}.key_request'
+                                        ' where email is not null').fetchall()]
     assert left == ['neu@x.de']
 
 

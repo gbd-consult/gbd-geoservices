@@ -78,9 +78,12 @@ landing.organisation:
 landing.request_key:
   de: Testschlüssel anfragen
   en: Request a trial key
+landing.consent:
+  de: Freiwillig - Ich bin einverstanden, dass meine E-Mail-Adresse und mein Name {days} Tage gespeichert werden, damit Sie mir per E-Mail ein Angebot schicken können. Den Testschlüssel erhalte ich auch ohne. Widerruf jederzeit per E-Mail an den Betreiber.
+  en: Optional - I agree that my e-mail address and name are stored for {days} days so that you can send me an offer by e-mail. I get the trial key without this too. I can withdraw at any time by e-mail to the operator.
 landing.key_request_privacy:
-  de: Die Angaben werden nur zur Bearbeitung der Anfrage gespeichert und danach, spätestens nach {days} Tagen, gelöscht.
-  en: The details are stored only to deal with the request and deleted afterwards, after {days} days at the latest.
+  de: Ohne Einwilligung werden E-Mail-Adresse und Name nur zur Bearbeitung der Anfrage gespeichert und danach, spätestens nach {days} Tagen, gelöscht. Damit ein Testschlüssel nicht mehrfach angefragt wird, bleibt ein nicht umkehrbarer, verschlüsselter Hashwert von beiden {hash_days} Tage gespeichert.
+  en: Without consent, the e-mail address and name are stored only to deal with the request and deleted afterwards, after {days} days at the latest. So that a trial key is not requested repeatedly, an irreversible keyed hash of both is kept for {hash_days} days.
 landing.key_request_sent:
   de: Danke, Ihre Anfrage ist eingegangen.
   en: Thank you, your request has been received.

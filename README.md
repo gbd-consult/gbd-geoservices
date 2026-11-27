@@ -40,7 +40,7 @@ The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik)
    `config/` is git-ignored: it holds the database password. Fill in:
 
    - `config/options.yaml` -- `host` (the public host name), and `serve_area` (which area this server serves).
-   - `config/postgres.env` -- a strong `POSTGRES_PASSWORD`.
+   - `config/postgres.env` -- a strong `POSTGRES_PASSWORD`, and `KEY_REQUEST_SECRET` (`openssl rand -hex 32`), set once and never changed: a new one no longer recognises earlier trial key requests.
    - `config/Caddyfile` -- the same host name, and an e-mail address for the TLS certificate.
    - `config/postgresql.conf` -- memory settings (`shared_buffers` and the like) for the host.
 
@@ -103,7 +103,9 @@ The two newest complete imports of an area are kept, and the one the running app
 | client IP, URL (without the key), referrer, user agent | `data/log/caddy.log` | 7 days | logrotate and journald, as `setup.sh` sets them up |
 | a slow search's text; a slow statement with its parameters | `data/log/app.log`, `postgres.log` | 7 days | the same |
 | client IP, key and, for a search, its terms, per API request | table `service.request_log` | `request_log_days` (1-7, today included) | the app, every night shortly after midnight UTC |
-| e-mail address and name or company from the trial key form | table `service.key_request` | until the operator marks it done, at most 7 days | the operator (`key-request-done`), else the app every night |
+| e-mail address and name or company from the trial key form, without consent to offers | table `service.key_request` | until the operator marks it done, at most 7 days | the operator (`key-request-done`), else the app every night |
+| the same, with consent to offers by e-mail | table `service.key_request` | 90 days | the app every night; the operator on withdrawal (`key-contact-withdraw`) |
+| HMACs of e-mail address and name, to recognise a repeated trial request | table `service.key_request` | 365 days | the app every night |
 | a key's name, customer and allowed referrers; its requests per month | tables `service.api_key`, `service.key_usage` | as long as the key is registered | the operator, by hand: `key-disable` blocks a key but deletes nothing |
 
 The daily and monthly figures (`service.daily_stats`, `daily_host`, `data/stats/`) hold counts only, no IPs and no search terms. Nothing else is kept about a request: no cookies, no tracking, no analytics.
@@ -157,7 +159,7 @@ echo "$KEY" | ./manage.sh key-register old-client   # a key a client already has
 ```
 
 - `--scopes`: `tiles`, `search` and/or `devtools`; none means `tiles` and `search`. `devtools` opens the viewer's data and is given only by name, to our own keys. `--referrers`: only from these pages (matched against `Origin` and `Referer`). `--rate`: requests per minute.
-- Trial key requests from the landing page's form wait in the database: `./manage.sh key-requests` lists them, `key-add <name> --customer <company> --trial` issues the key, you send the link to the address, and `./manage.sh key-request-done <id>` deletes the request. The app logs each new request (`key request <id>: waiting` in `app.log`) and deletes requests older than 7 days by itself. An address already waiting is not stored twice, one IP may send 3 requests an hour (counted in memory only, the IP is not stored), and with 100 open requests the form refuses more.
+- Trial key requests from the landing page's form wait in the database: `./manage.sh key-requests` lists them, `key-add <name> --customer <company> --trial` issues the key, you send the link to the address, and `./manage.sh key-request-done <id>` closes the request. `REPEAT` in the list means the address or name asked within the last year: no second trial key. The form has an optional box for consent to offers by e-mail; the key does not depend on it. Without consent, done deletes the address and name; with it, they stay 90 days, and `./manage.sh key-contacts` lists them for the offer. A requester who withdraws: `./manage.sh key-contact-withdraw <email>`. The app logs each new request (`key request <id>: waiting` in `app.log`) and closes requests older than 7 days by itself. An address already waiting is not stored twice, one IP may send 3 requests an hour (counted in memory only, the IP is not stored), and with 100 open requests the form refuses more.
 - `--trial` makes a key valid for 30 days, `--expires YYYY-MM-DD` until that day. An expired or disabled key is refused with 403. Changes take effect within 30 seconds, without a reload.
 - Every request with a key is counted per month: successful tile requests (XYZ, WMTS, WMS) and search requests apart, and every request answered with an error (status 400 or above, the key's own refusals included) as `errors`. A WMS map counts as one request, whatever its size up to `wms_max_px`. `usage-export` writes `key;customer;month;tiles;search;errors` for every key. The app writes the same file for every finished month itself, as `data/stats/usage-YYYY-MM.csv` shortly after midnight UTC on the 1st (with `request_log` on); `usage-export` is for a month by hand.
 

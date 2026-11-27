@@ -12,6 +12,8 @@
     python tools/manage.py key-disable <name> | key-enable <name>
     python tools/manage.py key-requests
     python tools/manage.py key-request-done <id>
+    python tools/manage.py key-contacts
+    python tools/manage.py key-contact-withdraw <email>
     python tools/manage.py usage-export <yyyy-mm>
     python tools/manage.py stats-daily
     python tools/manage.py stats-export <yyyy-mm>
@@ -201,21 +203,41 @@ def cmd_key_requests(args: argparse.Namespace) -> int:
     """The trial key requests from the landing page that wait for an answer."""
     from lib import keys
 
-    print('id\tasked\temail\torganisation')
-    for request_id, ts, email, organisation in keys.requests():
-        print(f'{request_id}\t{ts:%Y-%m-%d %H:%M}\t{email}\t{organisation or ""}')
+    print('id\tasked\temail\torganisation\tconsent\trepeat')
+    for request_id, ts, email, organisation, consent, repeat in keys.requests():
+        print(f'{request_id}\t{ts:%Y-%m-%d %H:%M}\t{email}\t{organisation or ""}'
+              f'\t{"yes" if consent else "no"}\t{"REPEAT" if repeat else ""}')
     return 0
 
 
 def cmd_key_request_done(args: argparse.Namespace) -> int:
-    """Delete a request once its key is sent, or it is turned down."""
+    """Close a request once its key is sent, or it is turned down."""
     from lib import keys
 
     if not keys.request_done(args.id):
         print(f'no key request {args.id}', file=sys.stderr)
         return 1
-    print(f'key request {args.id} deleted', file=sys.stderr)
+    print(f'key request {args.id} done', file=sys.stderr)
     return 0
+
+
+def cmd_key_contacts(args: argparse.Namespace) -> int:
+    """The trial key requesters who consented to offers by e-mail."""
+    from lib import keys
+
+    print('asked\temail\torganisation')
+    for ts, email, organisation in keys.contacts():
+        print(f'{ts:%Y-%m-%d}\t{email}\t{organisation or ""}')
+    return 0
+
+
+def cmd_key_contact_withdraw(args: argparse.Namespace) -> int:
+    """Withdraw an address's consent to offers."""
+    from lib import keys
+
+    count = keys.contact_withdraw(args.email)
+    print(f'{count} requests of {args.email} without consent now', file=sys.stderr)
+    return 0 if count else 1
 
 
 def cmd_usage_export(args: argparse.Namespace) -> int:
@@ -402,12 +424,21 @@ def parser() -> argparse.ArgumentParser:
         'key-requests', help='list the trial key requests from the landing page',
         description='Answer each with `key-add <name> --customer <organisation> --trial`, send '
                     'the link to the e-mail address, then `key-request-done <id>`; a request '
-                    f'is deleted after {stats.MAX_RETENTION_DAYS} days in any case.',
+                    f'closes after {stats.MAX_RETENTION_DAYS} days in any case. REPEAT: the '
+                    'address or name asked before (within a year); no second trial key.',
     ).set_defaults(func=cmd_key_requests)
     done = commands.add_parser('key-request-done',
-                               help='delete a trial key request once dealt with')
+                               help='close a trial key request once dealt with; without '
+                                    'consent its address and name go')
     done.add_argument('id', type=int)
     done.set_defaults(func=cmd_key_request_done)
+    commands.add_parser(
+        'key-contacts', help='list the trial key requesters who consented to offers by e-mail',
+    ).set_defaults(func=cmd_key_contacts)
+    withdraw = commands.add_parser('key-contact-withdraw',
+                                   help='withdraw an address\'s consent to offers')
+    withdraw.add_argument('email')
+    withdraw.set_defaults(func=cmd_key_contact_withdraw)
 
     usage = commands.add_parser(
         'usage-export', help='export a month\'s requests per key as CSV',
