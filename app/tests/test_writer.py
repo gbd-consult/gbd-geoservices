@@ -90,7 +90,7 @@ def test_arrays_and_jsonb_round_trip(db, temp_schema):
     db.execute(t.ddl(temp_schema, t.OSM_SEARCH_OBJECT))
     writer = TableWriter(db, temp_schema, t.OSM_SEARCH_OBJECT)
     tags = {'name': 'Zur\tPost', 'amenity': 'pub', 'note': 'a "quoted" \\ thing'}
-    writer.add(([12, -34], 'Zur\tPost', 'zur post', 'zur post', '87284', None,
+    writer.add(([12, -34], 'Zur\tPost', 'zur post', 'zur post', '87284', ['87284'], None,
                 ['amenity', 'amenity_pub'], 'amenity_pub', 60, 'poi_pub',
                 None, None, None, None,
                 shapely.Point(9.5, 54.5), None, None, shapely.Point(9.5, 54.5),
@@ -114,7 +114,7 @@ def test_serial_id_is_filled_by_the_database(db, temp_schema):
     db.execute(t.ddl(temp_schema, t.OSM_SEARCH_OBJECT))
     writer = TableWriter(db, temp_schema, t.OSM_SEARCH_OBJECT)
     for i in range(3):
-        writer.add(([i], f'n{i}', None, None, None, None, [], None, None, None,
+        writer.add(([i], f'n{i}', None, None, None, None, None, [], None, None, None,
                     None, None, None, None, shapely.Point(9, 54), None, None,
                     shapely.Point(9, 54), None, None))
     writer.close()
@@ -126,7 +126,7 @@ def test_null_geometry_stays_null(db, temp_schema):
     db.execute(t.ddl(temp_schema, t.OSM_SEARCH_OBJECT))
     writer = TableWriter(db, temp_schema, t.OSM_SEARCH_OBJECT)
     line = shapely.MultiLineString([[(9, 54), (9.1, 54.1)]])
-    writer.add(([1], 'Street', None, None, None, None, [], None, None, None,
+    writer.add(([1], 'Street', None, None, None, None, None, [], None, None, None,
                 None, None, None, None, None, line, None, shapely.Point(9, 54), None, None))
     writer.close()
     row = db.execute(

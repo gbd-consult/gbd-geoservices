@@ -85,7 +85,7 @@ Each section is sorted by importance, most important first. Items are numbered a
 67. **The object lookup for address hits** (one more query per page) is not measured.
 69. **`osm_category_term.lang` has an interim rule**: the request's language first, then the longest match. A long term in one language loses to a short one in the other.
 70. **Paging is `OFFSET`-based**; deep pages over a large result are linear.
-71. **No spell correction and no synonyms** beyond the categories' terms and `model/abbreviations.yaml`.
+71. **No synonyms** beyond the categories' terms and `model/abbreviations.yaml`. **Spell correction only without a name**: the phrase mode's corrected pass reads a misspelt category, place or street only in a reading with no name left over; "Kunstmusem Lichtenstein" (a name in a misspelt place) is left to the fuzzy text step, which finds it by the name. A misspelt word is corrected when it is at least `text.MIN_PHONETIC_WORD` letters long and a single span; two typos in one place name ("Bad Oeinhusen") are not tried.
 
 ## Web and operations
 

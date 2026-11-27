@@ -122,9 +122,9 @@ def add_way(db, schema, params, osm_id, cls, category, n1, n2, name='Kölner Str
     db.execute(f'insert into {schema}.osm_line (osm_id, class, name, z_order, minzoom, geom) '
                f"values (%s, %s, %s, 0, 0, st_geomfromtext('LINESTRING({x} 0, {x + 10} 0)', 3857))",
                (osm_id, cls, name))
-    db.execute(f'insert into {schema}._street_ends values (%s, %s, %s, %s, %s, %s, %s, %s, %s)',
-               (osm_id, name, search_name, text.phonetic(search_name), cls, category,
-                params.rank(cls), n1, n2))
+    db.execute(f'insert into {schema}._street_ends values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+               (osm_id, name, search_name, text.phonetic(search_name),
+                text.phonetic_tokens(search_name), cls, category, params.rank(cls), n1, n2))
 
 
 def merge(schema, classifier) -> int:

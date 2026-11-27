@@ -41,7 +41,7 @@ def add_object(db, schema, name, category, *, cls=None, point=None, line=None, p
     # Stored with every ancestor, as the importer stores them.
     ancestors = ['_'.join(parts[:n]) for n in range(2, len(parts) + 1)]
     writer = TableWriter(db, schema, t.OSM_SEARCH_OBJECT)
-    writer.add(([osm_id], name, search_name or name, name, 'X', None,
+    writer.add(([osm_id], name, search_name or name, name, 'X', ['X'], None,
                 ancestors, category, importance, cls,
                 None, None, None, None,
                 point, line, polygon, geometry.representative_point(),
@@ -62,7 +62,7 @@ def add_area(db, schema, name, level, box, **kw):
 
 def add_address(db, schema, lon, lat):
     writer = TableWriter(db, schema, t.OSM_SEARCH_ADDRESS)
-    writer.add((1, 'strasse_1', 'strasse_1', 'X', None, None, '1', 1, None,
+    writer.add((1, 'strasse_1', 'strasse_1', None, None, '1', 1, None,
                 shapely.Point(lon, lat), None, None, None))
     writer.close()
     return db.execute(f'select max(id) from {schema}.osm_search_address').fetchone()[0]
