@@ -60,6 +60,9 @@ def test_a_narrowed_text_query_probes_every_channel():
     assert any('search_name %%' in p for p in plan.probes)          # letters
     assert any('<%% o.search_name' in p for p in plan.probes)       # fragment
     assert any('phon_words &&' in p for p in plan.probes)          # exact code, per word
+    # The whole query against the names' words, never each of its words:
+    # "TH Köln" took in every name with a word "Köln" on de_nrw.
+    assert not any('phon_words && %(q_phon_tokens)s' in p for p in plan.probes)
     assert any('phon_name %%' in p for p in plan.probes)            # near code
 
 

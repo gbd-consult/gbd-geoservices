@@ -288,7 +288,7 @@ def resolve_id_object(conn, schema: str) -> int:
 
 def build_dictionaries(conn, schema: str, classifier, languages,
                        street_classes) -> dict[str, int]:
-    """osm_street and osm_category_term.
+    """osm_street, osm_place_name and osm_category_term.
 
     Street matching runs against the small distinct-name table rather than
     the main one; the term dictionary is what lets the phrase
@@ -311,6 +311,17 @@ def build_dictionaries(conn, schema: str, classifier, languages,
     """).format(street=_table(schema, 'osm_street'),
                 objects=_table(schema, 'osm_search_object')),
         {'classes': list(street_classes)}).rowcount
+
+    from search.place import PLACE_CATEGORIES
+    counts['osm_place_name'] = conn.execute(sql.SQL("""
+        insert into {place} (search_name, phon_name)
+        select search_name, min(phon_name)
+        from {objects}
+        where categories && %(categories)s and search_name <> ''
+        group by search_name
+    """).format(place=_table(schema, 'osm_place_name'),
+                objects=_table(schema, 'osm_search_object')),
+        {'categories': list(PLACE_CATEGORIES)}).rowcount
 
     from lib import text as text_module
     rows = set()

@@ -138,10 +138,10 @@ CORRECTION_LOOKUP = """
     FROM unnest(%(spans)s::text[], %(codes)s::text[]) AS s(span, code)
     JOIN {terms} t ON (t.phon_term = s.code OR t.term %% s.span) AND t.lang = %(lang)s
     UNION ALL
-    SELECT s.span, 'place', o.search_name, similarity(o.search_name, s.xspan)
-    FROM unnest(%(spans)s::text[], %(xspans)s::text[], %(xcodes)s::text[]) AS s(span, xspan, xcode)
-    JOIN {objects} o ON (o.phon_name = s.xcode OR o.search_name %% s.xspan)
-                    AND o.categories && %(place_categories)s
+    SELECT s.span, 'place', p.search_name, similarity(p.search_name, s.xspan)
+    FROM unnest(%(pspans)s::text[], %(pxspans)s::text[], %(pxcodes)s::text[])
+         AS s(span, xspan, xcode)
+    JOIN {places} p ON p.phon_name = s.xcode OR p.search_name %% s.xspan
     UNION ALL
     SELECT s.span, 'street', st.search_street, similarity(st.search_street, s.xspan)
     FROM unnest(%(sspans)s::text[], %(sxspans)s::text[], %(sxcodes)s::text[]) AS s(span, xspan, xcode)
@@ -427,10 +427,11 @@ def _corrections(conn, statement, typed: list[str], lang: str, w: rank.Weights,
     rank.set_thresholds(conn, w.phrase_correct_min_similarity, word_threshold)
     rows = conn.execute(statement(CORRECTION_LOOKUP), {
         'spans': typed, 'codes': [text.phonetic(span) for span in typed],
-        'xspans': expanded, 'xcodes': [text.phonetic(span) for span in expanded],
+        'pspans': typed, 'pxspans': expanded,
+        'pxcodes': [text.phonetic(span) for span in expanded],
         'sspans': [span for span, _ in streets], 'sxspans': [x for _, x in streets],
         'sxcodes': [text.phonetic(x) for _, x in streets],
-        'place_categories': list(place_mode.PLACE_CATEGORIES), 'lang': lang,
+        'lang': lang,
     }).fetchall()
     best: dict[str, dict[str, tuple[float, str]]] = {'term': {}, 'place': {}, 'street': {}}
     for row in rows:

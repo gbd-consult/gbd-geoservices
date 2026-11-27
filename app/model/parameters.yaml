@@ -176,6 +176,10 @@ ranking:                    # the name score; DESIGN.md "Relevance and score"
   # this much of its trigrams, whichever is closer. "Apoteke"/"Apotheke" and
   # "Dortmnd"/"Dortmund" are 0.55; below 0.4 short words start to read as each other.
   phrase_correct_min_similarity: 0.40
+  # The fuzzy name search's probe for a word of a name sounding like the query (search/name.py)
+  # takes at most this many rows, the most important first. "Koln" sounds like a word of 5 279
+  # names on de_nrw; scoring them all took the query from 78 to 190 ms.
+  phonetic_word_limit: 500
   relevance:                # 0-100, reported with every name and address result: how literally it
                             # matched; the request's `relevance` drops results below it. The phrase
                             # mode's are per step, in search_rules.yaml.

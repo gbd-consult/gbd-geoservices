@@ -72,6 +72,7 @@ def fuzzy_plan(req, *, narrowed: bool = False) -> rank.Plan:
         'q_phon_tokens': q_phon_tokens,
         'q_prefix': q_name + '%',
         'q_categories': categories,
+        'phon_word_limit': rank.weights().phonetic_word_limit,
     }
 
     probes: list[str] = []
@@ -85,10 +86,22 @@ def fuzzy_plan(req, *, narrowed: bool = False) -> rank.Plan:
             '%(q_name)s <%% o.search_name',
         ]
         if q_phon_tokens:
-            # Exact phonetic hits, word against word: a GIN lookup, and the
-            # one that answers "Maier" -- or "Bäckerei Maier" -- for "Meyer"
-            # outright rather than by degrees.
-            probes.append('o.phon_words && %(q_phon_tokens)s')
+            # Exact phonetic hits, the cheapest probes here, and the ones
+            # that answer "Maier" for "Meyer" outright rather than by degrees:
+            # a name sounding like the query or one of its words (btree), and
+            # a word of a name sounding like the whole query (GIN) -- "Fago by
+            # meier" for "Meyer". Not the query's words against the names'
+            # words: on de_nrw "TH Köln" then took in every name with a word
+            # "Köln", 176 to 217 ms.
+            # The word probe is capped, most important first: a one-word query
+            # is a word of every name holding it -- "Koln" sounds like 5 279
+            # names with a word "Köln" on de_nrw, 179 named so -- and those
+            # are found by their letters anyway; what the probe adds is the
+            # few that only sound alike.
+            probes += ['o.phon_name = ANY(%(q_phon_tokens)s)',
+                       'o.id IN (SELECT w.id FROM {objects} w'
+                       ' WHERE w.phon_words && ARRAY[%(q_phon)s]::text[]'
+                       ' ORDER BY w.importance DESC NULLS LAST LIMIT %(phon_word_limit)s)']
         if q_phon and (narrowed or categories):
             # Near-miss codes -- a typo bad enough to change the code.
             # Only where something else narrows the probe: codes are digit

@@ -69,6 +69,7 @@ class Weights:
     phrase_strict_min_score: float
     phrase_strict_best_share: float
     phrase_correct_min_similarity: float
+    phonetic_word_limit: int
     inside_view_bonus: float
     importance_weight: float
     relevance: dict
@@ -93,6 +94,7 @@ class Weights:
             phrase_strict_min_score=float(values['phrase_strict_min_score']),
             phrase_strict_best_share=float(values['phrase_strict_best_share']),
             phrase_correct_min_similarity=float(values['phrase_correct_min_similarity']),
+            phonetic_word_limit=int(values['phonetic_word_limit']),
             inside_view_bonus=float(values['inside_view_bonus']),
             importance_weight=float(values['importance_weight']),
             relevance={key: int(value) for key, value in values['relevance'].items()},

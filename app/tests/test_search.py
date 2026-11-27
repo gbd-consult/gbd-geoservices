@@ -23,7 +23,7 @@ def street_at(lon, lat, length=0.004):
 
 @pytest.fixture
 def search_schema(db, temp_schema):
-    for table in (t.OSM_SEARCH_OBJECT, t.OSM_SEARCH_ADDRESS, t.OSM_STREET, t.OSM_CATEGORY_TERM):
+    for table in t.SEARCH_TABLES:
         db.execute(t.ddl(temp_schema, table))
     return temp_schema
 
@@ -78,6 +78,23 @@ def test_street_dictionary_counts_distinct_names(db, search_schema, classifier):
     assert counts['osm_street'] == 2
     rows = dict(db.execute(f'select search_street, n from {search_schema}.osm_street').fetchall())
     assert rows == {'hauptstrasse': 2, 'bahnhofstrasse': 1}
+
+
+def test_the_place_dictionary_holds_each_place_name_once(db, search_schema, classifier):
+    """The phrase parser's corrected pass looks misspelt places up here; a
+    street is no place."""
+    writer = TableWriter(db, search_schema, t.OSM_SEARCH_OBJECT)
+    for osm_id, category in ((1, 'cat_geography_places_town'), (2, 'cat_geography_admin_8')):
+        writer.add(([osm_id], 'Kiel', 'kiel', 'kiel', '45', ['45'], None,
+                    ['cat_geography', category.rsplit('_', 1)[0], category], category, 60, None,
+                    None, None, None, None, shapely.Point(*WEST), None, None,
+                    shapely.Point(*WEST), None, None))
+    writer.close()
+    add_street(db, search_schema, 'hauptstrasse')
+    counts = postprocess.build_dictionaries(db, search_schema, classifier, ['de'], STREET_CLASSES)
+    assert counts['osm_place_name'] == 1
+    assert db.execute(f'select search_name, phon_name from {search_schema}.osm_place_name'
+                      ).fetchall() == [('kiel', '45')]
 
 
 def test_only_streets_reach_the_street_dictionary(db, search_schema, classifier):

@@ -354,7 +354,20 @@ OSM_STREET = Table('osm_street', (
     'using btree (phon_street)',
 ))
 
-SEARCH_TABLES = (OSM_SEARCH_OBJECT, OSM_SEARCH_ADDRESS, OSM_CATEGORY_TERM, OSM_STREET)
+#: The distinct place names, for the phrase parser's corrected pass: a
+#: misspelt place is looked for by sound and trigrams here, among some
+#: 37 000 names on de_nrw, rather than through the trigram index of every
+#: search object, 29 ms a word there.
+OSM_PLACE_NAME = Table('osm_place_name', (
+    ('search_name', 'text not null'),
+    ('phon_name', 'text'),
+), indexes=(
+    'using btree (phon_name)',
+    'using gin (search_name gin_trgm_ops)',
+))
+
+SEARCH_TABLES = (OSM_SEARCH_OBJECT, OSM_SEARCH_ADDRESS, OSM_CATEGORY_TERM, OSM_STREET,
+                 OSM_PLACE_NAME)
 
 #: Written by the ways pass, read by the street merge, dropped afterwards.
 #: search_name and phon_name are computed in Python during the pass, which

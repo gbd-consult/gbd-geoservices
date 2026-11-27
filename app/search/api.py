@@ -50,6 +50,7 @@ def _statement(text: str) -> sql.Composed:
         addresses=db.table(active, 'osm_search_address'),
         streets=db.table(active, 'osm_street'),
         terms=db.table(active, 'osm_category_term'),
+        places=db.table(active, 'osm_place_name'),
     )
 
 
