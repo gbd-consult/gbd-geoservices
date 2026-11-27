@@ -467,6 +467,12 @@ def build_sql(plan: Plan, req, *, count_only: bool) -> str:
     # and only then joined back for the rest: the GeoJSON of every
     # candidate was built before the LIMIT threw most of it away -- all
     # 100 000 restaurants of de for a page of 200, 1 s.
+    #
+    # The text score is written once, and `score` is added up from the
+    # materialised columns in `page`. Written twice in one select list it was
+    # computed twice per candidate -- Postgres does not merge equal
+    # expressions -- and in a plain subquery it is pulled up and written
+    # twice again; the CTE is the fence that keeps it once.
     return f"""
     WITH {prefix}
     cand AS MATERIALIZED (
@@ -475,14 +481,14 @@ def build_sql(plan: Plan, req, *, count_only: bool) -> str:
     scored AS MATERIALIZED (
         SELECT {', '.join(ORDER_COLUMNS)},
                ({plan.score}) AS match,
-               ({plan.score}) + {IMPORTANCE_TERM} AS score{distance}
+               {IMPORTANCE_TERM} AS boost{distance}
         FROM {{objects}} o JOIN cand c ON c.{plan.key} = o.{plan.key}
     ),
     page AS MATERIALIZED (
         SELECT id, match, score{', distance' if has_distance else ''},
                count(*) OVER () AS total_count,
                row_number() OVER (ORDER BY {order}) AS position
-        FROM scored
+        FROM (SELECT *, match + boost AS score FROM scored) s
         WHERE match >= %(min_score)s
         ORDER BY {order}
         LIMIT %(limit)s OFFSET %(offset)s

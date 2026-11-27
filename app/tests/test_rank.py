@@ -129,6 +129,16 @@ def test_the_view_is_a_constant_to_the_planner():
         'area_wkt': 'POLYGON((9 54,10 54,10 55,9 55,9 54))'}
 
 
+def test_a_candidate_is_scored_once():
+    """Written twice -- once as `match`, once inside `score` -- the text score
+    was computed twice per candidate, since Postgres does not merge equal
+    expressions: ~17 against ~30 ms over li's 3 521 rows."""
+    from search import name, request
+    req = request.parse({'mode': 'name', 'text': 'kirche', 'near': [9.5, 47.1]})
+    sql = rank.build_sql(name.fuzzy_plan(req), req, count_only=False)
+    assert len(re.findall(r'(?<!_)similarity\(o\.search_name', sql)) == 1
+
+
 def test_distance_goes_through_geography():
     """`<->` on a 4326 geometry returns degrees.
 
