@@ -37,6 +37,10 @@
   form input { display: block; width: 100%; max-width: 24rem; box-sizing: border-box;
                padding: .35rem .5rem; font: inherit; }
   form button { font: inherit; padding: .35rem .9rem; margin-top: .25rem; }
+  /* A checkbox beside its text, not a full-width block like the text fields. */
+  form label.check { display: flex; gap: .5rem; align-items: flex-start;
+                     max-width: 24rem; font-size: .85rem; color: var(--muted); }
+  form label.check input { width: auto; margin: .2rem 0 0; flex: none; }
   .hp { position: absolute; left: -9999px; }
   footer a { color: inherit; }
   footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule);
