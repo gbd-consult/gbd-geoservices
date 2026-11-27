@@ -22,9 +22,9 @@ A Linux server with Docker and the Compose plugin, `rsync`, and SSH access from 
 |---|---|---|
 | `li` (Liechtenstein) | 3 MB | under a minute |
 | `de_sh` (Schleswig-Holstein) | 160 MB | ~12 minutes, plus the download |
-| `de` (Germany) | 4 GB | ~6 hours; ~53 GB per import in the database, and two imports are kept |
+| `de` (Germany) | 4 GB | ~7.5 hours; ~53 GB per import in the database, and two imports are kept |
 
-The times are for the default `--pass-workers 1`, the node, way and area passes one after another; on `de` the passes are 3.5 of the 6 hours. `import <area> --pass-workers 2` or `3` runs them in parallel and shortens that part, but each way or area pass holds every node location of the file, so memory grows with every worker. The `location_store` option moves that cache to disk for an area too large for the RAM; each pass logs its peak memory at its end.
+The times are for the default `--pass-workers 1`, the node, way and area passes one after another; on `de` the passes are 4.4 of the 7.5 hours. `import <area> --pass-workers 2` or `3` runs them in parallel and shortens that part, but each way or area pass holds every node location of the file, so memory grows with every worker. The `location_store` option moves that cache to disk for an area too large for the RAM; each pass logs its peak memory at its end.
 
 The stack is PostgreSQL 17 with PostGIS 3.5, pgbouncer, the app (Python, Mapnik) and Caddy for TLS.
 
@@ -82,7 +82,7 @@ All commands run on the server, in `/opt/gbd-geoservices/v0.3`.
 | `./manage.sh compile-styles` | recompile the map styles (the app also does this at every start) |
 | `./manage.sh init-elevation` | download the missing elevation tiles (`elevation_tiles`) and draw the contour lines once; the next import of an area takes its share |
 
-**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Monday, Wednesday and Friday at 02:00 and appends to `data/cron.log`. An import downloads the Geofabrik extract again only when Geofabrik's is newer (its `Last-Modified`) and otherwise reuses the one in `data/downloads/`; `GET /health/data` shows the date of the data served.
+**Updating the data.** An import writes a new copy of the data beside the one being served; the served one is untouched until the next `reload`. `setup.sh` installs a cron job (`/etc/cron.d/gbd-geoservices-v03`) that runs `./manage.sh update` for `serve_area` on Fridays at 23:00 (the server's time, UTC) and appends to `data/cron.log`. For `de` with the 48 themes of 8 palettes and 6 details and the three grids, an update takes about a day: the import 7.5 hours, then the pre-cache 17 hours for 4.4 million tiles, rendered theme after theme by `map_pool_size` workers. Three quarters of the tiles and 13 of the 17 hours are the two UTM grids, whose `precache` depth 8 lies about a zoom deeper than Web Mercator's 12; the pre-cache time grows with the themes served (`serve_palettes`, `serve_details`) and four-fold per level of depth. An import downloads the Geofabrik extract again only when Geofabrik's is newer (its `Last-Modified`) and otherwise reuses the one in `data/downloads/`; `GET /health/data` shows the date of the data served.
 
 The two newest complete imports of an area are kept, and the one the running app serves, however old. Only one import runs at a time. At its end, an import logs the counts that moved against the previous one (`against <schema>: ...` in `data/import.log`); a class that vanished there is worth a look before the reload. `update` empties the tile cache and pre-caches again; after an `import` and `reload` by hand the cache is kept until `drop-cache` (and `pre-cache`).
 
