@@ -67,6 +67,7 @@ class Weights:
     word_range: tuple[float, float]
     phrase_strict_min_score: float
     phrase_strict_best_share: float
+    phrase_correct_min_similarity: float
     inside_view_bonus: float
     importance_weight: float
     relevance: dict
@@ -89,6 +90,7 @@ class Weights:
             word_range=tuple(float(v) for v in values['word_range']),
             phrase_strict_min_score=float(values['phrase_strict_min_score']),
             phrase_strict_best_share=float(values['phrase_strict_best_share']),
+            phrase_correct_min_similarity=float(values['phrase_correct_min_similarity']),
             inside_view_bonus=float(values['inside_view_bonus']),
             importance_weight=float(values['importance_weight']),
             relevance={key: int(value) for key, value in values['relevance'].items()},

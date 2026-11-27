@@ -215,6 +215,9 @@ class Reading:
     place: Place | None = None
     street: str | None = None
     addresses: tuple = ()
+    #: (typed, corrected) for each part read from a misspelt word
+    #: (`phrase.parse_corrected`); not a part, so no rule sees it.
+    corrected: tuple[tuple[str, str], ...] = ()
 
     @property
     def parts(self) -> frozenset[str]:
@@ -232,6 +235,8 @@ class Reading:
             out['place'] = self.place.name
         if self.street is not None:
             out['street'] = self.street
+        if self.corrected:
+            out['corrected'] = dict(self.corrected)
         return out
 
 

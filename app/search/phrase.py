@@ -124,6 +124,31 @@ ADMIN_CATEGORIES = ['cat_geography_admin']
 
 STREET_LOOKUP = 'SELECT search_street FROM {streets} WHERE search_street = ANY(%(spans)s)'
 
+#: For each span no dictionary knows, the terms, places and streets that
+#: sound like it (the codes' btrees) or share trigrams with it at
+#: pg_trgm.similarity_threshold (the trigram GINs), with their similarity,
+#: for `parse_corrected` to keep the closest of each kind. Terms are
+#: compared as typed, places and streets with street suffixes written out,
+#: as each is stored.
+CORRECTION_LOOKUP = """
+    SELECT s.span, 'term' AS kind, t.term AS corrected, similarity(t.term, s.span) AS sim
+    FROM unnest(%(spans)s::text[], %(codes)s::text[]) AS s(span, code)
+    JOIN {terms} t ON t.phon_term = s.code OR t.term %% s.span
+    UNION ALL
+    SELECT s.span, 'place', o.search_name, similarity(o.search_name, s.xspan)
+    FROM unnest(%(spans)s::text[], %(xspans)s::text[], %(xcodes)s::text[]) AS s(span, xspan, xcode)
+    JOIN {objects} o ON (o.phon_name = s.xcode OR o.search_name %% s.xspan)
+                    AND o.categories && %(place_categories)s
+    UNION ALL
+    SELECT s.span, 'street', st.search_street, similarity(st.search_street, s.xspan)
+    FROM unnest(%(sspans)s::text[], %(sxspans)s::text[], %(sxcodes)s::text[]) AS s(span, xspan, xcode)
+    JOIN {streets} st ON st.phon_street = s.xcode OR st.search_street %% s.xspan
+"""
+
+#: What a street name ends in once `text.expand_street` has written its
+#: suffix out: the expansions of its suffix rule.
+STREET_ENDINGS = ('strasse', 'platz', 'gasse', 'weg', 'allee')
+
 
 @dataclass(frozen=True, slots=True)
 class Run:
@@ -275,14 +300,81 @@ def parse(conn, statement, query: str, lang: str = 'de') -> tuple[Reading, ...]:
         out.append(Reading(text=whole, addresses=addresses))
     if len(tokens) < 2:
         return tuple(out)
+    out += _readings(tokens, *_parts(conn, statement, tokens, _indexed(tokens), lang))
+    return tuple(out)
 
+
+def parse_corrected(conn, statement, query: str, lang: str, w: rank.Weights,
+                    word_threshold: float) -> tuple[Reading, ...]:
+    """The readings `parse` misses for one misspelt word: a category in a
+    place or on a street, the category, the place or the street typed wrong
+    ("Apoteke Bielefeld", "Apotheke Dortmnd").
+
+    A span no dictionary knows is read as the term, the place or the street
+    that sounds like it or shares `phrase_correct_min_similarity` of its
+    trigrams, the closest of each kind (`CORRECTION_LOOKUP`). Only readings
+    with a corrected part and no name are kept: a corrected word beside a
+    name has nothing to confirm it -- "Holtenauer Kiel" would become a name
+    "Kiel" in a place Holtenau -- and the name LIKE rules after this pass
+    read such queries as they are.
+    """
+    tokens = tokens_of(query)
+    if len(tokens) < 2:
+        return ()
+    indexed = _indexed(tokens)
+    exact = _parts(conn, statement, tokens, indexed, lang)
+    # A span holding a word a dictionary knows is not misspelt as a whole:
+    # "salento triesen" is close enough to the place Triesen, and read so it
+    # took the name with it.
+    known = {i for kind in exact for s, e, *_ in kind for i in range(s, e)}
+    unknown = [(s, e, span) for s, e, span in indexed
+               if not known & set(range(s, e))
+               and len(span.replace(' ', '')) >= text.MIN_PHONETIC_WORD
+               and span.replace(' ', '').isalpha()]
+    if not unknown:
+        return ()
+    alias = _corrections(conn, statement, [span for *_, span in unknown], w, word_threshold)
+    if not any(alias.values()):
+        return ()
+    fixed = _parts(conn, statement, tokens, unknown, lang, alias)
+    corrected = {(kind, *part[:2]): (part_span, alias[kind][part_span])
+                 for kind, found in zip(('term', 'place', 'street'), fixed, strict=True)
+                 for part in found
+                 for part_span in [' '.join(tokens[part[0]:part[1]])]}
+    readings = _readings(tokens, *(a + b for a, b in zip(exact, fixed, strict=True)), corrected)
+    return tuple(r for r in readings if r.corrected and r.name is None)
+
+
+def _indexed(tokens: list[str]) -> list[tuple[int, int, str]]:
     # The whole query is step 1's; a part is always less than all of it.
-    indexed = [(s, e, span) for s, e, span in spans(tokens) if e - s < len(tokens)]
-    categories = _categories(conn, statement, indexed, lang)
-    places = _places(conn, statement, [(s, e, span) for s, e, span in indexed
-                                       if s == 0 or e == len(tokens)])
-    streets = _streets(conn, statement, indexed)
+    return [(s, e, span) for s, e, span in spans(tokens) if e - s < len(tokens)]
 
+
+def _parts(conn, statement, tokens, indexed, lang, alias=None) -> tuple[list, list, list]:
+    """The spans the dictionaries know: (categories, places, streets).
+
+    `alias` maps a kind to {span: what to look up instead}, for the
+    corrected pass; a span without one is looked up as typed.
+    """
+    alias = alias or {}
+    return (
+        _categories(conn, statement, indexed, lang, alias.get('term', {})),
+        _places(conn, statement, [(s, e, span) for s, e, span in indexed
+                                  if s == 0 or e == len(tokens)], alias.get('place', {})),
+        _streets(conn, statement, indexed, alias.get('street', {})),
+    )
+
+
+def _readings(tokens, categories, places, streets, corrected=None) -> list[Reading]:
+    """Every combination of the parts, the rest of the query as the name,
+    with two parts at least -- no rule after step 1 takes fewer.
+
+    `corrected` maps (kind, start, end) of a part read from a misspelt word
+    to (typed, corrected), which the reading carries.
+    """
+    corrected = corrected or {}
+    whole = ' '.join(tokens)
+    out = []
     seen = set()
     for category in [None, *categories]:
         for place in [None, *places]:
@@ -298,6 +390,10 @@ def parse(conn, statement, query: str, lang: str = 'de') -> tuple[Reading, ...]:
                 # by its fragments.
                 if category and not place and any(rest == list(range(s, e)) for s, e, _ in places):
                     continue
+                fixes = tuple(corrected[(kind, *part[:2])]
+                              for kind, part in (('term', category), ('place', place),
+                                                 ('street', street))
+                              if part and (kind, *part[:2]) in corrected)
                 reading = Reading(
                     text=whole,
                     name=' '.join(tokens[i] for i in rest) or None,
@@ -305,31 +401,67 @@ def parse(conn, statement, query: str, lang: str = 'de') -> tuple[Reading, ...]:
                     term=category[2] if category else None,
                     place=place[2] if place else None,
                     street=street[2] if street else None,
+                    corrected=fixes,
                 )
                 key = (reading.name, reading.category, place and place[:2], reading.street)
                 if len(reading.parts) >= 2 and key not in seen:
                     seen.add(key)
                     out.append(reading)
-    return tuple(out)
+    return out
 
 
-def _categories(conn, statement, indexed, lang) -> list[tuple[int, int, str, str]]:
+def _corrections(conn, statement, typed: list[str], w: rank.Weights,
+                 word_threshold: float) -> dict[str, dict[str, str]]:
+    """{kind: {span: the closest term, place or street to it}}."""
+    expanded = [text.expand_street(span) for span in typed]
+    # Only a span that ends like a street is read as one: there are so many
+    # streets that nearly any word of a name sounds like one of them.
+    streets = [(span, x) for span, x in zip(typed, expanded, strict=True)
+               if x.endswith(STREET_ENDINGS)]
+    # `%%` finds the trigram candidates at the floor; SET LOCAL, so the LIKE
+    # rules after this set their own again.
+    rank.set_thresholds(conn, w.phrase_correct_min_similarity, word_threshold)
+    rows = conn.execute(statement(CORRECTION_LOOKUP), {
+        'spans': typed, 'codes': [text.phonetic(span) for span in typed],
+        'xspans': expanded, 'xcodes': [text.phonetic(span) for span in expanded],
+        'sspans': [span for span, _ in streets], 'sxspans': [x for _, x in streets],
+        'sxcodes': [text.phonetic(x) for _, x in streets],
+        'place_categories': list(place_mode.PLACE_CATEGORIES),
+    }).fetchall()
+    best: dict[str, dict[str, tuple[float, str]]] = {'term': {}, 'place': {}, 'street': {}}
+    for row in rows:
+        if row['sim'] < w.phrase_correct_min_similarity:
+            continue
+        current = best[row['kind']].get(row['span'])
+        if current is None or (row['sim'], current[1]) > (current[0], row['corrected']):
+            best[row['kind']][row['span']] = (row['sim'], row['corrected'])
+    return {kind: {span: corrected for span, (_, corrected) in found.items()}
+            for kind, found in best.items()}
+
+
+def _categories(conn, statement, indexed, lang, alias=None) -> list[tuple[int, int, str, str]]:
     """The spans that are category terms, as (start, end, term, category).
 
     Only the longest: "italienisches restaurant" is one term, not
-    "restaurant" with "italienisches" left over as a name.
+    "restaurant" with "italienisches" left over as a name. A span in
+    `alias` is looked up as the term it maps to.
     """
+    alias = alias or {}
+    lookup = {span: alias.get(span, span) for *_, span in indexed}
     rows = conn.execute(statement(TERM_LOOKUP),
-                        {'spans': [span for *_, span in indexed], 'lang': lang}).fetchall()
+                        {'spans': sorted(set(lookup.values())), 'lang': lang}).fetchall()
     found = {row['term']: row['category'] for row in rows}
-    hits = [(s, e, span, found[span]) for s, e, span in indexed if span in found]
+    hits = [(s, e, span, found[lookup[span]]) for s, e, span in indexed if lookup[span] in found]
     return [hit for hit in hits
             if not any(o[0] <= hit[0] and hit[1] <= o[1] and o[:2] != hit[:2] for o in hits)]
 
 
-def _places(conn, statement, indexed) -> list[tuple[int, int, Place]]:
-    """The spans at either end that name a place, as (start, end, place)."""
-    names = {text.expand_street(span) for *_, span in indexed}
+def _places(conn, statement, indexed, alias=None) -> list[tuple[int, int, Place]]:
+    """The spans at either end that name a place, as (start, end, place).
+    A span in `alias` is looked up as the place name it maps to."""
+    alias = alias or {}
+    lookup = {span: alias.get(span) or text.expand_street(span) for *_, span in indexed}
+    names = set(lookup.values())
     rows = conn.execute(statement(PLACE_LOOKUP), {
         'spans': sorted(names),
         'place_categories': list(place_mode.PLACE_CATEGORIES),
@@ -341,17 +473,18 @@ def _places(conn, statement, indexed) -> list[tuple[int, int, Place]]:
             name=row['name'], ids=tuple(row['ids']), area_ids=tuple(row['area_ids']),
             points=tuple((lon, lat, place_mode.radius_for(cls)) for lon, lat, cls in row['points']),
             centre=(row['lon'], row['lat']))
-    return [(s, e, found[text.expand_street(span)]) for s, e, span in indexed
-            if text.expand_street(span) in found]
+    return [(s, e, found[lookup[span]]) for s, e, span in indexed if lookup[span] in found]
 
 
-def _streets(conn, statement, indexed) -> list[tuple[int, int, str]]:
-    """The spans that name a street, as (start, end, normalised street)."""
-    names = {text.expand_street(span) for *_, span in indexed}
-    rows = conn.execute(statement(STREET_LOOKUP), {'spans': sorted(names)}).fetchall()
+def _streets(conn, statement, indexed, alias=None) -> list[tuple[int, int, str]]:
+    """The spans that name a street, as (start, end, normalised street).
+    A span in `alias` is looked up as the street it maps to."""
+    alias = alias or {}
+    lookup = {span: alias.get(span) or text.expand_street(span) for *_, span in indexed}
+    rows = conn.execute(statement(STREET_LOOKUP),
+                        {'spans': sorted(set(lookup.values()))}).fetchall()
     found = {row['search_street'] for row in rows}
-    return [(s, e, text.expand_street(span)) for s, e, span in indexed
-            if text.expand_street(span) in found]
+    return [(s, e, lookup[span]) for s, e, span in indexed if lookup[span] in found]
 
 
 # --- running the steps ---------------------------------------------------
@@ -376,15 +509,52 @@ def find(conn, statement, req, steps) -> tuple[list, int, list]:
 
 
 def _cascade(conn, statement, req, steps) -> list[Run]:
-    """The steps in order until one finds something, on one text."""
+    """The steps in order until one finds something, on one text.
+
+    Before the first step below `relevance.phrase_corrected`, the corrected
+    pass: the parse rules of the steps above it once more, on the readings
+    of a misspelt category, place or street (`parse_corrected`), at that
+    relevance.
+    """
     w = rank.weights()
+    corrected_relevance = w.relevance['phrase_corrected']
     whole: Reading | None = None
     parsed: tuple[Reading, ...] | None = None
+    corrected_done = corrected_relevance < req.relevance
     runs: list[Run] = []
+
+    def run(rule: Rule, readings, relevance: int) -> bool:
+        found = False
+        for reading in readings:
+            with steps.step(rule.id):
+                rows = _run(conn, statement, rule, reading, req, w)
+            steps.rows(len(rows))
+            if req.categories and not rule.on_addresses:
+                # The rules read categories of their own; the request's
+                # filter applies to what they found.
+                rows = [row for row in rows
+                        if set(req.categories) & set(row['categories'] or ())]
+            runs.append(Run(rule, reading, rows, relevance))
+            found = found or bool(rows)
+        return found
 
     for step in rules.steps():
         if not step.enabled or step.relevance < req.relevance:
             continue
+        if not corrected_done and step.relevance < corrected_relevance:
+            corrected_done = True
+            with steps.step('correct'):
+                readings = parse_corrected(conn, statement, req.text, req.lang, w,
+                                           rank.trgm_thresholds(req.similarity, w)[1])
+            found = False
+            for above in rules.steps():
+                if above.enabled and above.relevance > corrected_relevance:
+                    for rule in above.rules:
+                        if not (rule.on_text or rule.on_addresses):
+                            matching = [r for r in readings if rule.parts == r.parts]
+                            found = run(rule, matching, corrected_relevance) or found
+            if found:
+                break
         found = False
         for rule in step.rules:
             # An address has no category, so a category filter would drop it.
@@ -401,17 +571,7 @@ def _cascade(conn, statement, req, steps) -> list[Run]:
                         parsed = parse(conn, statement, req.text, req.lang)
                 readings = [r for r in parsed
                             if (bool(r.addresses) if rule.on_addresses else rule.parts == r.parts)]
-            for reading in readings:
-                with steps.step(rule.id):
-                    rows = _run(conn, statement, rule, reading, req, w)
-                steps.rows(len(rows))
-                if req.categories and not rule.on_addresses:
-                    # The rules read categories of their own; the request's
-                    # filter applies to what they found.
-                    rows = [row for row in rows
-                            if set(req.categories) & set(row['categories'] or ())]
-                runs.append(Run(rule, reading, rows, step.relevance))
-                found = found or bool(rows)
+            found = run(rule, readings, step.relevance) or found
         if found:
             break
     return runs

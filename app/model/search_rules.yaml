@@ -55,6 +55,15 @@ steps:
       category_near_place: category = query.category AND location NEAR query.place      # "Restaurant Wilstedt Siedlung"
       category_near_street: category = query.category AND location NEAR query.street    # "Apotheke Holtenauer Straße"
 
+  # Above the name LIKE rules: a query with a house number and a postcode or
+  # city is an address, typo or not, and at 40 the street alone was found
+  # first and ended the search without its house.
+  - relevance: 50
+    rules:
+      address_like: >-                                                                 # "Schildergase 10 Köln"
+        address.street LIKE query.street AND address.housenumber = query.housenumber
+        AND (address.city = query.place OR address.postcode = query.postcode)
+
   - relevance: 40
     rules:
       category_name_like_in_place: category = query.category AND name LIKE query.name AND (location IN query.place OR location NEAR query.place)  # "Restaurant Maxim Kiel"
@@ -65,9 +74,6 @@ steps:
     enabled: false
     rules:
       name_nearest_place: name = query.name ORDER BY distance(location, query.place)   # "Hauptstraße Bargteheide"
-      address_like: >-                                                                 # "Holtenaur Strasse 100 Kiel"
-        address.street LIKE query.street AND address.housenumber = query.housenumber
-        AND (address.city = query.place OR address.postcode = query.postcode)
 
   - relevance: 20
     rules:

@@ -168,6 +168,11 @@ ranking:                    # the name score; DESIGN.md "Relevance and score"
   # of the best row, "Christian-Albrechts-Universität zu Kiel" (for
   # "Universität Kiel") at 0.66.
   phrase_strict_best_share: 0.65
+  # The phrase mode's corrected pass (search/phrase.py `parse_corrected`): a word that is
+  # no category term, place or street is read as the one that sounds like it, or shares
+  # this much of its trigrams, whichever is closer. "Apoteke"/"Apotheke" and
+  # "Dortmnd"/"Dortmund" are 0.55; below 0.4 short words start to read as each other.
+  phrase_correct_min_similarity: 0.40
   relevance:                # 0-100, reported with every name and address result: how literally it
                             # matched; the request's `relevance` drops results below it. The phrase
                             # mode's are per step, in search_rules.yaml.
@@ -175,6 +180,10 @@ ranking:                    # the name score; DESIGN.md "Relevance and score"
     name: 99                # the normalised name
     name_fuzzy: 20          # the name mode's fallback when the exact name finds nothing, and /search/fuzzy: a typo or a fragment
     point: 99               # what lies at a point; its nearest address, first, is `address`
+    # The phrase mode's corrected pass: a category in a place or on a street, one of them
+    # misspelt ("Apoteke Bielefeld"). Run when every step above it found nothing, and
+    # above the name LIKE rules (40), which read the misspelt word as a name.
+    phrase_corrected: 50
   inside_view_bonus: 0.10   # added when geom_center lies inside the request's bbox / area
   # Importance (0-100, model/importance.yaml) is added to the score times this, after the
   # floors above, so it orders what matched and lets nothing in. On de_sh, of 41 typos,

@@ -338,7 +338,10 @@ OSM_CATEGORY_TERM = Table('osm_category_term', (
     ('lang', 'text not null'),
 ), indexes=(
     'using btree (term)',
+    # The phrase mode's corrected pass: a misspelt category term, by sound or
+    # by trigrams (search/phrase.py CORRECTION_LOOKUP).
     'using btree (phon_term)',
+    'using gin (term gin_trgm_ops)',
 ))
 
 OSM_STREET = Table('osm_street', (

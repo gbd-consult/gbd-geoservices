@@ -352,6 +352,47 @@ def test_a_typo_falls_to_the_fuzzy_step():
     assert 'Vaduz' in names(page)
 
 
+@pytest.mark.parametrize('q, category, typed, corrected', [
+    ('Apoteke Schaan', 'cat_poi_health_pharmacy', 'apoteke', 'apotheke'),     # the category
+    ('Restaurant Vadutz', 'cat_poi_food_restaurant', 'vadutz', 'vaduz'),     # the place
+    ('Restorant Vaduz', 'cat_poi_food_restaurant', 'restorant', 'restaurant'),
+])
+def test_a_misspelt_category_or_place_is_read_as_the_one_it_sounds_like(q, category, typed,
+                                                                       corrected):
+    """Every dictionary lookup was exact, so one typo in "Apotheke" or
+    "Vaduz" left no reading with both parts, and the fuzzy text step
+    returned the town and its bus stops instead."""
+    page = find(q, limit=100)
+    assert found(page) == ['category_in_place']
+    assert {p['match_relevance'] for p in props(page)} == {50}
+    assert all(category in [c['id'] for c in p['categories']] for p in props(page))
+    corrections = [i['corrected'] for i in page['interpretation'] if 'corrected' in i]
+    assert corrections and all(c == {typed: corrected} for c in corrections)
+
+
+def test_a_correct_spelling_runs_no_corrected_pass():
+    page = find('Apotheke Schaan')
+    assert found(page) == ['category_in_place']
+    assert {p['match_relevance'] for p in props(page)} == {80}
+    assert not any('corrected' in i for i in page['interpretation'])
+
+
+def test_a_corrected_word_beside_a_name_is_left_to_the_name_rules():
+    """With a name left over nothing confirms the correction: "Holtenauer
+    Vaduz" read as a place "Holtenau" would look for a name "Vaduz" there."""
+    page = find('Holtenauer Vaduz')
+    assert not any('corrected' in i for i in page['interpretation'])
+
+
+def test_a_misspelt_street_still_finds_the_house():
+    """At 40 the street alone was found by name and ended the search; the
+    address with its typo comes first now."""
+    page = find('Lanstrasse 10 Triesenberg')
+    assert found(page) == ['address_like']
+    first = props(page)[0]
+    assert (first['address_street'], first['address_housenumber']) == ('Landstrasse', '10')
+
+
 def test_a_disabled_step_does_not_run():
     page = find('qqzz Vaduz')
     assert 'name_like_in_place' in ran(page)
@@ -500,10 +541,11 @@ def test_the_city_first_finds_the_same_address():
         ('Landstrasse', '11', 'Vaduz')
 
 
-@pytest.mark.parametrize('q', ['Landstrasse 11', 'Landstrasse 11 Schaan', 'Lanstrasse 11 Vaduz'])
+@pytest.mark.parametrize('q', ['Landstrasse 11', 'Landstrasse 11 Schaan'])
 def test_an_address_that_does_not_match_exactly_adds_nothing(q):
     """Landstrasse 11 is in Vaduz and in Triesen, not in Schaan; without a
-    city it is both; misspelt it is neither."""
+    city it is both. Misspelt it is found by `address_like`
+    (`test_a_misspelt_street_still_finds_the_house`)."""
     page = find(q, limit=100)
     assert not any(f['id'].startswith('a') for f in page['results']['features'])
     assert 'address' not in found(page)
